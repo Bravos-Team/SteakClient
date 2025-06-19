@@ -19,9 +19,18 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
-    }
+      "@/*": ["src/frontend/*"]
+    },
+    "typeRoots": ["./src/frontend/types", "./node_modules/@types"]
   },
-  "include": ["env.d.ts", "src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "src/preload/preload.ts"],
+  "include": [
+    "env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "src/preload/preload.ts",
+    "src/frontend/types/**/*"
+  ],
   "exclude": ["node_modules", "dist", "**/__mocks__/**", "vite.config.ts", "sign"]
 }
