@@ -1,15 +1,39 @@
-import { createRouter, createWebHashHistory } from 'vue-router';
+
+import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 const routes = [
-  { path: '/', component: () => import('../views/DashBoard.vue') },
+  {
+    path: '/',
+    name: 'Home',
+    component: () => import('@/views/Home.vue'),
+    meta: { title: 'Home' },
+  },
+  {
+    path: '/library',
+    name: 'Library',
+    component: () => import('@/views/Library.vue'),
+    meta: { title: 'Library' },
+  },
+    {
+    path: '/store',
+    name: 'Store',
+    component: () => import('@/views/Store.vue'),
+    meta: { title: 'Store' },
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/NotFound.vue'),
+    meta: { title: '404 Not Found' },
+  },
 ];
-const isElectron = window && window.process && window.process.type;
 
 const router = createRouter({
-  history:  createWebHashHistory() ,
+  history:  createWebHashHistory(),
   routes,
-});
+})
 router.beforeEach((to, from, next) => {
   console.log('Router navigating to:', to.path);
-  return next();
+  document.title = to.meta.title || 'Default Title'; // Fallback title
+  next();
 });
-export default router;
+export default router
