@@ -12,6 +12,10 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
+  Gamepad,
+  ShoppingCart,
+  Power,
+  ArrowDownToLine,
 } from 'lucide-vue-next'
 import NavMain from '@/components/NavMain.vue'
 import NavProjects from '@/components/NavProjects.vue'
@@ -25,6 +29,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from '@/components/ui/sidebar'
+import { cn } from '@/lib/utils'
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: 'icon',
@@ -56,89 +61,25 @@ const data = {
   ],
   navMain: [
     {
-      title: 'Playground',
-      url: '#',
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: 'History',
-          url: '#',
-        },
-        {
-          title: 'Starred',
-          url: '#',
-        },
-        {
-          title: 'Settings',
-          url: '#',
-        },
-      ],
+      title: 'Library',
+      url: '/library',
+      icon: Gamepad,
     },
     {
-      title: 'Models',
-      url: '#',
-      icon: Bot,
-      items: [
-        {
-          title: 'Genesis',
-          url: '#',
-        },
-        {
-          title: 'Explorer',
-          url: '#',
-        },
-        {
-          title: 'Quantum',
-          url: '#',
-        },
-      ],
+      title: 'Store',
+      url: '/store',
+      icon: ShoppingCart,
     },
-    {
-      title: 'Documentation',
-      url: '#',
-      icon: BookOpen,
-      items: [
-        {
-          title: 'Introduction',
-          url: '#',
-        },
-        {
-          title: 'Get Started',
-          url: '#',
-        },
-        {
-          title: 'Tutorials',
-          url: '#',
-        },
-        {
-          title: 'Changelog',
-          url: '#',
-        },
-      ],
-    },
+
     {
       title: 'Settings',
       url: '#',
       icon: Settings2,
-      items: [
-        {
-          title: 'General',
-          url: '#',
-        },
-        {
-          title: 'Team',
-          url: '#',
-        },
-        {
-          title: 'Billing',
-          url: '#',
-        },
-        {
-          title: 'Limits',
-          url: '#',
-        },
-      ],
+    },
+    {
+      title: 'Logout',
+      url: '#',
+      icon: Power,
     },
   ],
   projects: [
@@ -153,25 +94,30 @@ const data = {
       icon: PieChart,
     },
     {
-      name: 'Travel',
+      name: 'LogOut',
       url: '#',
-      icon: Map,
+      icon: Power,
     },
   ],
+  footer: [{ title: 'Download', url: '#', icon: ArrowDownToLine }],
 }
 </script>
 
 <template>
   <Sidebar v-bind="props">
     <SidebarHeader>
-      <TeamSwitcher :teams="data.teams" />
+      <!-- <TeamSwitcher :teams="data.teams" /> -->
+      <img class="h-[75px] p-2" src="https://ccdn.steak.io.vn/logo_steak.svg" alt="" />
     </SidebarHeader>
     <SidebarContent>
       <NavMain :items="data.navMain" />
-      <NavProjects :projects="data.projects" />
+      <!-- <NavProjects :projects="data.projects" /> -->
     </SidebarContent>
     <SidebarFooter>
-      <NavUser :user="data.user" />
+
+        <NavMain class="pb-4" :items="data.footer" />
+
+      <NavUser :class="cn('block md:hidden')" :user="data.user" />
     </SidebarFooter>
     <SidebarRail />
   </Sidebar>

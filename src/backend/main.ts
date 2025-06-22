@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, screen } from 'electron'
 import path, { dirname } from 'node:path'
 import started from 'electron-squirrel-startup'
 import { fileURLToPath } from 'node:url'
@@ -18,6 +18,7 @@ const loginWindow = () => {
   loginWin = new BrowserWindow({
     width: 1280,
     height: 960,
+    title: 'Login',
     icon: path.join(__dirname, './favicon.ico'),
     webPreferences: {
       preload: path.join(__dirname, './preload.js'),
@@ -56,9 +57,24 @@ const loginWindow = () => {
 }
 
 const mainWindow = () => {
+  const screenInfo = screen.getPrimaryDisplay()
+  let width = 1200
+  let height = 690
+  if (screenInfo?.workAreaSize?.height < height) {
+    height = screenInfo.workAreaSize.height * 0.8
+  }
+
+  if (screenInfo?.workAreaSize?.width < width) {
+    width = screenInfo.workAreaSize.width * 0.8
+  }
   mainWin = new BrowserWindow({
-    width: 1280,
-    height: 960,
+    width: width,
+    height: height,
+    show: false,
+    x: 0,
+    y: 0,
+    resizable: true,
+    title: 'main',
     icon: path.join(__dirname, './favicon.ico'),
     webPreferences: {
       preload: path.join(__dirname, './preload.js'),
@@ -66,6 +82,7 @@ const mainWindow = () => {
       contextIsolation: true,
     },
     autoHideMenuBar: true,
+    maximizable: false,
   })
 
   // if (process.env.NODE_ENV === 'development') {
@@ -98,19 +115,40 @@ const mainWindow = () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(loginWindow)
-
-ipcMain.on('login-username', (_event, username) => {
-  console.log("Đăng nhập thành công:",username);
-  if(loginWin){
-    loginWin.hide()
-  }
-  if(!mainWin){
-    mainWindow()
-  }else{
-    mainWin.show()
-  }
-  
+app.whenReady().then(() => {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize
+  console.log('Screen size:', width, height)
+  loginWindow()
+  ipcMain.on('login-username', (event, username: string) => {
+    console.log('Đăng nhập thành công:', username)
+    if (loginWin) {
+      loginWin.hide()
+    }
+    if (!mainWin) {
+      mainWindow()
+      mainWin?.once('ready-to-show', () => {
+        const size = mainWin?.getSize()
+        const scaleFactor = screen.getPrimaryDisplay().scaleFactor
+        console.log('Scale factor:', scaleFactor)
+        mainWin?.setSize(1920 / scaleFactor, 960 / scaleFactor)
+        console.log(321)
+        mainWin?.show()
+        mainWin?.webContents.send('login-success', username)
+      })
+    } else {
+      console.log(123)
+      mainWin.show()
+      mainWin?.setSize(1920, 960)
+      mainWin.webContents.send('login-success', username)
+    }
+  })
+  app.on('activate', () => {
+    // On OS X it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0) {
+      loginWindow()
+    }
+  })
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -119,14 +157,6 @@ ipcMain.on('login-username', (_event, username) => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
-  }
-})
-
-app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) {
-    loginWindow()
   }
 })
 
