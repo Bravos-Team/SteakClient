@@ -1,8 +1,8 @@
 <template>
-  <Combobox :class="cn('w-full')" by="label">
+  <Combobox  by="label">
     <ComboboxAnchor :class="cn('w-full')">
-      <div class="relative w-full  items-center">
-        <ComboboxInput class="pl-9" :display-value="(val) => val?.label ?? ''" placeholder="Search ..." />
+      <div class="relative w-full bg-[#202024] rounded-2xl  items-center">
+        <ComboboxInput class="pl-2" :display-value="(val) => val?.label ?? ''" placeholder="Search ..." />
         <span class="absolute start-0 inset-y-0 flex items-center justify-center px-3">
           <Search class="size-4 text-muted-foreground" />
         </span>

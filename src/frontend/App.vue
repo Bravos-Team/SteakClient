@@ -13,7 +13,9 @@
   <SidebarProvider >
     <AppSidebar />
     <SidebarInset>
+      
       <HeaderHome :user="data.user" />
+
       <Suspense>
         <template #default>
           <RouterView />
@@ -29,6 +31,7 @@
 import AppSidebar from '@/components/AppSidebar.vue'
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar'
 import HeaderHome from '@/components/home/HeaderHome.vue'
+import { ref } from 'vue'
 const data = {
   user: {
     name: 'shadcn',
@@ -36,4 +39,6 @@ const data = {
     avatar: '/avatars/shadcn.jpg',
   },
 }
+
+
 </script>
