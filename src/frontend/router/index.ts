@@ -10,7 +10,7 @@ const routes = [
   {
     path: '/library',
     name: 'Library',
-    component: () => import('@/views/Library.vue'),
+    component: () => import('@/views/library/LibraryHome.vue'),
     meta: { title: 'Library' },
   },
     {
@@ -18,6 +18,12 @@ const routes = [
     name: 'Store',
     component: () => import('@/views/Store.vue'),
     meta: { title: 'Store' },
+  },
+  {
+    path : '/',
+    name : "detail",
+    componemt : () => import('@/views/library/GameDetail.vue'),
+    meta :  {tiltle : 'GameDetail'}
   },
   {
     path: '/:pathMatch(.*)*',
