@@ -1,1 +1,0 @@
-import{_ as r}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{c as e,o as c}from"./index-Bczdgnur.js";const o={};function t(a,n){return c(),e("div",null,"this is page library")}const _=r(o,[["render",t]]);export{_ as default};

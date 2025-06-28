@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
-import { ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import VueApexCharts from 'vue3-apexcharts'
 
 // Test data
-const downloadSpeed = ref('23.62 MB/s')
-const diskSpeed = ref('0 MB/s')
+const downloadSpeed = ref('10.81 MB/s')
+const diskSpeed = ref('20.31 MB/s')
 const downloadProgress = ref('6.91% [107.51MB]')
 const downloadTimeRemaining = ref('00:01:13')
 const currentDownloads = ref([
@@ -32,6 +33,150 @@ const queuedDownloads = ref([
     store: 'Epic Games'
   }
 ])
+
+// Biểu đồ ApexCharts
+const chartOptions = ref({
+  chart: {
+    id: 'download-speed-chart',
+    height: 70,
+    type: 'line',
+    animations: {
+      enabled: true,
+      easing: 'linear',
+      dynamicAnimation: {
+        speed: 500
+      }
+    },
+    toolbar: {
+      show: false
+    },
+    zoom: {
+      enabled: false
+    },
+    sparkline: {
+      enabled: true
+    }
+  },
+  colors: ['#2dd4bf'],
+  stroke: {
+    curve: 'smooth',
+    width: 2
+  },
+  markers: {
+    size: 0
+  },
+  tooltip: {
+    enabled: false
+  },
+  grid: {
+    show: false,
+    padding: {
+      left: 0,
+      right: 0
+    }
+  },
+  xaxis: {
+    type: 'numeric',
+    labels: {
+      show: false
+    },
+    axisBorder: {
+      show: false
+    },
+    axisTicks: {
+      show: false
+    }
+  },
+  yaxis: {
+    show: false,
+    min: 0
+  }
+})
+
+const downloadSeries = ref([
+  {
+    name: 'Download',
+    data: Array(20).fill(0).map((_, i) => {
+      // Create a more realistic starting pattern with some fluctuations
+      const base = 12;  // Base download speed of 12 MB/s
+      return base + Math.sin(i / 3) * 2 + (Math.random() * 1.5 - 0.75);
+    })
+  }
+])
+
+const diskSeries = ref([
+  {
+    name: 'Disk',
+    data: Array(20).fill(0).map((_, i) => {
+      // Disk writes are typically more stable
+      const base = 18;  // Base disk write speed of 18 MB/s
+      return base + Math.sin(i / 4) * 1 + (Math.random() * 1 - 0.5);
+    })
+  }
+])
+
+let chartUpdateInterval: number | null = null
+
+// More realistic game download simulation
+onMounted(() => {
+  // Initialize with more realistic starting values
+  const baseDownloadSpeed = 12; // Base speed in MB/s
+  const baseDiskSpeed = 18;     // Base disk write speed in MB/s
+  let currentDownloadSpeed = baseDownloadSpeed + (Math.random() * 2 - 1);
+  let currentDiskSpeed = baseDiskSpeed + (Math.random() * 3 - 1.5);
+
+  chartUpdateInterval = window.setInterval(() => {
+    // Simulate fluctuations in network conditions
+    // Network speed tends to fluctuate more than disk speed
+    currentDownloadSpeed += (Math.random() * 0.9 - 0.4); // Small random adjustment
+
+    // Occasional larger fluctuations (network congestion)
+    if (Math.random() < 0.1) { // 10% chance of larger fluctuation
+      currentDownloadSpeed += (Math.random() * 2 - 1);
+    }
+
+    // Keep speeds within realistic bounds
+    currentDownloadSpeed = Math.max(6, Math.min(20, currentDownloadSpeed));
+
+    // Disk write speed is usually more consistent but affected by download speed
+    currentDiskSpeed = baseDiskSpeed + (Math.random() * 1.5 - 0.75);
+    currentDiskSpeed = Math.max(12, Math.min(30, currentDiskSpeed));
+
+    // Update chart data
+    const newDownloadData = [...downloadSeries.value[0].data.slice(1), currentDownloadSpeed];
+    downloadSeries.value = [{ name: 'Download', data: newDownloadData }];
+
+    const newDiskData = [...diskSeries.value[0].data.slice(1), currentDiskSpeed];
+    diskSeries.value = [{ name: 'Disk', data: newDiskData }];
+
+    // Update displayed speeds with formatting
+    downloadSpeed.value = `${currentDownloadSpeed.toFixed(2)} MB/s`;
+    diskSpeed.value = `${currentDiskSpeed.toFixed(2)} MB/s`;
+
+    // Update progress
+    const totalSize = 19.2 * 1024; // Total size in MB (from 19.2 GB)
+    const downloadedSoFar = parseFloat(downloadProgress.value.split('%')[0]) / 100 * totalSize;
+    const newDownloaded = downloadedSoFar + currentDownloadSpeed;
+    const newPercentage = (newDownloaded / totalSize * 100).toFixed(2);
+    const newDownloadedFormatted = (newDownloaded / 1024).toFixed(2);
+
+    downloadProgress.value = `${newPercentage}% [${newDownloadedFormatted}GB]`;
+
+    // Update time remaining
+    const remainingMB = totalSize - newDownloaded;
+    const remainingSeconds = Math.floor(remainingMB / currentDownloadSpeed);
+    const minutes = Math.floor(remainingSeconds / 60);
+    const seconds = remainingSeconds % 60;
+    downloadTimeRemaining.value = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:00`;
+  }, 1000);
+})
+
+// Dọn dẹp khi component bị hủy
+onBeforeUnmount(() => {
+  if (chartUpdateInterval) {
+    clearInterval(chartUpdateInterval)
+  }
+})
 </script>
 
 <template>
@@ -42,14 +187,18 @@ const queuedDownloads = ref([
     <div class="mx-5 mb-6">
       <Card class="bg-card/20 backdrop-blur border border-border/10 rounded-lg p-5">
         <div class="flex items-center">
-          <div class="flex-1 h-12 flex items-end">
-            <div class="w-full h-1 bg-sky-500/30 rounded"></div>
+          <div class="flex-1 h-12 flex items-end relative">
+            <!-- Chart -->
+            <div class="w-full absolute right-0 bottom-0 h-12">
+              <VueApexCharts width="100%" height="70" type="line" :options="chartOptions" :series="downloadSeries" />
+            </div>
+            <div class="w-full h-0.5 bg-sky-500/30 rounded"></div>
           </div>
-          <div class="flex flex-col items-end ml-8">
+          <div class="flex flex-col items-end ml-8 z-10">
             <span class="text-lg font-bold text-sky-400 leading-none">{{ downloadSpeed }}</span>
             <span class="text-xs text-muted-foreground">Download</span>
           </div>
-          <div class="flex flex-col items-end ml-8">
+          <div class="flex flex-col items-end ml-8 z-10">
             <span class="text-lg font-bold text-sky-400 leading-none">{{ diskSpeed }}</span>
             <span class="text-xs text-muted-foreground">Disk</span>
           </div>
@@ -73,7 +222,7 @@ const queuedDownloads = ref([
 
     <div class="mx-5 mb-6">
       <Card class="bg-card/20 backdrop-blur border border-border/10 rounded-lg p-0">
-        <div class="px-4 bg-gray-900 dark:bg-gray-800 rounded-lg">
+        <div class="px-4 bg-gray-900 dark:bg-gray-800/20 rounded-lg">
           <table class="w-full border-collapse">
             <thead>
               <tr class="text-sm font-medium text-foreground/70">
@@ -134,7 +283,7 @@ const queuedDownloads = ref([
 
     <div class="mx-5">
       <Card class="bg-card/20 backdrop-blur border border-border/10 rounded-lg p-0">
-        <div class="px-4 bg-gray-900 dark:bg-gray-800 rounded-lg">
+        <div class="px-4 bg-gray-900 dark:bg-gray-800/20 rounded-lg">
           <table class="w-full border-collapse">
             <thead>
               <tr class="text-sm font-medium text-foreground/70">
