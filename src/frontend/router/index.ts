@@ -1,4 +1,3 @@
-
 import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 const routes = [
   {
@@ -13,17 +12,23 @@ const routes = [
     component: () => import('@/views/library/LibraryHome.vue'),
     meta: { title: 'Library' },
   },
-    {
+  {
     path: '/store',
     name: 'Store',
     component: () => import('@/views/Store.vue'),
     meta: { title: 'Store' },
   },
   {
-    path : '/',
-    name : "detail",
-    componemt : () => import('@/views/library/GameDetail.vue'),
-    meta :  {tiltle : 'GameDetail'}
+    path: '/download',
+    name: 'Download',
+    component: () => import('@/views/Download.vue'),
+    meta: { title: 'Download' },
+  },
+  {
+    path: '/library/:id',
+    name: 'detail',
+    component: () => import('@/views/library/GameDetail.vue'),
+    meta: { title: 'GameDetail' },
   },
   {
     path: '/:pathMatch(.*)*',
@@ -31,15 +36,15 @@ const routes = [
     component: () => import('@/views/NotFound.vue'),
     meta: { title: '404 Not Found' },
   },
-];
+]
 
 const router = createRouter({
-  history:  createWebHashHistory(),
+  history: createWebHashHistory(),
   routes,
 })
 router.beforeEach((to, from, next) => {
-  console.log('Router navigating to:', to.path);
-  document.title = to.meta.title || 'Default Title'; // Fallback title
-  next();
-});
+  console.log('Router navigating to:', to.path)
+  document.title = to.meta.title || 'Default Title' // Fallback title
+  next()
+})
 export default router

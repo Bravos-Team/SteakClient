@@ -72,7 +72,11 @@ const data = {
       url: '/store',
       icon: ShoppingCart,
     },
-
+    {
+      title: 'Download',
+      url: '/download',
+      icon: ArrowDownToLine,
+    },
     {
       title: 'Settings',
       url: '#',
@@ -109,12 +113,9 @@ const data = {
   <Sidebar v-bind="props">
     <SidebarHeader class="flex my-6 p-0 justify-center items-center">
       <!-- <TeamSwitcher :teams="data.teams" /> -->
-      <img
-        class="h-[3rem] w-[3rem] p-1 rounded-full ring-2 ring-gray-300 dark:ring-gray-500"
-        src="https://ccdn.steak.io.vn/logo_steak.svg"
-        alt=""
-      />
-      
+      <img class="h-[3rem] w-[3rem] p-1 rounded-full ring-2 ring-gray-300 dark:ring-gray-500"
+        src="https://ccdn.steak.io.vn/logo_steak.svg" alt="" />
+
     </SidebarHeader>
     <div class="flex items-center justify-center">
       <hr class="h-px mb-2 w-full mr-4 ml-4 bg-[#ffffff] border-0" />
@@ -124,6 +125,7 @@ const data = {
       <!-- <NavProjects :projects="data.projects" /> -->
     </SidebarContent>
     <SidebarFooter>
+
       <NavMain class="pb-4" :items="data.footer" />
 
       <NavUser :class="cn('block md:hidden')" :user="data.user" />
