@@ -24,7 +24,7 @@
           class="relative flex justify-between items-center h-2/12 bg-[#202024] w-full rounded-b-sm px-4"
         >
           <!-- Icon giữa -->
-          <button
+          <button @click="saveGame"
             class="absolute left-1/2 -translate-x-1/2 p-3 rounded-full bg-white/10 hover:bg-blue-500 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
           >
             <ArrowDownToLine class="w-5 h-5 text-white" />
@@ -80,5 +80,10 @@
 </template>
 <script lang="ts" setup>
 import ComboboxSearch from '@/components/ComboboxSearch.vue'
+
 import { Play, Trash2, SlidersHorizontal, ArrowDownToLine } from 'lucide-vue-next'
+async function saveGame(){
+  const fileName = await window.electronAPI.openFile()
+  console.log(fileName)
+}
 </script>
