@@ -29,7 +29,9 @@ import {
   SidebarHeader,
   SidebarRail,
 } from '@/components/ui/sidebar'
+import { useSidebar } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
+import { ref } from 'vue'
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: 'icon',
@@ -109,10 +111,15 @@ const data = {
 
 <template>
   <Sidebar v-bind="props">
-    <SidebarHeader>
+    <SidebarHeader class="flex my-6 p-0 justify-center items-center">
       <!-- <TeamSwitcher :teams="data.teams" /> -->
-      <img class="h-[75px] p-2" src="https://ccdn.steak.io.vn/logo_steak.svg" alt="" />
+      <img class="h-[3rem] w-[3rem] p-1 rounded-full ring-2 ring-gray-300 dark:ring-gray-500"
+        src="https://ccdn.steak.io.vn/logo_steak.svg" alt="" />
+
     </SidebarHeader>
+    <div class="flex items-center justify-center">
+      <hr class="h-px mb-2 w-full mr-4 ml-4 bg-[#ffffff] border-0" />
+    </div>
     <SidebarContent>
       <NavMain :items="data.navMain" />
       <!-- <NavProjects :projects="data.projects" /> -->

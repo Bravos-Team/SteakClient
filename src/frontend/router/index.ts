@@ -9,7 +9,7 @@ const routes = [
   {
     path: '/library',
     name: 'Library',
-    component: () => import('@/views/Library.vue'),
+    component: () => import('@/views/library/LibraryHome.vue'),
     meta: { title: 'Library' },
   },
   {
@@ -23,6 +23,12 @@ const routes = [
     name: 'Download',
     component: () => import('@/views/Download.vue'),
     meta: { title: 'Download' },
+  }
+  {
+    path: '/library/:id',
+    name: 'detail',
+    component: () => import('@/views/library/GameDetail.vue'),
+    meta: { title: 'GameDetail' }
   },
   {
     path: '/:pathMatch(.*)*',

@@ -1,11 +1,10 @@
-import { app, BrowserWindow, ipcMain, screen } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, screen } from 'electron'
 import path, { dirname } from 'node:path'
 import started from 'electron-squirrel-startup'
 import { fileURLToPath } from 'node:url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-
 let loginWin: BrowserWindow | null = null
 let mainWin: BrowserWindow | null = null
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -105,7 +104,7 @@ const mainWindow = () => {
       responseHeaders: {
         ...details.responseHeaders,
         'Content-Security-Policy': [
-          "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.steak.io.vn; img-src 'self' https://ccdn.steak.io.vn;",
+          "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.steak.io.vn; img-src 'self' https://ccdn.steak.io.vn https://cdn2.unrealengine.com https://cdn1.epicgames.com/; frame-src https://develop.steak.io.vn ;",
         ],
       },
     })

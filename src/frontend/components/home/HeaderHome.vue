@@ -21,13 +21,14 @@
         </BreadcrumbList>
       </Breadcrumb>
     </div>
-    <div class="ml-4 w-full max-w-[500px]">
-      <ComboboxSearch />
-    </div>
+
     <div class="absolute right-0 p-[16px] hidden md:block">
       <NavUser :user="user" />
     </div>
   </header>
+  <div class="flex items-center justify-center">
+    <hr class="h-px mb-2 w-full bg-[#fdfdff] border-0" />
+  </div>
 </template>
 <script lang="ts" setup>
 import { SidebarTrigger } from '@/components/ui/sidebar'
