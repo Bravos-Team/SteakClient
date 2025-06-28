@@ -70,7 +70,11 @@ const data = {
       url: '/store',
       icon: ShoppingCart,
     },
-
+    {
+      title: 'Download',
+      url: '/download',
+      icon: ArrowDownToLine,
+    },
     {
       title: 'Settings',
       url: '#',
@@ -115,7 +119,7 @@ const data = {
     </SidebarContent>
     <SidebarFooter>
 
-        <NavMain class="pb-4" :items="data.footer" />
+      <NavMain class="pb-4" :items="data.footer" />
 
       <NavUser :class="cn('block md:hidden')" :user="data.user" />
     </SidebarFooter>
