@@ -1,6 +1,6 @@
 import type { DMQueueElement } from 'src/common/types/type'
 import { addHandler } from '../ipc'
-import { addToQueue, cancelDownload, getQueueInformation, paused } from './manager'
+import { addToQueue, cancelDownload, getQueueInformation, paused, resumeDownload } from './manager'
 
 addHandler('install', async (e, args) => {
   const dmQueueElement: DMQueueElement = {
@@ -18,7 +18,7 @@ addHandler('install', async (e, args) => {
     await paused(appName)
   }))
 addHandler('resumeDownload', async () => {
-  // await resumeDownload()
+  await resumeDownload('')
 })
 addHandler('cancelDownload', async (e, appName) => {
   await cancelDownload(appName)

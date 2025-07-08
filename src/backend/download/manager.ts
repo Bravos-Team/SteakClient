@@ -44,7 +44,7 @@ async function init() {
     } catch (error) {
       // Check if the download was paused
       if (getQueueState() === 'paused') {
-        console.log(`Download for ${element.params.appName} pausedassasasa`)
+        console.log(`Download for ${element.params.appName} paused`)
         return
       }
       // If the download was aborted or failed, handle it
@@ -73,14 +73,14 @@ async function init() {
     }
 
     // Remove the current element from the queue
-     queue= getQueue()
+    queue = getQueue()
     queue.shift()
     setQueue(queue)
     // Update the finished elements in the state
     setFinished(finishedElements)
 
     // Update the queue state and current element
-   
+
     console.log(`Download for ${element.params.appName} completed`)
     // Notify the frontend about the updated queue and game status
 
@@ -90,7 +90,6 @@ async function init() {
       folder: element.params.path,
       status: 'done',
     })
-   
   }
 }
 
@@ -206,6 +205,7 @@ async function resumeDownload(appName: string) {
     setQueueState('running')
 
     // Start the download again
+    
     await init()
   }
 }

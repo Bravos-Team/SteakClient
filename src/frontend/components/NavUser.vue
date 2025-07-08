@@ -29,7 +29,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { UserInfo } from 'src/common/types/type'
+import { UserInfo } from '@/types/type'
 import { useAuthStore } from '@/stores/auth/useAuthStore'
 import { computed } from 'vue'
 const userStore = useAuthStore()
