@@ -29,8 +29,8 @@
     "src/**/*.d.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "src/preload/index.ts",
+    "src/preload/preload.ts",
     "src/frontend/types/**/*"
-, "src/frontend/shims-vue.d.ts"  ],
+  ],
   "exclude": ["node_modules", "dist", "**/__mocks__/**", "vite.config.ts", "sign"]
 }

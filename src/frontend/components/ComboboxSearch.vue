@@ -32,7 +32,7 @@
 </template>
 <script setup lang="ts">
 import { Check, Search } from 'lucide-vue-next'
-import { cn } from '@/lib/utils'
+import { cn } from '@/libs/utils'
 import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxList } from '@/components/ui/combobox'
 
 const frameworks = [

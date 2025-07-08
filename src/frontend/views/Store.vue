@@ -11,7 +11,7 @@
           class="w-full text-center font-serif italic focus:outline-none focus:border-none"
           type="text"
           readonly
-          value="https://develop.steak.io.vn/store/home"
+          value=""
         />
       </div>
       <div class="flex justify-center pr-4"><ArrowUpFromLine /></div>

@@ -23,7 +23,7 @@
     </div>
 
     <div class="absolute right-0 p-[16px] hidden md:block">
-      <NavUser :user="user" />
+      <NavUser />
     </div>
   </header>
   <div class="flex items-center justify-center">
@@ -43,12 +43,11 @@ import {
 } from '@/components/ui/breadcrumb'
 import ComboboxSearch from '@/components/ComboboxSearch.vue'
 import NavUser from '@/components/NavUser.vue'
+import { onMounted } from 'vue'
+import { User } from 'src/common/types/type'
+import { useAuthStore } from '@/stores/auth/useAuthStore'
 
-defineProps<{
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}>()
+
+
+
 </script>

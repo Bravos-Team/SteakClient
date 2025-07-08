@@ -30,7 +30,7 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { useSidebar } from '@/components/ui/sidebar'
-import { cn } from '@/lib/utils'
+import { cn } from '@/libs/utils'
 import { ref } from 'vue'
 
 const props = withDefaults(defineProps<SidebarProps>(), {
@@ -84,7 +84,7 @@ const data = {
     },
     {
       title: 'Logout',
-      url: '#',
+      url: '/test',
       icon: Power,
     },
   ],
@@ -101,11 +101,11 @@ const data = {
     },
     {
       name: 'LogOut',
-      url: '#',
+      url: '/test',
       icon: Power,
     },
   ],
-  footer: [{ title: 'Download', url: '#', icon: ArrowDownToLine }],
+  footer: [{ title: 'Download', url: '/download', icon: ArrowDownToLine }],
 }
 </script>
 

@@ -8,11 +8,8 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    vue(),
-    vueDevTools(),tailwindcss(),
-  ],
-  base : './',
+  plugins: [vue(), vueDevTools(), tailwindcss()],
+  base: './',
   resolve: {
     alias: {
       // '@': fileURLToPath(new URL('./src', import.meta.url))

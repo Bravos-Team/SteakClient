@@ -31,6 +31,12 @@ const routes = [
     meta: { title: 'GameDetail' },
   },
   {
+    path: '/test',
+    name: 'Test',
+    component: () => import('@/views/test.vue'),
+    meta: { title: 'Test Page' },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/NotFound.vue'),

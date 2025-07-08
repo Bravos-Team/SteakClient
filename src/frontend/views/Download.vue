@@ -57,9 +57,9 @@ const chartOptions = ref({
       enabled: true
     }
   },
-  colors: ['#2dd4bf'],
+  colors: ['#2dd4bf','#ff6b6b'],
   stroke: {
-    curve: 'smooth',
+    curve: 'straight',
     width: 2
   },
   markers: {
@@ -190,7 +190,7 @@ onBeforeUnmount(() => {
           <div class="flex-1 h-12 flex items-end relative">
             <!-- Chart -->
             <div class="w-full absolute right-0 bottom-0 h-12">
-              <VueApexCharts width="100%" height="70" type="line" :options="chartOptions" :series="downloadSeries" />
+              <VueApexCharts width="100%" height="70" type="line" :options="chartOptions" :series="[...downloadSeries, ...diskSeries] " />
             </div>
             <div class="w-full h-0.5 bg-sky-500/30 rounded"></div>
           </div>

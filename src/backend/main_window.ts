@@ -1,8 +1,9 @@
 import { BrowserWindow, screen } from 'electron'
-import { WindowProps } from './types'
+
 import path, { dirname } from 'path'
 import { contentSecurityPolicy } from './main'
 import { fileURLToPath } from 'url'
+import { WindowProps } from 'src/common/types/type'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
