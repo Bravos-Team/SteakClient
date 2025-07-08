@@ -1,7 +1,12 @@
 <script lang="ts" setup>
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
+import { ArrowLeft, ArrowRight, RefreshCcw, ArrowUpFromLine } from 'lucide-vue-next'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router';
 import VueApexCharts from 'vue3-apexcharts'
+import { useNavigation } from '@/composables/useNavigation'
+
+const { handleNavigation } = useNavigation();
 
 // Test data
 const downloadSpeed = ref('10.81 MB/s')
@@ -171,7 +176,6 @@ onMounted(() => {
   }, 1000);
 })
 
-// Dọn dẹp khi component bị hủy
 onBeforeUnmount(() => {
   if (chartUpdateInterval) {
     clearInterval(chartUpdateInterval)
@@ -180,6 +184,21 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <div class="w-full flex flex-col">
+    <div class="flex justify-between items-end w-full">
+      <div class="flex justify-center pl-4 gap-4">
+        <ArrowLeft class="cursor-pointer" @click="handleNavigation('back')" />
+        <ArrowRight class="cursor-pointer" @click="handleNavigation('forward')" />
+        <RefreshCcw class="cursor-pointer" @click="handleNavigation('refresh')" />
+      </div>
+
+      <div class="flex justify-center pr-4">
+        <ArrowUpFromLine class="cursor-pointer" @click="handleNavigation('openInBrowser')" />
+      </div>
+    </div>
+    <hr class="h-px mt-2 w-full bg-[#ffffff] border-0" />
+  </div>
+
   <div class="min-h-screen bg-background p-0">
     <!-- Downloads Card -->
     <h1 class="text-xl font-semibold text-foreground/80 mx-5 mt-6 mb-4">Downloads</h1>
