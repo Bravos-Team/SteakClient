@@ -6,6 +6,7 @@ import {
   CreditCard,
   LogOut,
   Sparkles,
+  User
 } from 'lucide-vue-next'
 
 import {
@@ -28,14 +29,21 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { UserInfo } from '@/types/type'
+import { useAuthStore } from '@/stores/auth/useAuthStore'
+import { computed } from 'vue'
+const userStore = useAuthStore()
+const user = computed(() =>{
+  const userData = userStore.getUser()
+  return {
+    displayName: userData?.displayName || 'Guest',
+    avatarUrl: userData?.avatarUrl || '',
+  
+    
+  } as UserInfo
+})
 
-const props = defineProps<{
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}>()
+
 
 const { isMobile } = useSidebar()
 </script>
@@ -51,13 +59,13 @@ const { isMobile } = useSidebar()
           >
            
             <div class="grid flex-1 text-left text-sm leading-tight">
-              <span class="truncate font-medium">{{ user.name }}</span>
-              <span class="truncate text-xs">{{ user.email }}</span>
+              <span class="truncate font-medium">{{ user.displayName }}</span>
+              <!-- <span class="truncate text-xs">{{ user.email }}</span> -->
             </div>
              <Avatar class=" h-8 w-8 rounded-lg ">
-              <AvatarImage :src="user.avatar" :alt="user.name" />
+              <AvatarImage :src="user.avatarUrl as string" :alt="user.displayName" />
               <AvatarFallback class="rounded-lg">
-                CN
+                <User/>
               </AvatarFallback>
             </Avatar>
             <ChevronsUpDown class="ml-auto size-4" />
@@ -71,16 +79,16 @@ const { isMobile } = useSidebar()
         >
           <DropdownMenuLabel class="p-0 font-normal">
             <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-              <Avatar class="h-8 w-8 rounded-lg">
-                <AvatarImage :src="user.avatar" :alt="user.name" />
-                <AvatarFallback class="rounded-lg">
-                  CN
-                </AvatarFallback>
-              </Avatar>
-              <div class="grid flex-1 text-left text-sm leading-tight">
-                <span class="truncate font-semibold">{{ user.name }}</span>
+              <div class="grid flex-1 pl-2 text-left text-sm leading-tight">
+                <span class="truncate font-semibold">{{ user.displayName }}</span>
                 <span class="truncate text-xs">{{ user.email }}</span>
               </div>
+              <Avatar class="h-8 w-8 rounded-lg">
+                <AvatarImage :src="user.avatarUrl as string" :alt="user.displayName" />
+                <AvatarFallback class="rounded-lg">
+                  <User/>
+                </AvatarFallback>
+              </Avatar>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />

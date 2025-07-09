@@ -1,163 +1,116 @@
-import { app, BrowserWindow, dialog, ipcMain, screen } from 'electron'
+
+
+import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import path, { dirname } from 'node:path'
 import started from 'electron-squirrel-startup'
 import { fileURLToPath } from 'node:url'
+import { config } from 'dotenv'
+import { createMainWindow } from './main_window'
+import { createLoginWindow, getLoginWindow } from './login_window'
+import { UserInfo } from 'src/common/types/type'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-let loginWin: BrowserWindow | null = null
-let mainWin: BrowserWindow | null = null
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit()
 }
+config()
 
-const loginWindow = () => {
-  // Create the browser window.
-  loginWin = new BrowserWindow({
-    width: 1280,
-    height: 960,
-    title: 'Login',
-    icon: path.join(__dirname, './favicon.ico'),
-    webPreferences: {
-      preload: path.join(__dirname, './preload.js'),
-      nodeIntegration: false,
-      contextIsolation: true,
-    },
-    autoHideMenuBar: true,
-  })
-
-  // if (process.env.NODE_ENV === 'development') {
-  //     console.log('Loading Vite dev server');
-  //     mainWindow.loadURL('http://localhost:5173').catch(err => {
-  //       console.error('Failed to load dev server:', err);
-  //     });
-  //   } else {
-  //     const indexPath = path.join(__dirname, '../../dist/index.html');
-  //     console.log('Loading file:', indexPath);
-  //     mainWindow.loadFile(indexPath).catch(err => {
-  //       console.error('Failed to load index.html:', err);
-  //     });
-  //   }
-  loginWin.loadURL('http://localhost:5173/publisher/login')
-
-  loginWin.webContents.openDevTools()
-  // CSP để tăng bảo mật
-  loginWin.webContents.session.webRequest.onHeadersReceived((details, callback) => {
-    callback({
-      responseHeaders: {
-        ...details.responseHeaders,
-        'Content-Security-Policy': [
-          "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.steak.io.vn; img-src 'self' https://ccdn.steak.io.vn;",
-        ],
-      },
-    })
-  })
+async function initializeMainWindow(): Promise<BrowserWindow> {
+  const mainWindow = createMainWindow()
+  if (process.env.ELECTRON_RENDERER_URL) {
+    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
+  } else {
+    mainWindow.loadFile(path.join(__dirname, '../../dist/index.html'))
+  }
+  return mainWindow
 }
 
-const mainWindow = () => {
-  const screenInfo = screen.getPrimaryDisplay()
-  let width = 1200
-  let height = 690
-  if (screenInfo?.workAreaSize?.height < height) {
-    height = screenInfo.workAreaSize.height * 0.8
-  }
-
-  if (screenInfo?.workAreaSize?.width < width) {
-    width = screenInfo.workAreaSize.width * 0.8
-  }
-  mainWin = new BrowserWindow({
-    width: width,
-    height: height,
-    show: false,
-    x: 0,
-    y: 0,
-    resizable: true,
-    title: 'main',
-    icon: path.join(__dirname, './favicon.ico'),
-    webPreferences: {
-      preload: path.join(__dirname, './preload.js'),
-      nodeIntegration: false,
-      contextIsolation: true,
-    },
-    autoHideMenuBar: true,
-    maximizable: false,
-  })
-
-  // if (process.env.NODE_ENV === 'development') {
-  //     console.log('Loading Vite dev server');
-  //     mainWindow.loadURL('http://localhost:5173').catch(err => {
-  //       console.error('Failed to load dev server:', err);
-  //     });
-  //   } else {
-  const indexPath = path.join(__dirname, '../../dist/index.html')
-  console.log('Loading file:', indexPath)
-  mainWin.loadFile(indexPath).catch((err) => {
-    console.error('Failed to load index.html:', err)
-  })
-  //   }
-
-  mainWin.webContents.openDevTools()
-  // CSP để tăng bảo mật
-  mainWin.webContents.session.webRequest.onHeadersReceived((details, callback) => {
-    callback({
-      responseHeaders: {
-        ...details.responseHeaders,
-        'Content-Security-Policy': [
-          "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.steak.io.vn; img-src 'self' https://ccdn.steak.io.vn https://cdn2.unrealengine.com https://cdn1.epicgames.com/; frame-src https://develop.steak.io.vn ;",
-        ],
-      },
-    })
-  })
+async function initializeLoginWindow(): Promise<BrowserWindow> {
+  const loginWindow = createLoginWindow()
+  loginWindow.loadURL(process.env.LOGIN_WINDOW_URL as string)
+  return loginWindow
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize
-  console.log('Screen size:', width, height)
-  loginWindow()
-  ipcMain.on('login-username', (event, username: string) => {
-    console.log('Đăng nhập thành công:', username)
-    if (loginWin) {
-      loginWin.hide()
-    }
-    if (!mainWin) {
-      mainWindow()
-      mainWin?.once('ready-to-show', () => {
-        const size = mainWin?.getSize()
-        const scaleFactor = screen.getPrimaryDisplay().scaleFactor
-        console.log('Scale factor:', scaleFactor)
-        mainWin?.setSize(1920 / scaleFactor, 960 / scaleFactor)
-        console.log(321)
-        mainWin?.show()
-        mainWin?.webContents.send('login-success', username)
-      })
-    } else {
-      console.log(123)
-      mainWin.show()
-      mainWin?.setSize(1920, 960)
-      mainWin.webContents.send('login-success', username)
-    }
-  })
-  app.on('activate', () => {
-    // On OS X it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) {
-      loginWindow()
-    }
-  })
+if (process.platform === 'linux')
+  app.commandLine.appendSwitch('--disable-features', 'UsePortalDialogs')
+
+app.whenReady().then(async () => {
+  try {
+    const login_window = await initializeLoginWindow()
+    login_window.show()
+  } catch (error) {
+    console.error('Failed to initialize window:', error)
+    app.quit()
+  }
 })
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
+ipcMain.handle('dialog:openFile', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    properties: ['openFile', 'openDirectory'],
+    title: 'Save File',
+    defaultPath: '/home/tvt/Downloads',
+    filters: [
+      { name: 'Images', extensions: ['jpg', 'png', 'gif'] },
+      { name: 'Movies', extensions: ['mkv', 'avi', 'mp4'] },
+      { name: 'Custom File Type', extensions: ['as'] },
+      { name: 'All Files', extensions: ['*'] },
+    ],
+  })
+  return canceled ? null : filePaths[0]
+})
+// ipcMain.handle('downloadEvent', async () => {
+//   console.log('downloading')
+//   const url = 'https://mmatechnical.com/Download/Download-Test-File/(MMA)-500MB.zip'
+//   const dest = '/home/tvt/testdownload/'
+//   try {
+//     await downloadFile({ url, dest  })
+//     console.log('Download complete')
+//     return { success: true }
+//   } catch (err) {
+//     console.error('Download failed:', err)
+//     return { success: false, error: (err as Error).message }
+//   }
+// })
+
+ipcMain.on('loginWindow', async (_event, data: UserInfo) => {
+  console.log(data as UserInfo)
+  if (data) {
+    const login_window = getLoginWindow()
+    login_window?.hide()
+    const main_window = await initializeMainWindow()
+
+    main_window.webContents.on('did-finish-load', () => {
+      console.log('Page has finished loading!')
+      main_window.webContents.send('userinfo', data)
+    })
+    main_window.show()
+  }
+})
+ipcMain.on('dropped-file', (_event, filePath) => {
+  console.log('File được kéo vào:', filePath)
+})
+
+export const contentSecurityPolicy =
+  process.env.APP_CSP ??
+  [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline'",
+    "connect-src 'self' https://api.steak.io.vn",
+    "img-src 'self' blob: file:  https://ccdn.steak.io.vn https://cdn2.unrealengine.com https://cdn1.epicgames.com",
+    'frame-src https://develop.steak.io.vn',
+  ].join('; ')
+
+import './download/ipc'
+import './dialog/ipc_handler'

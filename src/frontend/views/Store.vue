@@ -7,6 +7,7 @@
         <RefreshCcw class="cursor-pointer" @click="handleNavigation('refresh')" />
       </div>
       <div class="grow flex justify-center items-center">
+
         <input class="w-full text-center font-serif italic focus:outline-none focus:border-none" type="text" readonly
           value="https://develop.steak.io.vn/store/home" />
       </div>
