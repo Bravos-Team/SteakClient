@@ -140,7 +140,7 @@
         <AlertTitle>Select Install Path :</AlertTitle>
         <AlertDescription class="flex flex-col gap-2">
           <span class="flex items-center w-full">
-            <Input class="px-4 h-12 text-lg rounded-r-none" defaultValue="/home/tvt/Games/Heroic" />
+            <Input class="px-4 h-12 text-lg rounded-r-none" />
             <!-- <input type="text" class="w-full bg-white/10 border-2 border-gray-500 rounded-sm h-12 outline-0 focus:outline-1 out"/> -->
             <button
               @click="openFolder"
@@ -161,11 +161,7 @@
         <Button variant="outline" class="w-32 h-12 text-lg hover:text-blue-500">
           Import Save
         </Button>
-        <Button
-          @click="installWukong"
-          variant="default"
-          class="w-32 h-12 text-lg hover:bg-green-500"
-        >
+        <Button @click="install" variant="default" class="w-32 h-12 text-lg hover:bg-green-500">
           Install
         </Button>
       </DialogFooter>
@@ -210,9 +206,20 @@ async function saveGame() {
   console.log(fileName)
 }
 async function openFolder() {
-  const folderPath = await window.api.openFolder()
+  const homePath = await window.api.getHomePath()
+  console.log(`Home path: ${homePath}`)
+
+  const folderPath = await window.api.openFolder(homePath)
+  console.log(`Folder path: ${folderPath}`)
+
   if (folderPath) {
+    console.log(`Opened folder: ${folderPath}`)
     toast.success(`Opened folder: ${folderPath}`)
+    return folderPath
+  } else if (folderPath === null) {
+    toast.error('No folder selected')
+    console.log('No folder selected')
+    return null 
   } else {
     toast.error('Failed to open folder')
   }
@@ -233,6 +240,7 @@ const installInfo: InstallParams = reactive({
   },
 })
 const installGameWukong = async () => {
+  
   installInfo.appName = 'Wukong'
   installInfo.path = '/path/to/Wukong'
   installInfo.gameInfo = {
@@ -246,7 +254,7 @@ const installGameWukong = async () => {
     is_installed: false,
     title: 'Wukong',
   }
-
+ 
   console.log('installInfo:', installInfo)
 }
 
@@ -261,13 +269,20 @@ const installGameElderRing = async () => {
   installInfo.gameInfo.is_installed = false
   installInfo.gameInfo.title = 'Elden Ring'
   console.log('installInfo:', installInfo)
+ 
 }
 
-const installWukong = async () => {
+const install = async () => {
   console.log('Installing Wukong with info:', installInfo)
-
+  const pathInstall = await openFolder()
+  if (!pathInstall) {
+    toast.error('Installation path not selected')
+    return
+  }
+  installInfo.path = pathInstall
+  installInfo.gameInfo.install.install_path = pathInstall
   try {
-    await window.api.install(toRaw(installInfo) )
+    await window.api.install(toRaw(installInfo))
     toast.success(`Installing ${installInfo.gameInfo.title}...`)
   } catch (error) {
     console.error('Installation failed:', error)
