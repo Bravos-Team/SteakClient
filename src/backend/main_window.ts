@@ -3,16 +3,16 @@ import { BrowserWindow, screen } from 'electron'
 import path, { dirname } from 'path'
 
 import { fileURLToPath } from 'url'
-import { WindowProps } from 'src/common/types/type'
+import { WindowProps } from '@/types/type'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 let windowProps: WindowProps | null = null
 let mainWindow: BrowserWindow | null = null
 
-export const getMainWindow = () =>{
-    if (mainWindow) return mainWindow
-    return BrowserWindow.getAllWindows().at(0)
+export const getMainWindow = () => {
+  if (mainWindow) return mainWindow
+  return BrowserWindow.getAllWindows().at(0)
 }
 export const createMainWindow = () => {
   windowProps = {
@@ -36,14 +36,14 @@ export const createMainWindow = () => {
     minHeight: 345,
     minWidth: 600,
     show: false,
-    autoHideMenuBar :true,
+    autoHideMenuBar: true,
     webPreferences: {
       webviewTag: true,
       contextIsolation: true,
       nodeIntegration: true,
-      webSecurity : true,
-      allowRunningInsecureContent : false,
-      sandbox :false,
+      webSecurity: true,
+      allowRunningInsecureContent: false,
+      sandbox: false,
       preload: path.join(__dirname, './index.js'),
     },
   })
@@ -55,5 +55,5 @@ export const createMainWindow = () => {
   //     },
   //   })
   // })
-  return mainWindow 
+  return mainWindow
 }

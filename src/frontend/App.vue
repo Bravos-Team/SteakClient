@@ -10,11 +10,11 @@
   </Suspense>
 </template> -->
 <template>
- 
-  <SidebarProvider >
-    <Toaster/>
+
+  <SidebarProvider>
+    <Toaster />
     <AppSidebar />
-     
+
     <SidebarInset>
       <HeaderHome />
 
@@ -33,10 +33,10 @@
 import AppSidebar from '@/components/AppSidebar.vue'
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar'
 import HeaderHome from '@/components/home/HeaderHome.vue'
-import { Toaster} from '@/components/ui/sonner'
+import { Toaster } from '@/components/ui/sonner'
 import 'vue-sonner/style.css'
 import { onMounted, ref } from 'vue'
-import { UserInfo } from 'src/common/types/type'
+import { UserInfo } from '@/types/type'
 import { useAuthStore } from './stores/auth/useAuthStore'
 
 onMounted(() => {

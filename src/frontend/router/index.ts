@@ -25,6 +25,12 @@ const routes = [
     meta: { title: 'Download' },
   },
   {
+    path: '/account',
+    name: 'Account',
+    component: () => import('@/views/Account.vue'),
+    meta: { title: 'Account' },
+  },
+  {
     path: '/library/:id',
     name: 'detail',
     component: () => import('@/views/library/GameDetail.vue'),

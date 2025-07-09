@@ -1,7 +1,6 @@
 <template>
   <header
-    class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12"
-  >
+    class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
     <div class="flex items-center gap-2 px-4">
       <SidebarTrigger class="-ml-1" />
       <Separator orientation="vertical" class="mr-2 h-4" />
@@ -44,7 +43,7 @@ import {
 import ComboboxSearch from '@/components/ComboboxSearch.vue'
 import NavUser from '@/components/NavUser.vue'
 import { onMounted } from 'vue'
-import { User } from 'src/common/types/type'
+import { UserInfo } from '@/types/type'
 import { useAuthStore } from '@/stores/auth/useAuthStore'
 
 
