@@ -88,7 +88,7 @@ export interface InstallProgress {
   diskWriteSpeed?: string
   file?: string
 }
-export type DMStatus = 'done' | 'error' | 'abort' | 'paused' | 'finished'
+export type DMStatus = 'done' | 'error' | 'abort' | 'paused' | 'finished' | 'downloading'
 
 export interface DMQueueElement {
   type: 'install' |  'update' 
@@ -98,7 +98,7 @@ export interface DMQueueElement {
   endTime?: number
   status?: DMStatus
 }
-export type DownloadManagerState = 'idle' | 'running' | 'paused' | 'stopped'
+export type DownloadManagerState = 'idle' | 'running' | 'paused' | 'stopped'  | 'downloading'
 export const Platforms = [ 'windows', 'linux', 'macos', 'android', 'ios' ] as const
 export type Platform = (typeof Platforms)[number]
 export interface SystemRequirements {

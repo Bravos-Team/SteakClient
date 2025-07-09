@@ -1,7 +1,7 @@
 import { BrowserWindow, screen } from 'electron'
 
 import path, { dirname } from 'path'
-import { contentSecurityPolicy } from './main'
+
 import { fileURLToPath } from 'url'
 import { WindowProps } from 'src/common/types/type'
 

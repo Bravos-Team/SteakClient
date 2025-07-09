@@ -1,17 +1,39 @@
-
-import { GameStatus ,DMQueueElement, DownloadManagerState } from '@/types/type'
+import { GameStatus, DMQueueElement, DownloadManagerState, InstallProgress } from '@/types/type'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-export const useDownloadStore = defineStore('download', {
-  state: () => ({
-    statuses: {} as Record<string, GameStatus>,
-  }),
-  actions: {
-    updateGameStatus(payload: GameStatus) {
-      this.statuses[payload.appName] = payload
-    },
-  },
+export const useDownloadStore = defineStore('download', () => {
+  const gameStatus = ref<GameStatus>({ appName: '', status: 'queued' })
+
+  const setGameStatus = (status: GameStatus) => {
+    gameStatus.value = status
+  }
+  const getGameStatus = () => {
+    return gameStatus.value
+  }   
+  const setProgress = (progress: InstallProgress) => {
+    if (gameStatus.value.appName) {
+      gameStatus.value.progress = progress
+    } else {
+      console.warn('Game status not set, cannot update progress')
+    }
+  }
+
+  const getProgress = () => {
+    if (gameStatus.value.progress) {
+      return gameStatus.value.progress
+    } else {
+      console.warn('No progress available for the current game status')
+      return null
+    }
+  }
+  return {
+
+    setProgress,
+    getProgress,
+    setGameStatus,
+    getGameStatus,
+  }
 })
 
 export const useDownloadQueueStore = defineStore('downloadQueue', () => {
@@ -36,20 +58,21 @@ export const useDownloadQueueStore = defineStore('downloadQueue', () => {
     if (!exists) elements.value.push(element)
   }
 
-  const updateAll = (
-   patload: { elements: DMQueueElement[], finished: DMQueueElement[], state: DownloadManagerState }
-  ) => {
-    if (patload.elements) {
-      setQueue(patload.elements)
+  const updateAll = (payload: {
+    elements: DMQueueElement[]
+    finished: DMQueueElement[]
+    state: DownloadManagerState
+  }) => {
+    if (payload.elements) {
+      setQueue(payload.elements)
     }
-    if (patload.finished) {
-      setFinished(patload.finished)
+    if (payload.finished) {
+      setFinished(payload.finished)
     }
-    if (patload.state) {
-      setState(patload.state)
+    if (payload.state) {
+      setState(payload.state)
     }
   }
-
 
   return {
     elements,

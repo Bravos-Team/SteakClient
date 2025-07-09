@@ -1,4 +1,4 @@
-import { TitleBarOverlay } from 'electron'
+
 export interface UserInfo {
   id: string | null
   username: string | null
@@ -82,7 +82,7 @@ export interface InstallProgress {
   diskWriteSpeed?: string
   file?: string
 }
-export type DMStatus = 'done' | 'error' | 'abort' | 'paused'
+export type DMStatus = 'done' | 'error' | 'abort' | 'paused' |'downloading'
 
 export interface DMQueueElement {
   type: 'install' |  'update' 

@@ -23,7 +23,7 @@ async function showDialog(options: DialogOptions): Promise<string[]> {
   if (!mainWindow) throw new Error('Main window not available')
 
   const props = Object.entries(options.properties || {})
-    .filter(([_, value]) => value)
+    .filter(([, value]) => value)
     .map(([key]) => key as DialogProperty)
 
   const result = await dialog.showOpenDialog(mainWindow, {

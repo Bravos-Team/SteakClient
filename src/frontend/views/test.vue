@@ -1,12 +1,12 @@
 <template>
     
-  <div class="bg-amber-800" v-if="status">
+  <!-- <div class="bg-amber-800" v-if="status">
     <p>{{ status.status }}</p>
     <p>{{ status.progress?.percent?.toFixed(1) }}%</p>
     <p>{{ status.progress?.downSpeed }} /s</p>
     <p>{{ status.progress?.diskWriteSpeed }} /s</p>
     <p>Còn lại: {{ status.progress?.eta }}</p>
-  </div>
+  </div> -->
 
   <button  @click="handleInstallEldenRing">Install Game elden-ring</button>
   <button @click="pauseDownload('elden-ring')">Pause Download</button>
@@ -34,23 +34,19 @@ onMounted( () => {
   
   // Giả sử bạn muốn lấy trạng thái của game "elden-ring"
  
-  window.api.handleGameStatus(( e : any, payload : GameStatus) => {
-    store.updateGameStatus(payload)
-    console.log( 'Game status updated:', payload);
+  // window.api.handleGameStatus(( e : any, payload : GameStatus) => {
+  //   store.updateGameStatus(payload)
+  //   console.log( 'Game status updated:', payload);
     
-  })
+  // })
   
-  window.api.handleDMQueueInformation((e: any,  elements :DMQueueElement[] ,state :DownloadManagerState ) => {
-   
-    console.log('📦 Queue Elements:', elements)
-    console.log('🔁 Current State:', state)
-  })
+ 
   
 
 
 })
 
-const status = computed(() => store.statuses['elden-ring'] || store.statuses['Wukong'] || null)
+// const status = computed(() => store.statuses['elden-ring'] || store.statuses['Wukong'] || null)
 async function handleInstallEldenRing() {
   await nextTick()
   await window.api.install({

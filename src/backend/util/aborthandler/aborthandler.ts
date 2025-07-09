@@ -16,7 +16,7 @@ function callAbortController(key: string): void {
 }
 
 function callAbortControllers() {
-  abortController.forEach((controller, key) => {
+  abortController.forEach((controller) => {
     controller.abort()
   })
 }

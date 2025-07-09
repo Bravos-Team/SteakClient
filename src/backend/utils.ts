@@ -5,9 +5,6 @@ import https from 'node:https'
 import path from 'node:path'
 import { mkdirp } from 'mkdirp'
 import { Entry, open } from 'yauzl'
-import {} from 'easydl'
-import { sendFrontendMessage } from './ipc'
-import { GameStatus } from 'src/common/types/type'
 import { updateGameStatus } from './download'
 import { callAbortController } from './util/aborthandler/aborthandler'
 interface ProgressCallback {
@@ -37,6 +34,7 @@ interface DownloadArgs {
   progressCallback?: ProgressCallback
   signal?: AbortSignal
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function throttle<T extends (...args: any[]) => any>(
   callback: T,
   limit: number,
