@@ -100,7 +100,11 @@ ipcMain.on('loginWindow', async (_event, data: UserInfo) => {
 ipcMain.on('dropped-file', (_event, filePath) => {
   console.log('File được kéo vào:', filePath)
 })
-
+addHandler('getHomePath',() => {
+  console.log('Getting home path' + app.getPath('home'));
+  
+  return app.getPath('home')}
+)
 export const contentSecurityPolicy =
   process.env.APP_CSP ??
   [
@@ -114,3 +118,5 @@ export const contentSecurityPolicy =
 
 import './download/ipc'
 import './dialog/ipc_handler'
+import { addHandler } from './ipc'
+

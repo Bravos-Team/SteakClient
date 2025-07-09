@@ -1,5 +1,6 @@
 import { dialog } from 'electron'
 import { getMainWindow } from '../main_window'
+import { appPath, configPath ,homePath } from '../constants/path'
 
 export type DialogProperty =
   | 'openFile'
@@ -32,7 +33,12 @@ async function showDialog(options: DialogOptions): Promise<string[]> {
     filters: options.filters,
     properties: props,
   })
+ console.log(`Dialog result: ${configPath}`);
 
+ console.log(`homePath: ${homePath}`);
+
+ 
+ 
   return result.canceled ? [] : result.filePaths
 }
 export {

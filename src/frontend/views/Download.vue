@@ -74,11 +74,11 @@ async function resumeDownload(app_name: string) {
 }
 async function cancelDownload(appName: string) {
   await window.api.cancelDownload(appName)
-  console.log(`Cancelled download for ${appName}`);
+  console.log(`Cancelled download for ${appName}`)
 }
 async function removeFinished(appName: string) {
   await window.api.removeFinished(appName)
-  console.log(`Removed finished download for ${appName}`);
+  console.log(`Removed finished download for ${appName}`)
 }
 // Biểu đồ ApexCharts
 const chartOptions = ref({
@@ -194,28 +194,25 @@ const pushSeriesData = (seriesRef: Ref<any>, value: number) => {
   }
 }
 
-
 const downloadSeries = ref([
   {
     name: 'Download',
-    data: Array(20)
-      .fill(0)
+    data: Array(20).fill(0),
   },
 ])
 
 const diskSeries = ref([
   {
     name: 'Disk',
-    data: Array(20)
-      .fill(0)
+    data: Array(20).fill(0),
   },
 ])
 watchEffect(() => {
   const down = parseFloat(infoProgress.value?.downSpeed || '0') / 1048576
   const disk = parseFloat(infoProgress.value?.diskWriteSpeed || '0') / 1048576
-if(down== 0 && disk === 0) {
-  downloadSeries.value[0].data = Array(20).fill(0)
-  diskSeries.value[0].data = Array(20).fill(0)
+  if (down == 0 && disk === 0) {
+    downloadSeries.value[0].data = Array(20).fill(0)
+    diskSeries.value[0].data = Array(20).fill(0)
     return
   }
   pushSeriesData(downloadSeries, down)
@@ -330,7 +327,7 @@ onBeforeUnmount(() => {
         <span class="text-foreground/70">{{ downloadTimeRemaining }}</span>
       </div>
       <div class="w-full h-1.5 bg-foreground/10 rounded-full">
-        <div class="h-full bg-emerald-500 rounded-full" :style="{width:progressPercent }"></div>
+        <div class="h-full bg-emerald-500 rounded-full" :style="{ width: progressPercent }"></div>
       </div>
     </div>
 
@@ -370,7 +367,8 @@ onBeforeUnmount(() => {
                 <td class="py-3">Epic Games</td>
                 <td class="py-3 flex justify-center gap-2" v-if="QueueInfo.state === 'running'">
                   <!-- Cancel Button - Orange -->
-                  <button @click="cancelDownload(firsELement.params.appName)"
+                  <button
+                    @click="cancelDownload(firsELement.params.appName)"
                     class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white"
                   >
                     <svg
@@ -414,7 +412,8 @@ onBeforeUnmount(() => {
                   v-if="QueueInfo.state === 'paused' || QueueInfo.state === 'idle'"
                 >
                   <!-- Cancel Button - Orange -->
-                  <button  @click="cancelDownload(firsELement.params.appName)"
+                  <button
+                    @click="cancelDownload(firsELement.params.appName)"
                     class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white"
                   >
                     <svg
@@ -497,9 +496,13 @@ onBeforeUnmount(() => {
                 <td class="py-3">{{ formatTimestamp(item.addToQueueTime || 0) }}</td>
                 <td class="py-3">{{ item.type }}</td>
                 <td class="py-3">"Epic Games"</td>
-                <td class="py-3 flex justify-center gap-2" v-if="item.status === 'paused' || item.status ==='downloading'">
+                <td
+                  class="py-3 flex justify-center gap-2"
+                  v-if="item.status === 'paused' || item.status === 'downloading'"
+                >
                   <!-- Cancel Button - Orange -->
-                  <button @click="cancelDownload(item.params.appName)"
+                  <button
+                    @click="cancelDownload(item.params.appName)"
                     class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white"
                   >
                     <svg
@@ -562,7 +565,10 @@ onBeforeUnmount(() => {
             </tbody>
           </table>
 
-          <div v-if="remainingElements.length === 0" class="py-10 text-center text-muted-foreground">
+          <div
+            v-if="remainingElements.length === 0"
+            class="py-10 text-center text-muted-foreground"
+          >
             Nothing to download
           </div>
         </div>
@@ -602,7 +608,8 @@ onBeforeUnmount(() => {
                 <td class="py-3">"Epic Games"</td>
                 <td class="py-3 flex justify-center">
                   <!-- Remove Button - Orange -->
-                  <button @click="removeFinished(item.params.appName)"
+                  <button
+                    @click="removeFinished(item.params.appName)"
                     class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white"
                   >
                     <svg
