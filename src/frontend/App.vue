@@ -36,8 +36,9 @@ import HeaderHome from '@/components/home/HeaderHome.vue'
 import { Toaster} from '@/components/ui/sonner'
 import 'vue-sonner/style.css'
 import { onMounted, ref } from 'vue'
-import { UserInfo } from 'src/common/types/type'
+
 import { useAuthStore } from './stores/auth/useAuthStore'
+import { UserInfo } from './types/type'
 
 onMounted(() => {
   if (!window.electronAPI) {
