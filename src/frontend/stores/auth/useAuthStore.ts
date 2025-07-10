@@ -1,5 +1,6 @@
+import { UserInfo } from '@/types/type'
 import { defineStore } from 'pinia'
-import { UserInfo } from 'src/common/types/type'
+
 
 import { ref } from 'vue'
 

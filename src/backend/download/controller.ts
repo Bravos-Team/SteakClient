@@ -4,6 +4,8 @@ import { downloadFile, stopDownload } from '../utils'
 import { InstallParams } from 'src/common/types/type'
 import paths from 'path'
 import { homePath } from '../constants/path'
+import { updateGameStatus } from './events'
+import { notify } from '../dialog/dialog'
 
 
 async function installGame(params: InstallParams, signal?: AbortSignal) {
@@ -18,6 +20,19 @@ async function installGame(params: InstallParams, signal?: AbortSignal) {
 
   console.log(`Downloading ${appName} from ${zipUrl} to ${outputPath}`)
 
+
+  updateGameStatus({
+    appName,
+    status: 'installing',
+    folder: outputPath,
+  })
+
+  console.log(`Installing game ${appName} at path ${outputPath}`);
+  
+  notify({
+    title: params.gameInfo.app_name,
+    body: `Installing ...`,
+  })
   // Ensure the output directory exists
   ensureDir(outputPath)
 
