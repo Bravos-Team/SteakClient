@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { config } from 'dotenv'
 import { createMainWindow } from './main_window'
 import { createLoginWindow, getLoginWindow } from './login_window'
-import { UserInfo } from 'src/common/types/type'
+import { UserInfo } from '@/types/type'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -27,7 +27,12 @@ async function initializeMainWindow(): Promise<BrowserWindow> {
 
 async function initializeLoginWindow(): Promise<BrowserWindow> {
   const loginWindow = createLoginWindow()
-  loginWindow.loadURL(process.env.LOGIN_WINDOW_URL as string)
+  if (process.env.LOGIN_WINDOW_URL) {
+    loginWindow.loadURL(process.env.LOGIN_WINDOW_URL)
+  } else {
+    loginWindow.loadFile(path.join(__dirname, '../../dist/index.html'))
+  }
+
   return loginWindow
 }
 
@@ -43,6 +48,7 @@ app.whenReady().then(async () => {
       app.setAppUserModelId('steak-client-app')
     }
     const main_window = await initializeMainWindow()
+    console.log(configPath)
     main_window.show()
   } catch (error) {
     console.error('Failed to initialize window:', error)
@@ -106,3 +112,4 @@ export const contentSecurityPolicy =
 import './download/ipc'
 import './dialog/ipc_handler'
 import { addHandler } from './ipc'
+import { configPath } from './constants/path'

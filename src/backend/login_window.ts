@@ -3,7 +3,7 @@ import { BrowserWindow, Menu, screen } from 'electron'
 import path, { dirname } from 'path'
 
 import { fileURLToPath } from 'url'
-import { WindowProps } from 'src/common/types/type'
+import { WindowProps } from '@/types/type'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -36,7 +36,7 @@ export const createLoginWindow = () => {
     minHeight: 960,
     minWidth: 600,
     show: false,
-    autoHideMenuBar: true ,
+    autoHideMenuBar: true,
     webPreferences: {
       webviewTag: true,
       contextIsolation: true,
@@ -56,7 +56,7 @@ export const createLoginWindow = () => {
   //   })
   // })
 
-  const menu =Menu.buildFromTemplate([
+  const menu = Menu.buildFromTemplate([
     {
       label: 'File',
       submenu: [
