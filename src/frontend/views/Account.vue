@@ -60,7 +60,7 @@ const handleNavigation = (path: string) => {
 
                 <!-- Epic Alternative Login -->
                 <div class="w-full h-14 bg-[#202427] hover:bg-[#2c2d32] rounded-lg flex items-center cursor-pointer transition-colors"
-                    @click="handleNavigation('')">
+                    @click="handleNavigation('/alternative-login')">
                     <div class="w-16 h-full flex items-center justify-center">
                         <img src="https://cdn2.unrealengine.com/eg-shield-logo-white-f8185c103d8d.svg" alt="Epic Games"
                             class="w-8 h-8" />
