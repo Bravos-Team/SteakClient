@@ -2,10 +2,13 @@
   <div
     class="group/game transition-transform duration-300 hover:scale-105 flex flex-col aspect-[3/4] rounded-sm bg-muted/50 relative"
   >
+  
     <img
       class="grayscale group-hover/game:grayscale-0 transition-all h-5/6 w-full rounded-sm object-cover"
       :src="game.image"
+
       alt=""
+      
     />
     <div
       class="absolute bottom-10 left-0 flex items-center right-0 bg-[#202024]/30 backdrop-blur-sm text-white p-2 rounded-b-sm opacity-0 group-hover/game:opacity-100 group-hover/game:translate-y-0 translate-y-4 transition-all duration-300"

@@ -1,9 +1,10 @@
 import { BrowserWindow, Menu, screen } from 'electron'
 
 import path, { dirname } from 'path'
+import { WindowProps } from 'src/common/types/type'
 
 import { fileURLToPath } from 'url'
-import { WindowProps } from '@/types/type'
+
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
