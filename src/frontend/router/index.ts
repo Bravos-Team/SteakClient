@@ -9,7 +9,7 @@ const routes = [
   {
     path: '/library',
     name: 'Library',
-    component: () => import('@/views/library/LibraryHome.vue'),
+    component: () => import('@/views/library/Library.vue'),
     meta: { title: 'Library' },
   },
   {
