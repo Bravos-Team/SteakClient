@@ -20,7 +20,7 @@ async function initializeMainWindow(): Promise<BrowserWindow> {
   if (process.env.ELECTRON_RENDERER_URL) {
     mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../../dist/index.html'))
+    mainWindow.loadFile(path.join(__dirname, '../renderer/main_window/index.html'))
   }
   return mainWindow
 }
@@ -44,8 +44,12 @@ if (process.platform === 'linux')
 
 app.whenReady().then(async () => {
   try {
-    const login_window = await initializeLoginWindow()
-    login_window.show()
+    if (process.platform === 'darwin') {
+      app.setAppUserModelId('steak-client-app')
+    }
+    const main_window = await initializeMainWindow()
+    console.log(configPath)
+    main_window.show()
   } catch (error) {
     console.error('Failed to initialize window:', error)
     app.quit()
@@ -86,24 +90,14 @@ ipcMain.handle('dialog:openFile', async () => {
 //   }
 // })
 
-ipcMain.on('loginWindow', async (_event, data: UserInfo) => {
-  console.log(data as UserInfo)
-  if (data) {
-    const login_window = getLoginWindow()
-    login_window?.hide()
-    const main_window = await initializeMainWindow()
-
-    main_window.webContents.on('did-finish-load', () => {
-      console.log('Page has finished loading!')
-      main_window.webContents.send('userinfo', data)
-    })
-    main_window.show()
-  }
-})
 ipcMain.on('dropped-file', (_event, filePath) => {
   console.log('File được kéo vào:', filePath)
 })
+addHandler('getHomePath', () => {
+  console.log('Getting home path' + app.getPath('home'))
 
+  return app.getPath('home')
+})
 export const contentSecurityPolicy =
   process.env.APP_CSP ??
   [
@@ -117,3 +111,5 @@ export const contentSecurityPolicy =
 
 import './download/ipc'
 import './dialog/ipc_handler'
+import { addHandler } from './ipc'
+import { configPath } from './constants/path'

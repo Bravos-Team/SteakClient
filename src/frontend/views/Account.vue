@@ -2,8 +2,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Globe } from 'lucide-vue-next' // Fallback to lucide-vue-next for icons; replace with ShaCDN icons if available
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const router = useRouter()
 const version = ref('2.17.0')

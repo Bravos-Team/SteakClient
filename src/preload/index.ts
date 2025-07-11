@@ -1,8 +1,7 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, shell } from 'electron'
 
 import api from './api'
 import { UserInfo } from 'src/common/types/type'
-
 
 contextBridge.exposeInMainWorld('electronAPI', {
   openFile: () => ipcRenderer.invoke('dialog:openFile'),
@@ -18,6 +17,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
       callback(data)
     })
   },
+  openExternal: (url: string) => shell.openExternal(url),
 })
 
 contextBridge.exposeInMainWorld('api', api)

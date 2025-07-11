@@ -74,11 +74,11 @@ async function resumeDownload(app_name: string) {
 }
 async function cancelDownload(appName: string) {
   await window.api.cancelDownload(appName)
-  console.log(`Cancelled download for ${appName}`);
+  console.log(`Cancelled download for ${appName}`)
 }
 async function removeFinished(appName: string) {
   await window.api.removeFinished(appName)
-  console.log(`Removed finished download for ${appName}`);
+  console.log(`Removed finished download for ${appName}`)
 }
 // Biểu đồ ApexCharts
 const chartOptions = ref({
@@ -180,9 +180,9 @@ function formatTimestamp(ts: number): string {
   return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1)
     .toString()
     .padStart(2, '0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d
-    .getMinutes()
-    .toString()
-    .padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`
+      .getMinutes()
+      .toString()
+      .padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`
 }
 const MAX_POINTS = 20
 
@@ -194,28 +194,25 @@ const pushSeriesData = (seriesRef: Ref<any>, value: number) => {
   }
 }
 
-
 const downloadSeries = ref([
   {
     name: 'Download',
-    data: Array(20)
-      .fill(0)
+    data: Array(20).fill(0),
   },
 ])
 
 const diskSeries = ref([
   {
     name: 'Disk',
-    data: Array(20)
-      .fill(0)
+    data: Array(20).fill(0),
   },
 ])
 watchEffect(() => {
   const down = parseFloat(infoProgress.value?.downSpeed || '0') / 1048576
   const disk = parseFloat(infoProgress.value?.diskWriteSpeed || '0') / 1048576
-if(down== 0 && disk === 0) {
-  downloadSeries.value[0].data = Array(20).fill(0)
-  diskSeries.value[0].data = Array(20).fill(0)
+  if (down == 0 && disk === 0) {
+    downloadSeries.value[0].data = Array(20).fill(0)
+    diskSeries.value[0].data = Array(20).fill(0)
     return
   }
   pushSeriesData(downloadSeries, down)
@@ -301,13 +298,8 @@ onBeforeUnmount(() => {
           <div class="flex-1 h-12 flex items-end relative">
             <!-- Chart -->
             <div class="w-full absolute right-0 bottom-0 h-12">
-              <VueApexCharts
-                width="100%"
-                height="70"
-                type="line"
-                :options="chartOptions"
-                :series="[...downloadSeries, ...diskSeries]"
-              />
+              <VueApexCharts width="100%" height="70" type="line" :options="chartOptions"
+                :series="[...downloadSeries, ...diskSeries]" />
             </div>
             <div class="w-full h-0.5 bg-sky-500/30 rounded"></div>
           </div>
@@ -330,7 +322,7 @@ onBeforeUnmount(() => {
         <span class="text-foreground/70">{{ downloadTimeRemaining }}</span>
       </div>
       <div class="w-full h-1.5 bg-foreground/10 rounded-full">
-        <div class="h-full bg-emerald-500 rounded-full" :style="{width:progressPercent }"></div>
+        <div class="h-full bg-emerald-500 rounded-full" :style="{ width: progressPercent }"></div>
       </div>
     </div>
 
@@ -354,11 +346,7 @@ onBeforeUnmount(() => {
               <tr class="border-t border-border/20">
                 <td class="py-3">
                   <div class="flex items-center">
-                    <img
-                      src="../assets/img/1.jpg"
-                      alt="Game cover"
-                      class="w-12 h-12 object-cover rounded mr-3"
-                    />
+                    <img src="../assets/img/1.jpg" alt="Game cover" class="w-12 h-12 object-cover rounded mr-3" />
                     <div>
                       <div class="font-medium text-sm">{{ firsELement.params.appName }}</div>
                       <div class="text-xs text-muted-foreground">{{ firsELement.status }}</div>
@@ -371,83 +359,39 @@ onBeforeUnmount(() => {
                 <td class="py-3 flex justify-center gap-2" v-if="QueueInfo.state === 'running'">
                   <!-- Cancel Button - Orange -->
                   <button @click="cancelDownload(firsELement.params.appName)"
-                    class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                       <line x1="18" y1="6" x2="6" y2="18" />
                       <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                   </button>
                   <!-- Pause Button - Green -->
-                  <button
-                    @click="pauseDownload(firsELement.params.appName)"
-                    class="w-8 h-8 flex items-center justify-center rounded-full bg-green-500 hover:bg-green-600 text-white"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
+                  <button @click="pauseDownload(firsELement.params.appName)"
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-green-500 hover:bg-green-600 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                       <rect x="6" y="4" width="4" height="16" />
                       <rect x="14" y="4" width="4" height="16" />
                     </svg>
                   </button>
                 </td>
-                <td
-                  class="py-3 flex justify-center gap-2"
-                  v-if="QueueInfo.state === 'paused' || QueueInfo.state === 'idle'"
-                >
+                <td class="py-3 flex justify-center gap-2"
+                  v-if="QueueInfo.state === 'paused' || QueueInfo.state === 'idle'">
                   <!-- Cancel Button - Orange -->
-                  <button  @click="cancelDownload(firsELement.params.appName)"
-                    class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
+                  <button @click="cancelDownload(firsELement.params.appName)"
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                       <line x1="18" y1="6" x2="6" y2="18" />
                       <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                   </button>
                   <!-- Resume Button - Blue -->
-                  <button
-                    @click="resumeDownload(firsELement.params.appName)"
-                    class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-500 hover:bg-blue-600 text-white"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
+                  <button @click="resumeDownload(firsELement.params.appName)"
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-500 hover:bg-blue-600 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M18 6l-6 6 6 6" />
                     </svg>
                   </button>
@@ -483,11 +427,7 @@ onBeforeUnmount(() => {
               <tr class="border-t border-border/20" v-for="(item, i) in remainingElements" :key="i">
                 <td class="py-3">
                   <div class="flex items-center">
-                    <img
-                      src="../assets/img/1.jpg"
-                      alt="Game cover"
-                      class="w-12 h-12 object-cover rounded mr-3"
-                    />
+                    <img src="../assets/img/1.jpg" alt="Game cover" class="w-12 h-12 object-cover rounded mr-3" />
                     <div>
                       <div class="font-medium text-sm">{{ item.params.appName }}</div>
                       <div class="text-xs text-muted-foreground">{{ item.status }}</div>
@@ -497,42 +437,22 @@ onBeforeUnmount(() => {
                 <td class="py-3">{{ formatTimestamp(item.addToQueueTime || 0) }}</td>
                 <td class="py-3">{{ item.type }}</td>
                 <td class="py-3">"Epic Games"</td>
-                <td class="py-3 flex justify-center gap-2" v-if="item.status === 'paused' || item.status ==='downloading'">
+                <td class="py-3 flex justify-center gap-2"
+                  v-if="item.status === 'paused' || item.status === 'downloading'">
                   <!-- Cancel Button - Orange -->
                   <button @click="cancelDownload(item.params.appName)"
-                    class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                       <line x1="18" y1="6" x2="6" y2="18" />
                       <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                   </button>
                   <!-- Resume Button - Blue -->
-                  <button
-                    @click="resumeDownload(item.params.appName)"
-                    class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-500 hover:bg-blue-600 text-white"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
+                  <button @click="resumeDownload(item.params.appName)"
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-500 hover:bg-blue-600 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M18 6l-6 6 6 6" />
                     </svg>
                   </button>
@@ -540,19 +460,9 @@ onBeforeUnmount(() => {
                 <td class="py-3 flex justify-center" v-else>
                   <!-- Remove Button - Orange -->
                   <button
-                    class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                       <line x1="18" y1="6" x2="6" y2="18" />
                       <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
@@ -586,11 +496,7 @@ onBeforeUnmount(() => {
               <tr class="border-t border-border/20" v-for="(item, i) in finishedElements" :key="i">
                 <td class="py-3">
                   <div class="flex items-center">
-                    <img
-                      src="../assets/img/1.jpg"
-                      alt="Game cover"
-                      class="w-12 h-12 object-cover rounded mr-3"
-                    />
+                    <img src="../assets/img/1.jpg" alt="Game cover" class="w-12 h-12 object-cover rounded mr-3" />
                     <div>
                       <div class="font-medium text-sm">{{ item.params.appName }}</div>
                       <div class="text-xs text-muted-foreground">{{ item.status }}</div>
@@ -603,19 +509,9 @@ onBeforeUnmount(() => {
                 <td class="py-3 flex justify-center">
                   <!-- Remove Button - Orange -->
                   <button @click="removeFinished(item.params.appName)"
-                    class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                       <line x1="18" y1="6" x2="6" y2="18" />
                       <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>

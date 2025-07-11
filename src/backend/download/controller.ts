@@ -2,6 +2,10 @@
 import { ensureDir } from 'fs-extra'
 import { downloadFile, stopDownload } from '../utils'
 import { InstallParams } from 'src/common/types/type'
+import paths from 'path'
+import { homePath } from '../constants/path'
+import { updateGameStatus } from './events'
+import { notify } from '../dialog/dialog'
 
 
 async function installGame(params: InstallParams, signal?: AbortSignal) {
@@ -11,10 +15,24 @@ async function installGame(params: InstallParams, signal?: AbortSignal) {
   // Path zipURL
   const zipUrl = `https://mmatechnical.com/Download/Download-Test-File/(MMA)-500MB.zip`
   // Path to download the file
-  const outputPath = `/home/tvt/testdownload/${appName}`
+  const downloadPath = paths.join(homePath,'Games', appName)
+  const outputPath = paths.join(path,appName)
 
   console.log(`Downloading ${appName} from ${zipUrl} to ${outputPath}`)
 
+
+  updateGameStatus({
+    appName,
+    status: 'installing',
+    folder: outputPath,
+  })
+
+  console.log(`Installing game ${appName} at path ${outputPath}`);
+  
+  notify({
+    title: params.gameInfo.app_name,
+    body: `Installing ...`,
+  })
   // Ensure the output directory exists
   ensureDir(outputPath)
 

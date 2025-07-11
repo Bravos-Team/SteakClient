@@ -16,6 +16,8 @@ import {
   setQueueState,
 } from './state'
 import { removeFolder } from '../utils'
+import path from 'path'
+import { homePath } from '../constants/path'
 
 // Function to initialize the download queue
 
@@ -38,7 +40,7 @@ async function init() {
   while (queue.length) {
     // Get the first element in the queue
     const element = queue[0]
-
+    queue[0].status = 'downloading' // Set the status of the first element to downloading
     // Log the start time for the current element
     element.starTime = Date.now()
     setQueue(queue)
@@ -205,7 +207,7 @@ function cancelDownload(appName: string) {
     // If the current element is the one being cancelled, set it to null
     setCurrentElement(null)
     stopDownloadFile(appName) // Stop the download using the utility function
-    const outputPath = `/home/tvt/testdownload/`
+    const outputPath = path.join(homePath, 'Games')
     console.log(`Removing folder for ${appName} at path: ${outputPath}`);
     
     removeFolder(outputPath , appName) // Remove the folder if needed
@@ -272,8 +274,9 @@ function removeFinished(appName: string) {
   }
   updateFrontendQueue(getQueue(), getQueueState(), finishedElements)
   console.log(`Removed finished download for ${appName}`)
-  
-  removeFolder(`/home/tvt/testdownload/`, appName) // Remove the folder if needed
+  const outputPath = path.join(homePath, 'Games')
+
+  removeFolder(outputPath, appName) // Remove the folder if needed
 }
 function getQueueInformation() {
   return {

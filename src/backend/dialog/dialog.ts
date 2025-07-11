@@ -1,5 +1,6 @@
-import { dialog } from 'electron'
+import { dialog, Notification } from 'electron'
 import { getMainWindow } from '../main_window'
+import { appPath, configPath, homePath } from '../constants/path'
 
 export type DialogProperty =
   | 'openFile'
@@ -32,9 +33,31 @@ async function showDialog(options: DialogOptions): Promise<string[]> {
     filters: options.filters,
     properties: props,
   })
+  console.log(`Dialog result: ${configPath}`)
+
+  console.log(`homePath: ${homePath}`)
 
   return result.canceled ? [] : result.filePaths
 }
-export {
-    showDialog,
+
+type NotifyType = {
+  title: string
+  body: string
 }
+
+function notify({ title, body }: NotifyType) {
+  const main_window = getMainWindow()
+  if (Notification.isSupported()) {
+    const notify = new Notification({
+      title,
+      body,
+    })
+    notify.on('click', () => {
+      if (main_window) {
+        main_window.show()
+      }
+    })
+    notify.show()
+  }
+}
+export { showDialog  , notify }
