@@ -32,7 +32,7 @@ const gameInfo = ref({
 })
 
 // Mock data
-const fetchGameInfo = (id: any) => {
+const fetchGameInfo = (id: String | Number) => {
     const gameData: Record<string, any> = {
         1: {
             title: "Fortnite Blitz Royale",
@@ -192,7 +192,7 @@ const fetchGameInfo = (id: any) => {
             winePrefixFolder: "N/A",
             lastPlayed: "9999999999999",
             syncSaves: "Disabled",
-            imageUrl: "@/assets/img/2.jpg",
+            imageUrl: new URL('../../assets/img/2.jpg', import.meta.url).href,
             genre: "Unknown",
             releaseDate: "Unknown",
             isInstalled: false
