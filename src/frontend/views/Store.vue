@@ -3,7 +3,9 @@
     <div class="flex">
       <div class="flex justify-center pl-4 gap-4">
         <ArrowLeft class="cursor-pointer" @click="handleNavigation('back', currentUrl)" />
-        <ArrowRight class="cursor-pointer" @click="handleNavigation('forward', currentUrl)" />
+        <ArrowRight @click="canGoForward && handleNavigation('forward', currentUrl)"
+          :class="{ 'cursor-pointer': canGoForward, 'opacity-30': !canGoForward }" :disabled="!canGoForward"
+          :aria-disabled="!canGoForward" />
         <RefreshCcw class="cursor-pointer" @click="refreshIframe" :class="{ 'animate-spin': isRefreshing }" />
       </div>
       <div class="grow flex justify-center items-center">
@@ -40,6 +42,8 @@ const currentUrl = ref('https://develop.steak.io.vn/store/home');
 const isRefreshing = ref(false);
 let refreshTimeout: number | null = null;
 
+
+// Refresh button
 const refreshIframe = () => {
   if (isRefreshing.value) return;
   isRefreshing.value = true;
