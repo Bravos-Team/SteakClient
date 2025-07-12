@@ -3,8 +3,9 @@
     <div class="flex">
       <div class="flex justify-center pl-4 gap-4">
         <ArrowLeft class="cursor-pointer" @click="handleNavigation('back', currentUrl)" />
-        <ArrowRight @click="handleNavigation('forward', currentUrl)"
-          :class="{ 'cursor-pointer': canGoForward, 'opacity-30': !canGoForward }" />
+        <ArrowRight @click="canGoForward && handleNavigation('forward', currentUrl)"
+          :class="{ 'cursor-pointer': canGoForward, 'opacity-30': !canGoForward }" :disabled="!canGoForward"
+          :aria-disabled="!canGoForward" />
         <RefreshCcw class="cursor-pointer" @click="refreshIframe" :class="{ 'animate-spin': isRefreshing }" />
       </div>
       <div class="grow flex justify-center items-center">

@@ -14,6 +14,10 @@ export function useNavigation() {
       canGoForward.value = window.history.length > 1 && window.history.state !== null
     }
   }
+  // Listen for popstate events to dynamically update forward state
+  window.addEventListener('popstate', () => {
+    updateForwardState()
+  })
 
   updateForwardState()
 

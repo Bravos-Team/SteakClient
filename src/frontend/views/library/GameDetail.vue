@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { Download, Info, Star, TvMinimal } from 'lucide-vue-next'
+import { Download, Info, Star, TvMinimal, ArrowLeft } from 'lucide-vue-next'
 
 const route = useRoute()
+const router = useRouter()
 const gameId = route.params.id as string
+
+// Route back to library
+const routeBackToLibrary = () => {
+    router.push("/library")
+}
 
 // Define game information with defaults
 const gameInfo = ref({
@@ -208,8 +214,17 @@ onMounted(() => {
 </script>
 
 <template>
+
+    <!-- Back button -->
+    <div class="absolute top-30 left-52 z-20">
+        <Button @click="routeBackToLibrary"
+            class="p-2 h-auto w-auto min-w-0 bg-[#1a1b1e] hover:bg-[#303136] text-white rounded-md" variant="ghost">
+            <ArrowLeft class="h-5 w-5" />
+        </Button>
+    </div>
+
     <div class="container m-auto p-4 flex flex-col md:flex-row gap-6">
-        <!-- Game Info Card (Left side) -->
+        <!-- Game Info Card -->
         <Card class="md:w-1/2 bg-[#1a1b1e]">
             <div class="relative">
                 <!-- Platform logo -->
