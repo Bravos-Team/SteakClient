@@ -3,9 +3,9 @@ import path, { dirname } from 'node:path'
 import started from 'electron-squirrel-startup'
 import { fileURLToPath } from 'node:url'
 import { config } from 'dotenv'
-import { createMainWindow } from './main_window'
+
 import { createLoginWindow, getLoginWindow } from './login_window'
-import { UserInfo } from '@/types/type'
+
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -47,7 +47,7 @@ app.whenReady().then(async () => {
     if (process.platform === 'darwin') {
       app.setAppUserModelId('steak-client-app')
     }
-    const main_window = await initializeMainWindow()
+    const main_window = await initializeLoginWindow()
     console.log(configPath)
     main_window.show()
   } catch (error) {
@@ -113,3 +113,5 @@ import './download/ipc'
 import './dialog/ipc_handler'
 import { addHandler } from './ipc'
 import { configPath } from './constants/path'
+import { createMainWindow } from './main_window'
+

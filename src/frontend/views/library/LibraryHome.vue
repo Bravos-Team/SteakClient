@@ -1,11 +1,11 @@
 <template>
   <Dialog>
     <div class="flex mb-3">
-      <div class="ml-4 w-full max-w-[500px]">
+      <div class="ml-4 w-full  max-w-[500px]">
         <ComboboxSearch />
       </div>
     </div>
-    <div class="w-full flex flex-1 flex-col h-full p-4 overflow-y-hidden">
+    <div class="w-full   flex flex-1 flex-col h-full p-4 overflow-y-hidden">
       <div class="grid auto-rows-min gap-4 md:grid-cols-8">
         <div @click="navigateToGameDetail(1)"
           class="group/game transition-transform duration-300 hover:scale-105 flex flex-col aspect-[3/4] rounded-sm bg-muted/50 relative">

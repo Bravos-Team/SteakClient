@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 const routes = [
   {
     path: '/',
@@ -9,7 +9,7 @@ const routes = [
   {
     path: '/library',
     name: 'Library',
-    component: () => import('@/views/library/LibraryHome.vue'),
+    component: () => import('@/views/library/Library.vue'),
     meta: { title: 'Library' },
   },
   {
@@ -30,12 +30,7 @@ const routes = [
     component: () => import('@/views/Account.vue'),
     meta: { title: 'Account' },
   },
-  {
-    path: '/library/:id',
-    name: 'detail',
-    component: () => import('@/views/library/GameDetail.vue'),
-    meta: { title: 'GameDetail' },
-  },
+
   {
     path: '/test',
     name: 'Test',
@@ -51,7 +46,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes,
 })
 router.beforeEach((to, from, next) => {

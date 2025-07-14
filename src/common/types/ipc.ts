@@ -1,10 +1,11 @@
-import { DMQueueElement, DownloadManagerState, GameStatus, InstallParams } from './type'
+import { DMQueueElement, DownloadManagerState, GameStatus, InstallParams, UserInfo } from './type'
 
 interface SyncIPCFunctions {
   openDialog: () => string[] | null
 }
 
 interface AsyncIPCFunctions {
+  
   removeFinished: (appName: string) => Promise<void>
   openFolder: (path: string) => Promise<string | null>
   openFile: (path: string) => Promise<string | null>
