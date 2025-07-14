@@ -1,10 +1,9 @@
 import * as DownloadManager from './downloadmanager'
 import * as App from './appmanager'
-import * as Setting from './setting'
-
+import * as AuthManager from './authmanager'
 
 export default {
-  ...Setting,
+  ...AuthManager,
   ...DownloadManager,
   ...App,
 }

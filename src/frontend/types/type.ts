@@ -1,10 +1,7 @@
 
 export interface UserInfo {
-  id: string | null
-  username: string | null
-  email: string | null
-  avatarUrl: string | null
   displayName: string | null
+  avatarUrl: string | null
 }
 
 export interface InstallArgs {

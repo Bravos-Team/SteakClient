@@ -1,10 +1,7 @@
 import { TitleBarOverlay } from 'electron'
 export interface UserInfo {
-  id: string | null
-  username: string | null
-  email: string | null
-  avatarUrl: string | null
   displayName: string | null
+  avatarUrl: string | null
 }
 export interface WindowProps extends Electron.Rectangle {
   maximize: boolean
@@ -91,21 +88,20 @@ export interface InstallProgress {
 export type DMStatus = 'done' | 'error' | 'abort' | 'paused' | 'finished' | 'downloading'
 
 export interface DMQueueElement {
-  type: 'install' |  'update' 
+  type: 'install' | 'update'
   params: InstallParams
   addToQueueTime: number
   starTime?: number
   endTime?: number
   status?: DMStatus
 }
-export type DownloadManagerState = 'idle' | 'running' | 'paused' | 'stopped'  | 'downloading'
-export const Platforms = [ 'windows', 'linux', 'macos', 'android', 'ios' ] as const
+export type DownloadManagerState = 'idle' | 'running' | 'paused' | 'stopped' | 'downloading'
+export const Platforms = ['windows', 'linux', 'macos', 'android', 'ios'] as const
 export type Platform = (typeof Platforms)[number]
 export interface SystemRequirements {
   minimum: SystemRequirementEntry
   recommended?: SystemRequirementEntry
 }
-
 
 export interface AppSettings {
   defaultInstallPath: string

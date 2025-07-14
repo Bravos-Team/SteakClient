@@ -40,16 +40,16 @@ import { UserInfo } from '@/types/type'
 import { useAuthStore } from './stores/auth/useAuthStore'
 
 onMounted(() => {
-  if (!window.electronAPI) {
+  if (!window.api) {
     console.error('electronApi is not defined')
     return
   }
   console.log('Waiting for user info...')
-  window.electronAPI.onUserInfo((user: UserInfo) => {
-    console.log('User info received:', user)
-    if (user) {
-      useAuthStore().setUser(user)
-    }
-  })
+  window.api.sendUserInfo((_event : any, user: UserInfo) => {
+  console.log('User info received:', user)
+  if (user) {
+    useAuthStore().setUser(user)
+  }
+})
 })
 </script>

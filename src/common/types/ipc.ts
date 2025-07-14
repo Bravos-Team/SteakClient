@@ -1,10 +1,13 @@
-import { DMQueueElement, DownloadManagerState, GameStatus, InstallParams } from './type'
+import { DMQueueElement, DownloadManagerState, GameStatus, InstallParams, UserInfo } from './type'
 
 interface SyncIPCFunctions {
   openDialog: () => string[] | null
+  openLoginWindow: () => void
 }
 
 interface AsyncIPCFunctions {
+  login: (userInfo: UserInfo) => Promise<void>
+
   removeFinished: (appName: string) => Promise<void>
   openFolder: (path: string) => Promise<string | null>
   openFile: (path: string) => Promise<string | null>
@@ -20,6 +23,7 @@ interface AsyncIPCFunctions {
   }
 }
 interface FrontendMessages {
+  sendUserInfo: (userInfo: UserInfo) => void
   changedDMQueueInformation: (
     elements: DMQueueElement[],
     finished: DMQueueElement[],

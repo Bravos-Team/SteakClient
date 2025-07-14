@@ -6,7 +6,7 @@
   "type": "module",
   "main": ".vite/build/steak-client-app.js",
   "scripts": {
-    "start": "electron-forge package && electron-forge start",
+    "start": "vite build && electron-forge start",
     "code:check": "vue-tsc --noEmit",
     "build": "vite build",
     "preview": "vite preview",
