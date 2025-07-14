@@ -6,9 +6,23 @@ type NavigationAction = 'back' | 'forward' | 'refresh' | 'openInBrowser'
 export function useNavigation() {
   const router = useRouter()
   const isProcessing = ref(false)
+  const canGoForward = ref(false)
+
+  // Check if browser can go forward
+  const updateForwardState = () => {
+    if (window.history) {
+      canGoForward.value = window.history.length > 1 && window.history.state !== null
+    }
+  }
+  // Listen for popstate events to dynamically update forward state
+  window.addEventListener('popstate', () => {
+    updateForwardState()
+  })
+
+  updateForwardState()
 
   const handleNavigation = async (action: NavigationAction, routeToUrl: string | null) => {
-    if (isProcessing.value) return // Prevent multiple rapid calls
+    if (isProcessing.value) return
 
     try {
       isProcessing.value = true
@@ -18,7 +32,9 @@ export function useNavigation() {
           router.back()
           break
         case 'forward':
-          router.forward()
+          if (canGoForward.value) {
+            router.forward()
+          }
           break
         case 'refresh':
           window.location.reload()
@@ -40,6 +56,7 @@ export function useNavigation() {
       }
     } finally {
       setTimeout(() => {
+        updateForwardState()
         isProcessing.value = false
       }, 500)
     }
@@ -48,5 +65,7 @@ export function useNavigation() {
   return {
     handleNavigation,
     isProcessing,
+    canGoForward,
+    updateForwardState,
   }
 }
