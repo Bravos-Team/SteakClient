@@ -80,7 +80,7 @@ async function init() {
       // Update the queue state and current element
 
       console.log(`Download for ${element.params.appName} completed`)
-      
+
       updateFrontendQueue(queue, queueState, finishedElements)
       // Notify the frontend about the updated queue and game status
       setQueueState('idle') // Set the queue state to idle after processing the element
@@ -139,7 +139,7 @@ async function addToQueue(element: DMQueueElement) {
   }
   setQueue(elements)
   // Update the frontend queue and game status
-  
+
   updateFrontendQueue(elements, getQueueState())
   updateGameStatus({
     appName: element.params.appName,
@@ -178,7 +178,7 @@ function paused(appName: string) {
 
   // Update the queue and frontend
   const queue = getQueue().filter((el) => el.params.appName !== appName)
-  queue.push(currentElement) 
+  queue.push(currentElement)
   setQueue(queue)
   setCurrentElement(null)
 
@@ -211,6 +211,7 @@ function cancelDownload(appName: string) {
   // Check if the current element is downloading the specified app
   const queue = getQueue()
   const index = queue.findIndex((el) => el.params.appName === appName)
+  const outputPath = queue[index]?.params.path || path.join(homePath, 'Games')
   if (index < 0) {
     console.warn(`No download found for ${appName} in the queue`)
     return
@@ -226,10 +227,8 @@ function cancelDownload(appName: string) {
     // If the current element is the one being cancelled, set it to null
     setCurrentElement(null)
     stopDownloadFile(appName) // Stop the download using the utility function
-    const outputPath = path.join(homePath, 'Games')
-    console.log(`Removing folder for ${appName} at path: ${outputPath}`);
-    
-    removeFolder(outputPath , appName) // Remove the folder if needed
+
+    removeFolder(outputPath, appName) // Remove the folder if needed
     setQueueState('idle') // Update the queue state to idle
   }
   // Update the current element status to aborted
@@ -247,7 +246,7 @@ function cancelDownload(appName: string) {
     folder: getCurrentElement()?.params.path || '',
     status: 'aborted',
   })
-  
+
   if (queue.length > 0) {
     console.log(`Queue is not empty, reinitializing the queue`)
     init() // Reinitialize the queue to handle the next download
@@ -284,8 +283,8 @@ function resumeDownload(appName: string) {
 }
 function removeFinished(appName: string) {
   const finishedElements = getFinished()
-  const index = finishedElements.findIndex((el) => el.params.appName === appName
-  )
+  const index = finishedElements.findIndex((el) => el.params.appName === appName)
+  const outputPath = finishedElements[index]?.params.path || path.join(homePath, 'Games')
   notify({
     title: finishedElements[index]?.params.gameInfo.title || 'Download Finished',
     body: `Removed finished download`,
@@ -298,10 +297,8 @@ function removeFinished(appName: string) {
   }
   updateFrontendQueue(getQueue(), getQueueState(), finishedElements)
   console.log(`Removed finished download for ${appName}`)
-  const outputPath = path.join(homePath, 'Games')
-  
-  removeFolder(outputPath, appName) // Remove the folder if needed
 
+  removeFolder(outputPath, appName) // Remove the folder if needed
 }
 function getQueueInformation() {
   return {
@@ -310,4 +307,12 @@ function getQueueInformation() {
     state: getQueueState(),
   }
 }
-export { init, addToQueue, paused, cancelDownload, resumeDownload, getQueueInformation, removeFinished }
+export {
+  init,
+  addToQueue,
+  paused,
+  cancelDownload,
+  resumeDownload,
+  getQueueInformation,
+  removeFinished,
+}

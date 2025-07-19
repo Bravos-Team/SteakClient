@@ -3,8 +3,12 @@ import path, { dirname } from 'node:path'
 import started from 'electron-squirrel-startup'
 import { fileURLToPath } from 'node:url'
 import { config } from 'dotenv'
-
+import { createMainWindow } from './main_window'
 import { createLoginWindow, getLoginWindow } from './login_window'
+import { addHandler, addListener, sendFrontendMessage } from './ipc'
+import { configPath } from './constants/path'
+import { electronRendererUrl, steakLoginUrl } from './constants/url'
+import { UserInfo } from 'src/common/types/type'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -41,7 +45,13 @@ app.whenReady().then(async () => {
     if (process.platform === 'darwin') {
       app.setAppUserModelId('steak-client-app')
     }
+    const url = 'https://api.github.com/repos/GloriousEggroll/wine-ge-custom/releases'
+    const type = 'Wine-GE' as VersionInfo['type']
+    const count = 10
+    const versioninfo = await fetchReleases({ url, type, count })
+    console.log('Fetched Wine-GE releases:', versioninfo)
     const main_window = await initializeMainWindow()
+
     console.log(configPath)
     main_window.show()
   } catch (error) {
@@ -59,6 +69,8 @@ app.on('window-all-closed', () => {
 addHandler('getHomePath', () => {
   return app.getPath('home')
 })
+
+
 addListener('openLoginWindow', async () => {
   const loginWindow = await initializeLoginWindow()
   loginWindow.show()
@@ -85,9 +97,5 @@ export const contentSecurityPolicy =
 
 import './download/ipc'
 import './dialog/ipc_handler'
+import { fetchReleases, VersionInfo } from './wine/util'
 
-import { addHandler, addListener, sendFrontendMessage } from './ipc'
-import { configPath } from './constants/path'
-import { createMainWindow } from './main_window'
-import { electronRendererUrl, steakLoginUrl } from './constants/url'
-import { UserInfo } from 'src/common/types/type'

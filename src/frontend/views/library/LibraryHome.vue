@@ -1,12 +1,16 @@
 <template>
   <Dialog>
     <div class="flex mb-3">
-      <div class="ml-4 w-full  max-w-[500px]">
+      <div class="ml-4 w-full max-w-[500px]">
         <ComboboxSearch />
       </div>
     </div>
-    <div class="w-full   flex flex-1 flex-col h-full p-4 overflow-y-hidden">
+    <div class="w-full flex flex-1 flex-col h-full p-4 overflow-y-hidden">
       <div class="grid auto-rows-min gap-4 md:grid-cols-8">
+        <div
+        
+          class="group/game transition-transform duration-300 hover:scale-105 flex flex-col aspect-[3/4] rounded-sm bg-muted/50 relative"
+        >
         <div
         
           class="group/game transition-transform duration-300 hover:scale-105 flex flex-col aspect-[3/4] rounded-sm bg-muted/50 relative"
@@ -15,10 +19,17 @@
           <img
             @click="navigateToGameDetail(1)"
             class="grayscale group-hover/game:grayscale-0 transition-all h-5/6 w-full rounded-sm object-cover"
+          <img
+            @click="navigateToGameDetail(1)"
+            class="grayscale group-hover/game:grayscale-0 transition-all h-5/6 w-full rounded-sm object-cover"
             src="https://cdn2.unrealengine.com/fortnite-blitz-royale-1920x1080-9946411a3a9f.jpg?resize=1&w=1920"
             alt=""
           />
+            alt=""
+          />
           <div
+            class="absolute bottom-10 left-0 flex items-center right-0 bg-[#202024]/30 backdrop-blur-sm text-white p-2 rounded-b-sm opacity-0 group-hover/game:opacity-100 group-hover/game:translate-y-0 translate-y-4 transition-all duration-300"
+          >
             class="absolute bottom-10 left-0 flex items-center right-0 bg-[#202024]/30 backdrop-blur-sm text-white p-2 rounded-b-sm opacity-0 group-hover/game:opacity-100 group-hover/game:translate-y-0 translate-y-4 transition-all duration-300"
           >
             <h1 class="font-serif text-lg">Fortnite Blitz Royale</h1>
@@ -26,7 +37,13 @@
           <div
             class="relative flex justify-between items-center h-2/12 bg-[#202024] w-full rounded-b-sm px-4"
           >
+          <div
+            class="relative flex justify-between items-center h-2/12 bg-[#202024] w-full rounded-b-sm px-4"
+          >
             <!-- Icon giữa -->
+            <button
+              class="absolute left-1/2 -translate-x-1/2 p-3 rounded-full bg-white/10 hover:bg-blue-500 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
+            >
             <button
               class="absolute left-1/2 -translate-x-1/2 p-3 rounded-full bg-white/10 hover:bg-blue-500 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
             >
@@ -44,7 +61,19 @@
             src="../../assets/image/backmythwukong.jpg"
             alt=""
           />
+        <div
+        
+          class="group/game transition-transform duration-300 hover:scale-105 flex flex-col aspect-[3/4] rounded-sm bg-muted/50 relative"
+        >
+          <img
+            @click="navigateToGameDetail(2)"
+            class="group-hover/game:grayscale-0 transition-all h-5/6 w-full rounded-sm object-cover"
+            src="../../assets/image/backmythwukong.jpg"
+            alt=""
+          />
           <div
+            class="absolute bottom-10 left-0 flex items-center right-0 bg-[#202024]/30 backdrop-blur-sm text-white p-2 rounded-b-sm opacity-0 group-hover/game:opacity-100 group-hover/game:translate-y-0 translate-y-4 transition-all duration-300"
+          >
             class="absolute bottom-10 left-0 flex items-center right-0 bg-[#202024]/30 backdrop-blur-sm text-white p-2 rounded-b-sm opacity-0 group-hover/game:opacity-100 group-hover/game:translate-y-0 translate-y-4 transition-all duration-300"
           >
             <h1 class="font-serif text-lg">Black Myth: Wukong</h1>
@@ -52,8 +81,13 @@
           <div
             class="relative flex justify-between items-center h-2/12 bg-[#202024] w-full rounded-b-sm px-4"
           >
+          <div
+            class="relative flex justify-between items-center h-2/12 bg-[#202024] w-full rounded-b-sm px-4"
+          >
             <!-- Icon trái -->
             <button
+              class="p-2 rounded-full bg-white/10 hover:bg-red-600 transition-all backdrop-blur-sm shadow hover:scale-105"
+            >
               class="p-2 rounded-full bg-white/10 hover:bg-red-600 transition-all backdrop-blur-sm shadow hover:scale-105"
             >
               <Trash2 class="w-4 h-4 text-white" />
@@ -64,12 +98,18 @@
               as-child
               class="absolute left-1/2 -translate-x-1/2 p-3 rounded-full bg-white/10 hover:bg-green-600 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
             >
+            <DialogTrigger
+              as-child
+              class="absolute left-1/2 -translate-x-1/2 p-3 rounded-full bg-white/10 hover:bg-green-600 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
+            >
               <button>
                 <Play @click="installGameWukong" class="w-5 h-5 text-white" />
               </button>
             </DialogTrigger>
             <!-- Icon phải -->
             <button
+              class="p-2 rounded-full bg-white/10 hover:bg-blue-500 transition-all backdrop-blur-sm shadow hover:scale-105"
+            >
               class="p-2 rounded-full bg-white/10 hover:bg-blue-500 transition-all backdrop-blur-sm shadow hover:scale-105"
             >
               <SlidersHorizontal class="w-4 h-4 text-white" />
@@ -86,7 +126,19 @@
             src="../../assets/image/elderring.webp"
             alt=""
           />
+        <div
+        
+          class="group/game transition-transform duration-300 hover:scale-105 flex flex-col aspect-[3/4] rounded-sm bg-muted/50 relative"
+        >
+          <img
+            @click="navigateToGameDetail(3)"
+            class="group-hover/game:grayscale-0 transition-all h-5/6 w-full rounded-sm object-cover"
+            src="../../assets/image/elderring.webp"
+            alt=""
+          />
           <div
+            class="absolute bottom-10 left-0 flex items-center right-0 bg-[#202024]/30 backdrop-blur-sm text-white p-2 rounded-b-sm opacity-0 group-hover/game:opacity-100 group-hover/game:translate-y-0 translate-y-4 transition-all duration-300"
+          >
             class="absolute bottom-10 left-0 flex items-center right-0 bg-[#202024]/30 backdrop-blur-sm text-white p-2 rounded-b-sm opacity-0 group-hover/game:opacity-100 group-hover/game:translate-y-0 translate-y-4 transition-all duration-300"
           >
             <h1 class="font-serif text-lg">Elden Ring</h1>
@@ -94,14 +146,23 @@
           <div
             class="relative flex justify-between items-center h-2/12 bg-[#202024] w-full rounded-b-sm px-4"
           >
+          <div
+            class="relative flex justify-between items-center h-2/12 bg-[#202024] w-full rounded-b-sm px-4"
+          >
             <!-- Icon trái -->
             <button
+              class="p-2 rounded-full bg-white/10 hover:bg-red-600 transition-all backdrop-blur-sm shadow hover:scale-105"
+            >
               class="p-2 rounded-full bg-white/10 hover:bg-red-600 transition-all backdrop-blur-sm shadow hover:scale-105"
             >
               <Trash2 class="w-4 h-4 text-white" />
             </button>
 
             <!-- Icon giữa -->
+            <DialogTrigger
+              as-child
+              class="absolute left-1/2 -translate-x-1/2 p-3 rounded-full bg-white/10 hover:bg-green-600 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
+            >
             <DialogTrigger
               as-child
               class="absolute left-1/2 -translate-x-1/2 p-3 rounded-full bg-white/10 hover:bg-green-600 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
@@ -114,6 +175,8 @@
             <button
               class="p-2 rounded-full bg-white/10 hover:bg-blue-500 transition-all backdrop-blur-sm shadow hover:scale-105"
             >
+              class="p-2 rounded-full bg-white/10 hover:bg-blue-500 transition-all backdrop-blur-sm shadow hover:scale-105"
+            >
               <SlidersHorizontal class="w-4 h-4 text-white" />
             </button>
           </div>
@@ -122,6 +185,8 @@
     </div>
     <DialogContent class="sm:max-w-[750px] p-8">
       <DialogHeader>
+        <DialogTitle class="flex gap-8 font-semibold items-center text-3xl"
+          >Black Myth: Wukong
         <DialogTitle class="flex gap-8 font-semibold items-center text-3xl"
           >Black Myth: Wukong
           <AppWindow class="w-6 h-6" />
@@ -148,6 +213,10 @@
           <span class="flex items-center w-full">
             <Input class="px-4 h-12 text-lg rounded-r-none" />
             <!-- <input type="text" class="w-full bg-white/10 border-2 border-gray-500 rounded-sm h-12 outline-0 focus:outline-1 out"/> -->
+            <button
+              @click="openFolder"
+              class="w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-blue-500 transition-all backdrop-blur-sm shadow-lg rounded-r-md"
+            >
             <button
               @click="openFolder"
               class="w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-blue-500 transition-all backdrop-blur-sm shadow-lg rounded-r-md"
@@ -194,6 +263,7 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/libs/utils'
 import { InstallParams } from '@/types/type'
 import axios from 'axios'
+
 import {
   Play,
   Trash2,
@@ -213,6 +283,11 @@ const router = useRouter()
 const navigateToGameDetail = (gameId: number) => {
   router.push({ path: `/library/${gameId}` })
 }
+onMounted(() => {
+  axios.get(`https://api.steak.io.vn/api/v1/user/library/my-games`, {
+    withCredentials: true,
+  })
+})
 onMounted(() => {
   axios.get(`https://api.steak.io.vn/api/v1/user/library/my-games`, {
     withCredentials: true,

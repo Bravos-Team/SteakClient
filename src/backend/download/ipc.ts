@@ -1,5 +1,5 @@
 import type { DMQueueElement } from 'src/common/types/type'
-import { addHandler } from '../ipc'
+import { addHandler, addListener } from '../ipc'
 import {
   addToQueue,
   cancelDownload,
@@ -20,17 +20,17 @@ addHandler('install', async (e, args) => {
 
   await addToQueue(dmQueueElement)
 })
-;(addHandler('getDMQueueInformation', getQueueInformation),
-  addHandler('pausedDownload', async (e, appName) => {
-    await paused(appName)
-  }))
-addHandler('resumeDownload', async (e, app_name) => {
-  await resumeDownload(app_name)
+addHandler('getDMQueueInformation', getQueueInformation)
+addListener('pausedDownload', (e, app_name) => {
+  paused(app_name)
 })
-addHandler('cancelDownload', async (e, appName) => {
-  await cancelDownload(appName)
+addListener('resumeDownload', (e, app_name) => {
+  resumeDownload(app_name)
+})
+addListener('cancelDownload', async (e, appName) => {
+  cancelDownload(appName)
 })
 
-addHandler('removeFinished', async (e, appName) => {
-  await removeFinished(appName)
+addListener('removeFinished', (e, appName) => {
+  removeFinished(appName)
 })

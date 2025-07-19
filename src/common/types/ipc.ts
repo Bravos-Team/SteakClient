@@ -3,18 +3,20 @@ import { DMQueueElement, DownloadManagerState, GameStatus, InstallParams, UserIn
 interface SyncIPCFunctions {
   openDialog: () => string[] | null
   openLoginWindow: () => void
+  logout: () => void
+  removeFinished: (appName: string) => void
+  pausedDownload: (appName: string) => void
+  resumeDownload: (app_name: string) => void
+  cancelDownload: (appName: string) => void
 }
 
 interface AsyncIPCFunctions {
   login: (userInfo: UserInfo) => Promise<void>
-  removeFinished: (appName: string) => Promise<void>
+  getUser: () => UserInfo
+  install: (args: InstallParams) => Promise<void>
   openFolder: (path: string) => Promise<string | null>
   openFile: (path: string) => Promise<string | null>
-  getHomePath: () => string
-  install: (args: InstallParams) => Promise<void>
-  pausedDownload: (appName: string) => Promise<void>
-  resumeDownload: (app_name: string) => Promise<void>
-  cancelDownload: (appName: string) => Promise<void>
+  getHomePath: () => Promise<string>
   getDMQueueInformation: () => {
     elements: DMQueueElement[]
     finished: DMQueueElement[]

@@ -6,7 +6,7 @@
     <img
       class="grayscale group-hover/game:grayscale-0 transition-all h-5/6 w-full rounded-sm object-cover"
       :src="game.image"
-
+       @click="navigateToGameDetail(1)"
       alt=""
       
     />
@@ -51,8 +51,14 @@
 
 <script lang="ts" setup>
 import { DialogTrigger } from '@/components/ui/dialog';
+;
 import { Play, Trash2, SlidersHorizontal, ArrowDownToLine } from 'lucide-vue-next';
+import { useRouter } from 'vue-router';
+const router = useRouter()
 
+const navigateToGameDetail = (gameId: number) => {
+  router.push({ path: `/library/${gameId}` })
+}
 defineProps<{
   game: {
     appName: string;

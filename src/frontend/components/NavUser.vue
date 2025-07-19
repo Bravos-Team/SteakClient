@@ -6,14 +6,10 @@ import {
   CreditCard,
   LogOut,
   Sparkles,
-  User
+  User,
 } from 'lucide-vue-next'
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,13 +34,13 @@ const user = computed(() => {
   return {
     displayName: userData?.displayName || 'Guest',
     avatarUrl: userData?.avatarUrl || '',
-
-
   } as UserInfo
 })
 
-
-
+const logout = () => {
+  userStore.clearUser()
+  window.api.logout()
+}
 const { isMobile } = useSidebar()
 </script>
 
@@ -53,14 +49,15 @@ const { isMobile } = useSidebar()
     <SidebarMenuItem>
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
-          <SidebarMenuButton size="lg"
-            class="transition-transform duration-300 data-[state=open]:bg-sidebar-accent hover:bg-[#202024] data-[state=open]:text-sidebar-accent-foreground ">
-
+          <SidebarMenuButton
+            size="lg"
+            class="transition-transform duration-300 data-[state=open]:bg-sidebar-accent hover:bg-[#202024] data-[state=open]:text-sidebar-accent-foreground"
+          >
             <div class="grid flex-1 text-left text-sm leading-tight">
               <span class="truncate font-medium">{{ user.displayName }}</span>
               <!-- <span class="truncate text-xs">{{ user.email }}</span> -->
             </div>
-            <Avatar class=" h-8 w-8 rounded-lg ">
+            <Avatar class="h-8 w-8 rounded-lg">
               <AvatarImage :src="user.avatarUrl as string" :alt="user.displayName" />
               <AvatarFallback class="rounded-lg">
                 <User />
@@ -69,13 +66,17 @@ const { isMobile } = useSidebar()
             <ChevronsUpDown class="ml-auto size-4" />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
-        <DropdownMenuContent class="w-[--reka-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-          :side="isMobile ? 'bottom' : 'right'" align="end" :side-offset="4">
+        <DropdownMenuContent
+          class="w-[--reka-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+          :side="isMobile ? 'bottom' : 'right'"
+          align="end"
+          :side-offset="4"
+        >
           <DropdownMenuLabel class="p-0 font-normal">
             <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
               <div class="grid flex-1 pl-2 text-left text-sm leading-tight">
                 <span class="truncate font-semibold">{{ user.displayName }}</span>
-                <span class="truncate text-xs">{{ user.email }}</span>
+                <!-- <span class="truncate text-xs">{{ user.email }}</span> -->
               </div>
               <Avatar class="h-8 w-8 rounded-lg">
                 <AvatarImage :src="user.avatarUrl as string" :alt="user.displayName" />
@@ -109,8 +110,8 @@ const { isMobile } = useSidebar()
               Notifications
             </DropdownMenuItem>
           </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>
+          <DropdownMenuSeparator v-if="userStore.isAuthenticated()"/>
+          <DropdownMenuItem v-if="userStore.isAuthenticated()" @click="logout">
             <LogOut />
             Log out
           </DropdownMenuItem>
