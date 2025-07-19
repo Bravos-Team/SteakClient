@@ -3,10 +3,8 @@ import path, { dirname } from 'node:path'
 import started from 'electron-squirrel-startup'
 import { fileURLToPath } from 'node:url'
 import { config } from 'dotenv'
-import { createMainWindow } from './main_window'
+
 import { createLoginWindow, getLoginWindow } from './login_window'
-import { addHandler, addListener, sendFrontendMessage } from './ipc'
-import { configPath } from './constants/path'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -28,7 +26,7 @@ async function initializeMainWindow(): Promise<BrowserWindow> {
 async function initializeLoginWindow(): Promise<BrowserWindow> {
   const loginWindow = createLoginWindow()
   loginWindow.loadURL(steakLoginUrl)
-  
+
   return loginWindow
 }
 
@@ -57,9 +55,6 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
-
-
-
 
 addHandler('getHomePath', () => {
   return app.getPath('home')
@@ -90,6 +85,9 @@ export const contentSecurityPolicy =
 
 import './download/ipc'
 import './dialog/ipc_handler'
-import { UserInfo } from 'src/common/types/type'
-import { electronRendererUrl, steakLoginUrl } from './constants/url'
 
+import { addHandler, addListener, sendFrontendMessage } from './ipc'
+import { configPath } from './constants/path'
+import { createMainWindow } from './main_window'
+import { electronRendererUrl, steakLoginUrl } from './constants/url'
+import { UserInfo } from 'src/common/types/type'

@@ -215,6 +215,7 @@ onMounted(() => {
 
 <template>
 
+
     <!-- Back button -->
     <div class="absolute top-30 left-52 z-20">
         <Button @click="routeBackToLibrary"
@@ -535,3 +536,4 @@ onMounted(() => {
     max-width: 1200px;
 }
 </style>
+

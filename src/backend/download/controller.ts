@@ -20,7 +20,10 @@ async function installGame(params: InstallParams, signal?: AbortSignal) {
 
   console.log(`Downloading ${appName} from ${zipUrl} to ${outputPath}`)
 
-
+  notify({
+    title: params.gameInfo.title,
+    body: `Installing ...`,
+  })
   updateGameStatus({
     appName,
     status: 'installing',
@@ -29,10 +32,7 @@ async function installGame(params: InstallParams, signal?: AbortSignal) {
 
   console.log(`Installing game ${appName} at path ${outputPath}`);
   
-  notify({
-    title: params.gameInfo.app_name,
-    body: `Installing ...`,
-  })
+
   // Ensure the output directory exists
   ensureDir(outputPath)
 

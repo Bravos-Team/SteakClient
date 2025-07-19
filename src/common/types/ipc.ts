@@ -7,7 +7,6 @@ interface SyncIPCFunctions {
 
 interface AsyncIPCFunctions {
   login: (userInfo: UserInfo) => Promise<void>
-
   removeFinished: (appName: string) => Promise<void>
   openFolder: (path: string) => Promise<string | null>
   openFile: (path: string) => Promise<string | null>

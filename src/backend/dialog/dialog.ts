@@ -1,6 +1,6 @@
 import { dialog, Notification } from 'electron'
 import { getMainWindow } from '../main_window'
-import { appPath, configPath, homePath } from '../constants/path'
+import {  configPath, homePath } from '../constants/path'
 
 export type DialogProperty =
   | 'openFile'
@@ -44,10 +44,14 @@ type NotifyType = {
   title: string
   body: string
 }
-
+let currentNotify: Notification | null = null
 function notify({ title, body }: NotifyType) {
   const main_window = getMainWindow()
   if (Notification.isSupported()) {
+    if (currentNotify){
+      currentNotify.close() // Close the previous notification if it exists
+      currentNotify = null
+    }
     const notify = new Notification({
       title,
       body,
@@ -58,6 +62,7 @@ function notify({ title, body }: NotifyType) {
       }
     })
     notify.show()
+    currentNotify = notify
   }
 }
 export { showDialog  , notify }
