@@ -7,19 +7,19 @@ export interface StoreStructure {
   configStore: {
     userHome: string
     userInfo: UserInfo
-    theme: string
-    zoomPercent: number
-    contentFontFamily: string
-    actionsFontFamily: string
-    disableDialogBackdropClose: boolean
-    language: string
-    'general-logs': {
-      currentLogFile: string
-      lastLogFile: string
-      legendaryLogFile: string
-      gogdlLogFile: string
-      nileLogFile: string
-    }
+    // theme: string
+    // zoomPercent: number
+    // contentFontFamily: string
+    // actionsFontFamily: string
+    // disableDialogBackdropClose: boolean
+    // language: string
+    // 'general-logs': {
+    //   currentLogFile: string
+    //   lastLogFile: string
+    //   legendaryLogFile: string
+    //   gogdlLogFile: string
+    //   nileLogFile: string
+    // }
     'window-props': WindowProps
     settings: AppSettings
   }

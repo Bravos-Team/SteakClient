@@ -3,7 +3,7 @@ import { TypeCheckedStoreBackEnd } from '../electron_store'
 
 let queueState: DownloadManagerState = 'idle'
 let currentElement: DMQueueElement | null = null
-
+// Create a store for the download manager state
 const store = new TypeCheckedStoreBackEnd('downloadManager', {
   cwd: 'store',
   name: 'download-manager',

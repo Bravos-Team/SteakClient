@@ -15,7 +15,7 @@ import {
 defineProps<{
   items: {
     title: string
-    url: string
+    to: string
     icon?: LucideIcon
   }[]
 }>()
@@ -37,7 +37,7 @@ defineProps<{
           <!-- <component :is="item.icon" v-if="item.icon" />
               <span>{{ item.title }}</span>
               <ChevronRight class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" /> -->
-          <router-link :to="item.url">
+          <router-link :to="item.to">
             <component :is="item.icon" />
             <span>{{ item.title }}</span>
           </router-link>

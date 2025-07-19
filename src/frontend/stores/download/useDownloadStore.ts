@@ -10,7 +10,7 @@ export const useDownloadStore = defineStore('download', () => {
   }
   const getGameStatus = () => {
     return gameStatus.value
-  }   
+  }
   const setProgress = (progress: InstallProgress) => {
     if (gameStatus.value.appName) {
       gameStatus.value.progress = progress
@@ -28,7 +28,6 @@ export const useDownloadStore = defineStore('download', () => {
     }
   }
   return {
-
     setProgress,
     getProgress,
     setGameStatus,
@@ -91,5 +90,6 @@ export const useDownloadQueueStore = defineStore('downloadQueue', () => {
       finished: finished.value,
       state: state.value,
     }),
+
   }
 })

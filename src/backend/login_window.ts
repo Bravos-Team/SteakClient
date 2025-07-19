@@ -1,10 +1,9 @@
 import { BrowserWindow, Menu, screen } from 'electron'
 
 import path, { dirname } from 'path'
-import { WindowProps } from 'src/common/types/type'
 
 import { fileURLToPath } from 'url'
-
+import { WindowProps } from 'src/common/types/type'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -37,6 +36,10 @@ export const createLoginWindow = () => {
     minHeight: 960,
     minWidth: 600,
     show: false,
+    modal: true,
+    parent: BrowserWindow.getAllWindows().at(0) || undefined,
+    modal: true,
+    parent: BrowserWindow.getAllWindows().at(0) || undefined,
     autoHideMenuBar: true,
     webPreferences: {
       webviewTag: true,
@@ -57,38 +60,71 @@ export const createLoginWindow = () => {
   //   })
   // })
 
-  const menu = Menu.buildFromTemplate([
-    {
-      label: 'File',
-      submenu: [
-        {
-          label: 'Exit',
-          click: () => {
-            loginWindow?.close()
-          },
-        },
-      ],
-    },
-    {
-      label: 'View',
-      submenu: [
-        {
-          label: 'Reload',
-          accelerator: 'CmdOrCtrl+R',
-          click: () => {
-            loginWindow?.webContents.reload()
-          },
-        },
-        {
-          label: 'Toggle Developer Tools',
-          accelerator: 'CmdOrCtrl+I',
-          click: () => {
-            loginWindow?.webContents.toggleDevTools()
-          },
-        },
-      ],
-    },
-  ])
-  Menu.setApplicationMenu(menu)
+  // const menu = Menu.buildFromTemplate([
+  //   {
+  //     label: 'File',
+  //     submenu: [
+  //       {
+  //         label: 'Exit',
+  //         click: () => {
+  //           loginWindow?.close()
+  //         },
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     label: 'View',
+  //     submenu: [
+  //       {
+  //         label: 'Reload',
+  //         accelerator: 'CmdOrCtrl+R',
+  //         click: () => {
+  //           loginWindow?.webContents.reload()
+  //         },
+  //       },
+  //       {
+  //         label: 'Toggle Developer Tools',
+  //         accelerator: 'CmdOrCtrl+I',
+  //         click: () => {
+  //           loginWindow?.webContents.toggleDevTools()
+  //         },
+  //       },
+  //     ],
+  //   },
+  // ])
+  // Menu.setApplicationMenu(menu)
+  // const menu = Menu.buildFromTemplate([
+  //   {
+  //     label: 'File',
+  //     submenu: [
+  //       {
+  //         label: 'Exit',
+  //         click: () => {
+  //           loginWindow?.close()
+  //         },
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     label: 'View',
+  //     submenu: [
+  //       {
+  //         label: 'Reload',
+  //         accelerator: 'CmdOrCtrl+R',
+  //         click: () => {
+  //           loginWindow?.webContents.reload()
+  //         },
+  //       },
+  //       {
+  //         label: 'Toggle Developer Tools',
+  //         accelerator: 'CmdOrCtrl+I',
+  //         click: () => {
+  //           loginWindow?.webContents.toggleDevTools()
+  //         },
+  //       },
+  //     ],
+  //   },
+  // ])
+  // Menu.setApplicationMenu(menu)
   return loginWindow
 }

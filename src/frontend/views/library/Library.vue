@@ -74,7 +74,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, toRaw } from 'vue'
+import { ref, reactive, toRaw, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
 import ComboboxSearch from '@/components/ComboboxSearch.vue'
 
@@ -95,6 +95,7 @@ import GameCard from '@/components/library/GameCard.vue'
 import { useGameLibrary } from '@/stores/library/useGameLibrary'
 import wukongImage from '@/assets/image/backmythwukong.jpg'
 import elderRingImage from '@/assets/image/elderring.webp'
+import axios from 'axios'
 // Trạng thái Dialog và cài đặt
 const isDialogOpen = ref(false)
 const isInstalling = ref(false)
@@ -201,4 +202,9 @@ const formatSize = (size: string) => {
   const bytes = parseInt(size)
   return `${(bytes / 1000000).toFixed(3)} MB`
 }
+onMounted(() => {
+ axios.get(`https://api.steak.io.vn/api/v1/user/library/my-games`, {
+    withCredentials: true,
+  })
+})
 </script>

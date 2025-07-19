@@ -3,10 +3,12 @@ import path, { dirname } from 'node:path'
 import started from 'electron-squirrel-startup'
 import { fileURLToPath } from 'node:url'
 import { config } from 'dotenv'
-
+import { createMainWindow } from './main_window'
 import { createLoginWindow, getLoginWindow } from './login_window'
-
-
+import { addHandler, addListener, sendFrontendMessage } from './ipc'
+import { configPath } from './constants/path'
+import { electronRendererUrl, steakLoginUrl } from './constants/url'
+import { UserInfo } from 'src/common/types/type'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -18,7 +20,7 @@ config()
 async function initializeMainWindow(): Promise<BrowserWindow> {
   const mainWindow = createMainWindow()
   if (process.env.ELECTRON_RENDERER_URL) {
-    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
+    mainWindow.loadURL(electronRendererUrl)
   } else {
     mainWindow.loadFile(path.join(__dirname, '../renderer/main_window/index.html'))
   }
@@ -27,11 +29,7 @@ async function initializeMainWindow(): Promise<BrowserWindow> {
 
 async function initializeLoginWindow(): Promise<BrowserWindow> {
   const loginWindow = createLoginWindow()
-  if (process.env.LOGIN_WINDOW_URL) {
-    loginWindow.loadURL(process.env.LOGIN_WINDOW_URL)
-  } else {
-    loginWindow.loadFile(path.join(__dirname, '../../dist/index.html'))
-  }
+  loginWindow.loadURL(steakLoginUrl)
 
   return loginWindow
 }
@@ -47,7 +45,13 @@ app.whenReady().then(async () => {
     if (process.platform === 'darwin') {
       app.setAppUserModelId('steak-client-app')
     }
-    const main_window = await initializeLoginWindow()
+    const url = 'https://api.github.com/repos/GloriousEggroll/wine-ge-custom/releases'
+    const type = 'Wine-GE' as VersionInfo['type']
+    const count = 10
+    const versioninfo = await fetchReleases({ url, type, count })
+    console.log('Fetched Wine-GE releases:', versioninfo)
+    const main_window = await initializeMainWindow()
+
     console.log(configPath)
     main_window.show()
   } catch (error) {
@@ -62,42 +66,24 @@ app.on('window-all-closed', () => {
   }
 })
 
-ipcMain.handle('dialog:openFile', async () => {
-  const { canceled, filePaths } = await dialog.showOpenDialog({
-    properties: ['openFile', 'openDirectory'],
-    title: 'Save File',
-    defaultPath: '/home/tvt/Downloads',
-    filters: [
-      { name: 'Images', extensions: ['jpg', 'png', 'gif'] },
-      { name: 'Movies', extensions: ['mkv', 'avi', 'mp4'] },
-      { name: 'Custom File Type', extensions: ['as'] },
-      { name: 'All Files', extensions: ['*'] },
-    ],
-  })
-  return canceled ? null : filePaths[0]
-})
-// ipcMain.handle('downloadEvent', async () => {
-//   console.log('downloading')
-//   const url = 'https://mmatechnical.com/Download/Download-Test-File/(MMA)-500MB.zip'
-//   const dest = '/home/tvt/testdownload/'
-//   try {
-//     await downloadFile({ url, dest  })
-//     console.log('Download complete')
-//     return { success: true }
-//   } catch (err) {
-//     console.error('Download failed:', err)
-//     return { success: false, error: (err as Error).message }
-//   }
-// })
-
-ipcMain.on('dropped-file', (_event, filePath) => {
-  console.log('File được kéo vào:', filePath)
-})
 addHandler('getHomePath', () => {
-  console.log('Getting home path' + app.getPath('home'))
-
   return app.getPath('home')
 })
+
+
+addListener('openLoginWindow', async () => {
+  const loginWindow = await initializeLoginWindow()
+  loginWindow.show()
+  loginWindow.focus()
+})
+addHandler('login', async (e, userInfo: UserInfo) => {
+  const loginWindow = getLoginWindow()
+  sendFrontendMessage('sendUserInfo', userInfo)
+  if (loginWindow) {
+    loginWindow.close()
+  }
+})
+
 export const contentSecurityPolicy =
   process.env.APP_CSP ??
   [
@@ -111,7 +97,5 @@ export const contentSecurityPolicy =
 
 import './download/ipc'
 import './dialog/ipc_handler'
-import { addHandler } from './ipc'
-import { configPath } from './constants/path'
-import { createMainWindow } from './main_window'
+import { fetchReleases, VersionInfo } from './wine/util'
 

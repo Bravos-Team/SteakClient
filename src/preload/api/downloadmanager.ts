@@ -1,10 +1,10 @@
-import { frontendListenerSlot, makeHandlerCaller } from "../ipc";
+import { frontendListenerSlot, makeHandlerCaller, makeListenerCaller } from '../ipc'
 
 export const install = makeHandlerCaller('install')
 export const handleGameStatus = frontendListenerSlot('gameStatusUpdate')
 export const getDMQueueInformation = makeHandlerCaller('getDMQueueInformation')
-export const pausedDownload = makeHandlerCaller('pausedDownload')
-export const resumeDownload = makeHandlerCaller('resumeDownload')
-export const cancelDownload = makeHandlerCaller('cancelDownload')
+export const pausedDownload = makeListenerCaller('pausedDownload')
+export const resumeDownload = makeListenerCaller('resumeDownload')
+export const cancelDownload = makeListenerCaller('cancelDownload')
 export const handleDMQueueInformation = frontendListenerSlot('changedDMQueueInformation')
-export const removeFinished = makeHandlerCaller('removeFinished')
+export const removeFinished = makeListenerCaller('removeFinished')

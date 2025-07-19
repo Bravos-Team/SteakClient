@@ -11,6 +11,11 @@ const version = ref('2.17.0')
 const handleNavigation = (path: string) => {
     router.push(path)
 }
+const handleOpenLoginWindow = async () => {
+    console.log('Opening login window...');
+    
+    await window.api.openLoginWindow()
+}
 </script>
 
 <template>
@@ -47,8 +52,8 @@ const handleNavigation = (path: string) => {
             <!-- Updated Login Buttons -->
             <div class="space-y-3">
                 <!-- Epic Games Login -->
-                <div class="w-full h-14 bg-[#202427] hover:bg-[#2c2d32] rounded-lg flex items-center cursor-pointer transition-colors"
-                    @click="handleNavigation('/epic-login')">
+                <div class="w-full h-14 bg-[rgb(32,36,39)] hover:bg-[#2c2d32] rounded-lg flex items-center cursor-pointer transition-colors"
+                    @click="handleOpenLoginWindow()">
                     <div class="w-16 h-full flex items-center justify-center">
                         <img src="https://cdn2.unrealengine.com/eg-shield-logo-white-f8185c103d8d.svg" alt="Epic Games"
                             class="w-8 h-8" />

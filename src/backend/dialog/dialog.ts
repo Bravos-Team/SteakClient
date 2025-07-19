@@ -1,6 +1,6 @@
 import { dialog, Notification } from 'electron'
 import { getMainWindow } from '../main_window'
-import { appPath, configPath, homePath } from '../constants/path'
+import {  configPath, homePath } from '../constants/path'
 
 export type DialogProperty =
   | 'openFile'

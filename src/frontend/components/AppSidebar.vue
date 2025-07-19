@@ -18,7 +18,7 @@ import {
   ArrowDownToLine,
 } from 'lucide-vue-next'
 import NavMain from '@/components/NavMain.vue'
-import NavProjects from '@/components/NavProjects.vue'
+
 import NavUser from '@/components/NavUser.vue'
 import TeamSwitcher from '@/components/TeamSwitcher.vue'
 
@@ -73,38 +73,12 @@ const data = {
       icon: ShoppingCart,
     },
     {
-      title: 'Download',
-      url: '/download',
-      icon: ArrowDownToLine,
-    },
-    {
       title: 'Settings',
       url: '/setting',
       icon: Settings2,
     },
-    {
-      title: 'Logout',
-      url: '/test',
-      icon: Power,
-    },
   ],
-  projects: [
-    {
-      name: 'Design Engineering',
-      url: '#',
-      icon: Frame,
-    },
-    {
-      name: 'Sales & Marketing',
-      url: '#',
-      icon: PieChart,
-    },
-    {
-      name: 'LogOut',
-      url: '/test',
-      icon: Power,
-    },
-  ],
+
   footer: [{ title: 'Download', url: '/download', icon: ArrowDownToLine }],
 }
 </script>
@@ -113,19 +87,20 @@ const data = {
   <Sidebar v-bind="props">
     <SidebarHeader class="flex my-6 p-0 justify-center items-center">
       <!-- <TeamSwitcher :teams="data.teams" /> -->
-      <img class="h-[3rem] w-[3rem] p-1 rounded-full ring-2 ring-gray-300 dark:ring-gray-500"
-        src="https://ccdn.steak.io.vn/logo_steak.svg" alt="" />
-
+      <img
+        class="h-[3rem] w-[3rem] p-1 rounded-full ring-2 ring-gray-300 dark:ring-gray-500"
+        src="https://ccdn.steak.io.vn/logo_steak.svg"
+        alt=""
+      />
     </SidebarHeader>
     <div class="flex items-center justify-center">
       <hr class="h-px mb-2 w-full mr-4 ml-4 bg-[#ffffff] border-0" />
     </div>
+    <NavMain :items="data.navMain" />
     <SidebarContent>
-      <NavMain :items="data.navMain" />
       <!-- <NavProjects :projects="data.projects" /> -->
     </SidebarContent>
     <SidebarFooter>
-
       <NavMain class="pb-4" :items="data.footer" />
 
       <NavUser :class="cn('block md:hidden')" :user="data.user" />
