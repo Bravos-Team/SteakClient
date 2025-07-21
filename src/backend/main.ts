@@ -3,7 +3,7 @@ import path, { dirname } from 'node:path'
 import started from 'electron-squirrel-startup'
 import { fileURLToPath } from 'node:url'
 import { config } from 'dotenv'
-import { createMainWindow } from './main_window'
+import { createMainWindow, getMainWindow } from './main_window'
 import { createLoginWindow, getLoginWindow } from './login_window'
 import { addHandler, addListener, sendFrontendMessage } from './ipc'
 import { configPath } from './constants/path'
@@ -27,13 +27,6 @@ async function initializeMainWindow(): Promise<BrowserWindow> {
   return mainWindow
 }
 
-async function initializeLoginWindow(): Promise<BrowserWindow> {
-  const loginWindow = createLoginWindow()
-  loginWindow.loadURL(steakLoginUrl)
-
-  return loginWindow
-}
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -45,43 +38,28 @@ app.whenReady().then(async () => {
     if (process.platform === 'darwin') {
       app.setAppUserModelId('steak-client-app')
     }
-    const url = 'https://api.github.com/repos/GloriousEggroll/wine-ge-custom/releases'
-    const type = 'Wine-GE' as VersionInfo['type']
-    const count = 10
-    const versioninfo = await fetchReleases({ url, type, count })
-    console.log('Fetched Wine-GE releases:', versioninfo)
+    // const url = 'https://api.github.com/repos/GloriousEggroll/wine-ge-custom/releases'
+    // const type = 'Wine-GE' as VersionInfo['type']
+    // const count = 10
+    // const versioninfo = await fetchReleases({ url, type, count })
+    // console.log('Fetched Wine-GE releases:', versioninfo)
     const main_window = await initializeMainWindow()
 
     console.log(configPath)
+    
     main_window.show()
+
+    main_window.focus()
   } catch (error) {
     console.error('Failed to initialize window:', error)
     app.quit()
   }
 })
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
+
 
 addHandler('getHomePath', () => {
   return app.getPath('home')
-})
-
-
-addListener('openLoginWindow', async () => {
-  const loginWindow = await initializeLoginWindow()
-  loginWindow.show()
-  loginWindow.focus()
-})
-addHandler('login', async (e, userInfo: UserInfo) => {
-  const loginWindow = getLoginWindow()
-  sendFrontendMessage('sendUserInfo', userInfo)
-  if (loginWindow) {
-    loginWindow.close()
-  }
 })
 
 export const contentSecurityPolicy =
@@ -97,5 +75,5 @@ export const contentSecurityPolicy =
 
 import './download/ipc'
 import './dialog/ipc_handler'
+import './auth/ipc'
 import { fetchReleases, VersionInfo } from './wine/util'
-

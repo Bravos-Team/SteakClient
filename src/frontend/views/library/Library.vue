@@ -203,7 +203,7 @@ const formatSize = (size: string) => {
   return `${(bytes / 1000000).toFixed(3)} MB`
 }
 onMounted(() => {
- axios.get(`https://api.steak.io.vn/api/v1/user/library/my-games`, {
+ axios.get(`https://api.steak.io.vn/api/v1/store/private/library/my-games`, {
     withCredentials: true,
   })
 })

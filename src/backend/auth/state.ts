@@ -1,7 +1,9 @@
 import { UserInfo } from 'src/common/types/type'
 import { configStore } from '../constants/key_value_store'
 
-const setUSer = (user: UserInfo) => {
+
+
+const setUser = (user: UserInfo) => {
   configStore.set('userInfo', user)
 }
 const getUser = (): UserInfo => {
@@ -15,4 +17,4 @@ const isLogin = (): boolean => {
   const user = getUser()
   return user && user.displayName !== null
 }
-export { setUSer, getUser, deleteUser, isLogin }
+export { setUser, getUser, deleteUser, isLogin }

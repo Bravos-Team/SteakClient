@@ -1,45 +1,30 @@
 import { UserInfo } from 'src/common/types/type'
 import { steakLoginUrl } from '../constants/url'
-import { addHandler, addListener, sendFrontendMessage } from '../ipc'
+import { addHandler, addListener } from '../ipc'
 import { createLoginWindow, getLoginWindow } from '../login_window'
-import { logout, updateUser } from './events'
 import { getUser } from './state'
 import { getMainWindow } from '../main_window'
+import { login, logout } from './controller'
 
-addListener('openLoginWindow', async () => {
+addListener('openLoginWindow', () => {
   const loginWindow = createLoginWindow()
   loginWindow.loadURL(steakLoginUrl)
+  console.log('Opening login window:', steakLoginUrl)
+
   loginWindow.show()
   loginWindow.focus()
 })
 addHandler('login', async (e, userInfo: UserInfo) => {
-  const loginWindow = getLoginWindow()
-  // if (loginWindow && loginWindow.isDestroyed()) {
-  //   throw new Error('Login window is already destroyed')
-  // }
-  updateUser(userInfo)
-
-  if (loginWindow) {
-    loginWindow.close()
-  }
-  const mainWindow = getMainWindow()
-  if (mainWindow) {
-    mainWindow.reload()
-  }
-  // sendFrontendMessage('sendUserInfo', userInfo)
+  login(userInfo)
 })
 addHandler('getUser', () => {
   const user = getUser()
   if (!user || !user.displayName) {
-    throw new Error('User is not logged in')
+    return null
   }
   return user
 })
 
 addListener('logout', () => {
   logout()
-  const mainWindow = getMainWindow()
-  if (mainWindow) {
-    mainWindow.reload()
-  }
 })

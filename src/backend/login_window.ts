@@ -4,6 +4,7 @@ import path, { dirname } from 'path'
 
 import { fileURLToPath } from 'url'
 import { WindowProps } from 'src/common/types/type'
+import { getMainWindow } from './main_window'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -37,9 +38,8 @@ export const createLoginWindow = () => {
     minWidth: 600,
     show: false,
     modal: true,
-    parent: BrowserWindow.getAllWindows().at(0) || undefined,
-    modal: true,
-    parent: BrowserWindow.getAllWindows().at(0) || undefined,
+    parent: getMainWindow(),
+    title: 'Steak Login',
     autoHideMenuBar: true,
     webPreferences: {
       webviewTag: true,
