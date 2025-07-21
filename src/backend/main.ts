@@ -57,7 +57,17 @@ app.whenReady().then(async () => {
 })
 
 
-
+addHandler('openWebViewDevTools', (event, webviewId :string) => {
+  console.log(`Opening DevTools for webview with ID: ${webviewId}`);
+  
+  const webview = document.getElementById(webviewId) as Electron.WebviewTag
+  
+  if (webview) {
+    webview.openDevTools()
+  } else {
+    console.error(`Webview with ID ${webviewId} not found`)
+  }
+})
 addHandler('getHomePath', () => {
   return app.getPath('home')
 })

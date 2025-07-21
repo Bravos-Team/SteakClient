@@ -26,21 +26,21 @@
           <span class="flex items-center gap-4">
             <Download class="w-8 h-8" />
             <span class="flex flex-col">
-              <span class="text-lg font-semibold">Dung lượng tải</span>
+              <span class="text-lg font-semibold">Download size</span>
               <span class="text-sm text-muted-foreground">
                 {{ formatSize(installInfo.gameInfo.install.install_size) }}
               </span>
             </span>
             <CircleDot class="w-8 h-8" />
             <span class="flex flex-col">
-              <span class="text-lg font-semibold">Phiên bản</span>
+              <span class="text-lg font-semibold">Version</span>
               <span class="text-sm text-muted-foreground">1.0.0</span>
             </span>
           </span>
         </DialogDescription>
       </DialogHeader>
       <div class="flex flex-col gap-4">
-        <AlertTitle>Chọn đường dẫn cài đặt:</AlertTitle>
+        <AlertTitle>Select installation path:</AlertTitle>
         <AlertDescription class="flex flex-col gap-2">
           <span class="flex items-center w-full">
             <Input v-model="installInfo.path" class="px-4 h-12 text-lg rounded-r-none" readonly />
@@ -52,21 +52,21 @@
             </button>
           </span>
           <span>
-            Dung lượng trống: <span class="text-green-500 font-semibold">1.2 TB</span> /
-            <span class="text-red-500 font-semibold">2.0 TB</span> - Sau khi cài đặt, còn lại:
+            Free space: <span class="text-green-500 font-semibold">1.2 TB</span> /
+            <span class="text-red-500 font-semibold">2.0 TB</span> - After installation, remaining:
             <span class="text-red-500 font-semibold">1.5 TB</span>
           </span>
         </AlertDescription>
       </div>
       <DialogFooter class="flex mt-12 gap-2 justify-end">
-        <Button variant="outline" class="w-32 h-12 text-lg hover:text-blue-500"> Nhập Save </Button>
+        <Button variant="outline" class="w-32 h-12 text-lg hover:text-blue-500"> Enter Save</Button>
         <Button
           @click="install"
           variant="default"
           class="w-32 h-12 text-lg hover:bg-green-500"
           :disabled="isInstalling"
         >
-          {{ isInstalling ? 'Đang cài...' : 'Cài đặt' }}
+          {{ isInstalling ? 'Installing...' : 'Install' }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -92,13 +92,17 @@ import { InstallParams } from '@/types/type'
 import { Download, AppWindow, CircleDot, Folder } from 'lucide-vue-next'
 
 import GameCard from '@/components/library/GameCard.vue'
-import { useGameLibrary } from '@/stores/library/useGameLibrary'
+import { useGameLibrary } from '@/composables/useGameLibrary'
 import wukongImage from '@/assets/image/backmythwukong.jpg'
 import elderRingImage from '@/assets/image/elderring.webp'
 import axios from 'axios'
+import { useDownloadQueueStore } from '@/stores/download/useDownloadStore'
+
 // Trạng thái Dialog và cài đặt
 const isDialogOpen = ref(false)
 const isInstalling = ref(false)
+const LibraryStore = useGameLibrary()
+const QueueStore = useDownloadQueueStore()
 // Danh sách game mẫu
 const games = [
   {
@@ -148,13 +152,24 @@ const handleOpenFolder = async () => {
   }
 }
 // Sử dụng composable
-const { saveGame, openFolder, installGame } = useGameLibrary()
+const { saveGame, openFolder, installGame } = LibraryStore
 
 // Xử lý sự kiện cài đặt
 const handleInstall = async (appName: string) => {
   const game = games.find((g) => g.appName === appName)
-  if (!game) return
 
+  const queuedGame = QueueStore.getQueue().find((g) => g.params.appName === appName)
+  console.log(QueueStore.getQueue())
+
+  if (queuedGame) {
+    toast.error(`Game ${appName} is already in the download queue.`)
+    isInstalling.value = true
+    return
+  }
+  if (!game) {
+    toast.error(`Game ${appName} not found.`)
+    return
+  }
   installInfo.appName = appName
   installInfo.path = ''
   installInfo.gameInfo = {
@@ -168,6 +183,7 @@ const handleInstall = async (appName: string) => {
     is_installed: false,
     title: game.title,
   }
+  isInstalling.value = false
   isDialogOpen.value = true
 }
 
@@ -179,6 +195,7 @@ const handleDelete = (appName: string) => {
 
 // Cài đặt game
 const install = async () => {
+  
   if (!installInfo.path) {
     toast.error('Vui lòng chọn đường dẫn cài đặt')
     return
@@ -186,14 +203,17 @@ const install = async () => {
   isInstalling.value = true
   try {
     isDialogOpen.value = false
+    console.log(`Installing game: ${installInfo.appName} at ${installInfo.path}`)
+
+    QueueStore.addToQueue({
+      params: installInfo,
+      addToQueueTime: Date.now(),
+      type: 'install',
+    })
     await installGame(installInfo)
-    
-    
   } catch (error: any) {
     toast.error('Lỗi khi cài đặt: ' + error.message)
     isDialogOpen.value = false // Đóng Dialog khi lỗiu
-  } finally {
-    isInstalling.value = false
   }
 }
 
@@ -203,7 +223,7 @@ const formatSize = (size: string) => {
   return `${(bytes / 1000000).toFixed(3)} MB`
 }
 onMounted(() => {
- axios.get(`https://api.steak.io.vn/api/v1/store/private/library/my-games`, {
+  axios.get(`https://api.steak.io.vn/api/v1/store/private/library/my-games`, {
     withCredentials: true,
   })
 })

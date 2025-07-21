@@ -40,6 +40,7 @@ const user = computed(() => {
 const logout = () => {
   userStore.clearUser()
   window.api.logout()
+  window.location.reload() // Reload the page to reflect the logout state
 }
 const { isMobile } = useSidebar()
 </script>

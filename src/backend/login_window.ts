@@ -11,10 +11,7 @@ const __dirname = dirname(__filename)
 let windowProps: WindowProps | null = null
 let loginWindow: BrowserWindow | null = null
 
-export const getLoginWindow = () => {
-  if (loginWindow) return loginWindow
-  return BrowserWindow.getAllWindows().at(0)
-}
+export const getLoginWindow = () => loginWindow
 export const createLoginWindow = () => {
   windowProps = {
     height: 1080,
