@@ -27,7 +27,7 @@
         <div class="w-3 h-3 bg-sky-500 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
       </div>
     </div>
-    <iframe ref="storeIframe" class="w-full h-full" :src="currentUrl" frameborder="0" @load="handleIframeLoad"></iframe>
+    <webview id="myWebview" ref="storeIframe" class="w-full h-full" :src="currentUrl" frameborder="0" @load="handleIframeLoad"></webview>
   </div>
 </template>
 
@@ -98,4 +98,5 @@ onBeforeUnmount(() => {
     transform: rotate(360deg);
   }
 }
+
 </style>

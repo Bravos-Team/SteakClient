@@ -31,9 +31,9 @@ defineProps<{
         :default-open="item.isActive"
         class="group/collapsible"
       > -->
-      <SidebarMenuItem v-for="item in items" :key="item.title">
+      <SidebarMenuItem  v-for="item in items" :key="item.title">
         <!-- <CollapsibleTrigger as-child> -->
-        <SidebarMenuButton  size="xl" asChild>
+        <SidebarMenuButton :class="'transition duration-300'"  size="xl" asChild>
           <!-- <component :is="item.icon" v-if="item.icon" />
               <span>{{ item.title }}</span>
               <ChevronRight class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" /> -->

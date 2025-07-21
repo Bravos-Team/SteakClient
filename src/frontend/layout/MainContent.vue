@@ -6,5 +6,5 @@
 </template>
 <script setup lang="ts">
 import HeaderHome from '@/components/home/HeaderHome.vue'
-import { SidebarInset } from '@/components/ui/sidebar'
+import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 </script>

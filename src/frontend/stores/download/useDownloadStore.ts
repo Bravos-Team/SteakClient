@@ -53,6 +53,8 @@ export const useDownloadQueueStore = defineStore('downloadQueue', () => {
   }
 
   const addToQueue = (element: DMQueueElement) => {
+    console.log( element);
+    
     const exists = elements.value.some((e) => e.params.appName === element.params.appName)
     if (!exists) elements.value.push(element)
   }

@@ -9,14 +9,7 @@ import QueuedTable from '@/views/download/QueuedTable.vue'
 import { onMounted } from 'vue'
 
 const QueueStore = useDownloadQueueStore()
-onMounted(async () => {
-  const info = await window.api.getDMQueueInformation()
-  QueueStore.updateAll({
-    elements: info.elements,
-    finished: info.finished,
-    state: info.state,
-  })
-})
+
 useDownloadManagerSync()
 function handlePauseDownload(appName: string) {
   window.api.pausedDownload(appName)

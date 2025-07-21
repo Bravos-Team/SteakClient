@@ -11,6 +11,7 @@ interface SyncIPCFunctions {
 }
 
 interface AsyncIPCFunctions {
+  openWebViewDevTools: (webviewId: string) => Promise<void>
   login: (userInfo: UserInfo) => Promise<void>
   getUser: () => UserInfo | null
   install: (args: InstallParams) => Promise<void>
