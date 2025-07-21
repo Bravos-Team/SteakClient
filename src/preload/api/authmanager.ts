@@ -1,4 +1,6 @@
-import { frontendListenerSlot, makeHandlerCaller } from '../ipc'
+import { frontendListenerSlot, makeHandlerCaller, makeListenerCaller } from '../ipc'
 
 export const login = makeHandlerCaller('login')
-export const sendUserInfo = frontendListenerSlot('sendUserInfo')
+export const logout = makeListenerCaller('logout')
+export const openLoginWindow = makeListenerCaller('openLoginWindow')
+export const getUser = makeHandlerCaller('getUser')

@@ -14,7 +14,7 @@ const handleNavigation = (path: string) => {
 const handleOpenLoginWindow = async () => {
     console.log('Opening login window...');
     
-    await window.api.openLoginWindow()
+ window.api.openLoginWindow()
 }
 </script>
 
