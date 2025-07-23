@@ -1,4 +1,3 @@
-
 export interface UserInfo {
   displayName: string | null
   avatarUrl: string | null
@@ -14,6 +13,14 @@ export interface InstallParams extends InstallArgs {
   appName: string
   gameInfo: GameInfo
   size?: string
+}
+
+export type GameLibrary = {
+  gameId: string
+  title: string
+  thumbnailUrl: string
+  ownedDate: number
+  lastPlayedAt: number | null
 }
 
 export interface GameInfo {
@@ -79,10 +86,10 @@ export interface InstallProgress {
   diskWriteSpeed?: string
   file?: string
 }
-export type DMStatus = 'done' | 'error' | 'abort' | 'paused' |'downloading'
+export type DMStatus = 'done' | 'error' | 'abort' | 'paused' | 'downloading'
 
 export interface DMQueueElement {
-  type: 'install' |  'update' 
+  type: 'install' | 'update'
   params: InstallParams
   addToQueueTime: number
   starTime?: number
@@ -90,12 +97,10 @@ export interface DMQueueElement {
   status?: DMStatus
 }
 export type DownloadManagerState = 'idle' | 'running' | 'paused' | 'stopped'
-export const Platforms = [ 'windows', 'linux', 'macos', 'android', 'ios' ] as const
+export const Platforms = ['windows', 'linux', 'macos', 'android', 'ios'] as const
 export type Platform = (typeof Platforms)[number]
 
 export interface SystemRequirements {
   minimum: SystemRequirementEntry
   recommended?: SystemRequirementEntry
 }
-
-
