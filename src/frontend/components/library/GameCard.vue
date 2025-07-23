@@ -2,20 +2,20 @@
   <div
     class="group/game transition-transform duration-300 hover:scale-105 flex flex-col aspect-[3/4] rounded-sm bg-muted/50 relative"
   >
-  
     <img
       class="grayscale group-hover/game:grayscale-0 transition-all h-5/6 w-full rounded-sm object-cover"
       :src="game.image"
-       @click="navigateToGameDetail(1)"
+      @click="navigateToGameDetail(1)"
       alt=""
-      
     />
     <div
       class="absolute bottom-10 left-0 flex items-center right-0 bg-[#202024]/30 backdrop-blur-sm text-white p-2 rounded-b-sm opacity-0 group-hover/game:opacity-100 group-hover/game:translate-y-0 translate-y-4 transition-all duration-300"
     >
       <h1 class="font-serif text-lg">{{ game.title }}</h1>
     </div>
-    <div class="relative flex justify-between items-center h-2/12 bg-[#202024] w-full rounded-b-sm px-4">
+    <div
+      class="relative flex justify-between items-center h-2/12 bg-[#202024] w-full rounded-b-sm px-4"
+    >
       <button
         v-if="game.installable"
         @click="$emit('delete', game.appName)"
@@ -50,27 +50,28 @@
 </template>
 
 <script lang="ts" setup>
-import { DialogTrigger } from '@/components/ui/dialog';
-;
-import { Play, Trash2, SlidersHorizontal, ArrowDownToLine } from 'lucide-vue-next';
-import { useRouter } from 'vue-router';
+import { DialogTrigger } from '@/components/ui/dialog'
+import { Play, Trash2, SlidersHorizontal, ArrowDownToLine } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const navigateToGameDetail = (gameId: number) => {
-  router.push({ path: `/library/${gameId}` })
+  console.log(123, gameId)
+
+  router.push({ path: `/library/details` })
 }
 defineProps<{
   game: {
-    appName: string;
-    title: string;
-    image: string;
-    installable: boolean;
-  };
-}>();
+    appName: string
+    title: string
+    image: string
+    installable: boolean
+  }
+}>()
 
 defineEmits<{
-  (e: 'install', appName: string): void;
-  (e: 'delete', appName: string): void;
-  (e: 'save', appName: string): void;
-}>();
+  (e: 'install', appName: string): void
+  (e: 'delete', appName: string): void
+  (e: 'save', appName: string): void
+}>()
 </script>

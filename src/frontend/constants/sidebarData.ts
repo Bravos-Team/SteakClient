@@ -3,7 +3,7 @@ export const navMain = [
   { title: 'Library', to: '/library', icon: Gamepad },
   { title: 'Store', to: '/store', icon: ShoppingCart },
   { title: 'Settings', to: '/settings', icon: Settings2 },
-  { title: 'Logout', to: '/logout', icon: Power },
+  { title: 'Logout', to: '/test', icon: Power },
 ]
 
 export const navFooter = [{ title: 'Download', to: '/download', icon: ArrowDownToLine }]

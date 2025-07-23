@@ -11,18 +11,17 @@
 </template> -->
 <template>
   <Suspense>
-      <template #default>
-        <RouterView />
-      </template>
-      <template #fallback>
-        <div>Loading...</div>
-      </template>
-    </Suspense>
+    <template #default>
+      <RouterView />
+    </template>
+    <template #fallback>
+      <div>Loading...</div>
+    </template>
+  </Suspense>
+  <VueQueryDevtools initialIsOpen />
 </template>
 <script lang="ts" setup>
-import { Toaster } from './components/ui/sonner';
-
-
-
-
+import { Toaster } from './components/ui/sonner'
+import { VueQueryDevtools } from '@tanstack/vue-query-devtools'
+import 'vue-sonner/style.css'
 </script>

@@ -71,10 +71,11 @@
       </DialogFooter>
     </DialogContent>
   </Dialog>
+  <ul></ul>
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, toRaw, onMounted } from 'vue'
+import { ref, reactive, toRaw, onMounted, computed } from 'vue'
 import { toast } from 'vue-sonner'
 import ComboboxSearch from '@/components/ComboboxSearch.vue'
 
@@ -88,7 +89,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { InstallParams } from '@/types/type'
+import { GameLibrary, InstallParams } from '@/types/type'
 import { Download, AppWindow, CircleDot, Folder } from 'lucide-vue-next'
 
 import GameCard from '@/components/library/GameCard.vue'
@@ -97,6 +98,7 @@ import wukongImage from '@/assets/image/backmythwukong.jpg'
 import elderRingImage from '@/assets/image/elderring.webp'
 import axios from 'axios'
 import { useDownloadQueueStore } from '@/stores/download/useDownloadStore'
+import { useGetLibraryList } from '@/stores/library/useMyLibrary'
 
 // Trạng thái Dialog và cài đặt
 const isDialogOpen = ref(false)
@@ -104,27 +106,27 @@ const isInstalling = ref(false)
 const LibraryStore = useGameLibrary()
 const QueueStore = useDownloadQueueStore()
 // Danh sách game mẫu
-const games = [
-  {
-    appName: 'fortnite',
-    title: 'Fortnite Blitz Royale',
-    image:
-      'https://cdn2.unrealengine.com/fortnite-blitz-royale-1920x1080-9946411a3a9f.jpg?resize=1&w=1920',
-    installable: false,
-  },
-  {
-    appName: 'wukong',
-    title: 'Black Myth: Wukong',
-    image: wukongImage,
-    installable: true,
-  },
-  {
-    appName: 'elden-ring',
-    title: 'Elden Ring',
-    image: elderRingImage,
-    installable: true,
-  },
-]
+// const games = [
+//   {
+//     appName: 'fortnite',
+//     title: 'Fortnite Blitz Royale',
+//     image:
+//       'https://cdn2.unrealengine.com/fortnite-blitz-royale-1920x1080-9946411a3a9f.jpg?resize=1&w=1920',
+//     installable: false,
+//   },
+//   {
+//     appName: 'wukong',
+//     title: 'Black Myth: Wukong',
+//     image: wukongImage,
+//     installable: true,
+//   },
+//   {
+//     appName: 'elden-ring',
+//     title: 'Elden Ring',
+//     image: elderRingImage,
+//     installable: true,
+//   },
+// ]
 
 // Trạng thái cài đặt
 const installInfo: InstallParams = reactive({
@@ -156,7 +158,7 @@ const { saveGame, openFolder, installGame } = LibraryStore
 
 // Xử lý sự kiện cài đặt
 const handleInstall = async (appName: string) => {
-  const game = games.find((g) => g.appName === appName)
+  const game = games.value.find((g: { appName: string }) => g.appName === appName)
 
   const queuedGame = QueueStore.getQueue().find((g) => g.params.appName === appName)
   console.log(QueueStore.getQueue())
@@ -195,7 +197,6 @@ const handleDelete = (appName: string) => {
 
 // Cài đặt game
 const install = async () => {
-  
   if (!installInfo.path) {
     toast.error('Vui lòng chọn đường dẫn cài đặt')
     return
@@ -222,9 +223,18 @@ const formatSize = (size: string) => {
   const bytes = parseInt(size)
   return `${(bytes / 1000000).toFixed(3)} MB`
 }
-onMounted(() => {
-  axios.get(`https://api.steak.io.vn/api/v1/store/private/library/my-games`, {
-    withCredentials: true,
-  })
+
+const { data: libraryData } = useGetLibraryList()
+
+// const gameList = computed(() => libraryData.value?.data ?? [])
+const games = computed(() => {
+  return (
+    libraryData.value?.data.map((game: GameLibrary) => ({
+      appName: game.gameId,
+      title: game.title,
+      image: game.thumbnailUrl,
+      installable: false,
+    })) ?? []
+  )
 })
 </script>
