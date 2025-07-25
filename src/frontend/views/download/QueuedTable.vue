@@ -34,12 +34,12 @@ defineProps<{
               <td class="py-3">
                 <div class="flex items-center">
                   <img
-                    src="../../assets/img/1.jpg"
+                    :src="item.params.gameInfo.details.thumbnail"
                     alt="Game cover"
                     class="w-12 h-12 object-cover rounded mr-3"
                   />
                   <div>
-                    <div class="font-medium text-sm">{{ item.params.appName }}</div>
+                    <div class="font-medium text-sm">{{ item.params.gameInfo.details.title }}</div>
                     <div class="text-xs text-muted-foreground">{{ item.status }}</div>
                   </div>
                 </div>

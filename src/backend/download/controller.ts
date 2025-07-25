@@ -1,27 +1,27 @@
-
 import { ensureDir } from 'fs-extra'
-import { downloadFile, stopDownload } from '../utils'
-import { InstallParams } from 'src/common/types/type'
+import { downloadFile, stopDownload, toPascalCase } from '../utils'
+import { DMQueueElement, DownloadInfo, InstallParams } from 'src/common/types/type'
 import paths from 'path'
 import { homePath } from '../constants/path'
 import { updateGameStatus } from './events'
 import { notify } from '../dialog/dialog'
 
-
-async function installGame(params: InstallParams, signal?: AbortSignal) {
-  const { appName, path } = params
+async function installGame(element: DMQueueElement, signal?: AbortSignal) {
+  const { appName, path, gameInfo } = element.params
+  const { downloadUrl, fileName } = element.downloadInfo as DownloadInfo
   console.log(`Installing game ${appName} at path ${path}`)
-  
-  // Path zipURL
-  const zipUrl = `https://mmatechnical.com/Download/Download-Test-File/(MMA)-500MB.zip`
-  // Path to download the file
-  const downloadPath = paths.join(homePath,'Games', appName)
-  const outputPath = paths.join(path,appName)
 
-  console.log(`Downloading ${appName} from ${zipUrl} to ${outputPath}`)
+  // Path zipURL
+  // const zipUrl = `https://mmatechnical.com/Download/Download-Test-File/(MMA)-500MB.zip`
+
+  // Path to download the file
+  // const downloadPath = paths.join(homePath, 'Games', appName)
+  const outputPath = paths.join(path, toPascalCase(gameInfo.details.title))
+
+  // console.log(`Downloading ${appName} from ${zipUrl} to ${outputPath}`)
 
   notify({
-    title: params.gameInfo.title,
+    title: gameInfo.details.title,
     body: `Installing ...`,
   })
   updateGameStatus({
@@ -30,22 +30,21 @@ async function installGame(params: InstallParams, signal?: AbortSignal) {
     folder: outputPath,
   })
 
-  console.log(`Installing game ${appName} at path ${outputPath}`);
-  
+  console.log(`Installing game ${appName} at path ${123}`)
 
   // Ensure the output directory exists
   ensureDir(outputPath)
 
   // Download the file
   await downloadFile({
-    appName,
-    url: zipUrl,
+    fileName,
+    url: downloadUrl,
     dest: outputPath,
     signal,
   })
 }
 async function stopDownloadFile(appName: string) {
   console.log(`Paused download for game: ${appName}`)
-  stopDownload(appName) 
+  stopDownload(appName)
 }
-export { installGame , stopDownloadFile }
+export { installGame, stopDownloadFile }

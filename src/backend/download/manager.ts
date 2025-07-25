@@ -8,14 +8,13 @@ import {
   getFinished,
   getQueue,
   getQueueState,
-  queueState,
   removeFromQueue,
   setCurrentElement,
   setFinished,
   setQueue,
   setQueueState,
 } from './state'
-import { removeFolder } from '../utils'
+import { removeFolder, toPascalCase } from '../utils'
 import path from 'path'
 import { homePath } from '../constants/path'
 import { notify } from '../dialog/dialog'
@@ -43,19 +42,19 @@ async function init() {
     const element = queue[0]
     queue[0].status = 'downloading' // Set the status of the first element to downloading
     // Log the start time for the current element
-    element.starTime = Date.now()
+    element.startTime = Date.now()
     setQueue(queue)
     setCurrentElement(element)
     setQueueState('running')
-    updateFrontendQueue(getQueue(), queueState, getFinished())
+    updateFrontendQueue(getQueue(), 'running', getFinished())
 
     // Logic to install the game
     const crl = createAbortController(element.params.appName).signal
     try {
-      await installGame(element.params, crl)
+      await installGame(element, crl)
 
       // Mark the game as installed
-      element.params.gameInfo.is_installed = true
+      element.params.gameInfo.details.is_installed = true
       element.endTime = Date.now()
       element.status = 'done'
 
@@ -81,7 +80,7 @@ async function init() {
 
       console.log(`Download for ${element.params.appName} completed`)
 
-      updateFrontendQueue(queue, queueState, finishedElements)
+      updateFrontendQueue(queue, getQueueState(), finishedElements)
       // Notify the frontend about the updated queue and game status
       setQueueState('idle') // Set the queue state to idle after processing the element
       setCurrentElement(null) // Clear the current element after processing
@@ -93,7 +92,7 @@ async function init() {
         status: 'done',
       })
       notify({
-        title: element.params.gameInfo.title,
+        title: element.params.gameInfo.details.title || 'Download Completed',
         body: `Download completed!`,
       })
     } catch (error) {
@@ -112,7 +111,7 @@ async function init() {
       // Update the queue state to idle
       setQueueState('idle')
       // Remove the current element from the queue
-      updateFrontendQueue(getQueue(), queueState, getFinished())
+      updateFrontendQueue(getQueue(), getQueueState(), getFinished())
       updateGameStatus({
         appName: element.params.appName,
         folder: element.params.path,
@@ -147,7 +146,7 @@ async function addToQueue(element: DMQueueElement) {
     status: 'queued',
   })
   notify({
-    title: element.params.gameInfo.title,
+    title: element.params.gameInfo.details.title || 'Download Added',
     body: `Add Queue ...`,
   })
   // If the queue is idle or paused, initialize the queue
@@ -184,14 +183,14 @@ function paused(appName: string) {
 
   // Notify the frontend about the paused download
 
-  updateFrontendQueue(queue, queueState, getFinished())
+  updateFrontendQueue(queue, getQueueState(), getFinished())
   updateGameStatus({
     appName: currentElement.params.appName,
     folder: currentElement.params.path,
     status: 'paused',
   })
   notify({
-    title: queue[0]?.params.gameInfo.title || 'Download Paused',
+    title: queue[0]?.params.gameInfo.details.title || 'Download Paused',
     body: `Paused ...`,
   })
   const remainingQueue = queue.filter((el) => el.status !== 'paused')
@@ -218,7 +217,7 @@ function cancelDownload(appName: string) {
   }
 
   notify({
-    title: queue[index]?.params.gameInfo.title || 'Download Cancelled',
+    title: queue[index]?.params.gameInfo.details.title || 'Download Cancelled',
     body: `Download cancelled`,
   })
   // Remove the app from the queue
@@ -228,7 +227,7 @@ function cancelDownload(appName: string) {
     setCurrentElement(null)
     stopDownloadFile(appName) // Stop the download using the utility function
 
-    removeFolder(outputPath, appName) // Remove the folder if needed
+    removeFolder(outputPath, toPascalCase(queue[index]?.params.gameInfo.details.title || '')) // Remove the folder if needed
     setQueueState('idle') // Update the queue state to idle
   }
   // Update the current element status to aborted
@@ -240,7 +239,7 @@ function cancelDownload(appName: string) {
   setQueueState('idle')
 
   // Notify the frontend about the paused download
-  updateFrontendQueue(getQueue(), queueState, getFinished())
+  updateFrontendQueue(getQueue(), getQueueState(), getFinished())
   updateGameStatus({
     appName,
     folder: getCurrentElement()?.params.path || '',
@@ -285,8 +284,13 @@ function removeFinished(appName: string) {
   const finishedElements = getFinished()
   const index = finishedElements.findIndex((el) => el.params.appName === appName)
   const outputPath = finishedElements[index]?.params.path || path.join(homePath, 'Games')
+  console.log(`Removing finished download for app: ${appName} at path: ${outputPath}`)
+  removeFolder(
+    outputPath,
+    toPascalCase(finishedElements[index]?.params.gameInfo.details.title || ''),
+  )
   notify({
-    title: finishedElements[index]?.params.gameInfo.title || 'Download Finished',
+    title: finishedElements[index]?.params.gameInfo.details.title || 'Download Finished',
     body: `Removed finished download`,
   })
   if (index >= 0) {
@@ -298,7 +302,7 @@ function removeFinished(appName: string) {
   updateFrontendQueue(getQueue(), getQueueState(), finishedElements)
   console.log(`Removed finished download for ${appName}`)
 
-  removeFolder(outputPath, appName) // Remove the folder if needed
+  // Remove the folder if needed
 }
 function getQueueInformation() {
   return {

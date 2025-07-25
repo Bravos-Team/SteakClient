@@ -1,6 +1,6 @@
 import { toRaw } from 'vue'
 import { toast } from 'vue-sonner'
-import { InstallParams } from '@/types/type'
+import { DownloadInfo, InstallParams } from '@/types/type'
 
 export function useGameLibrary() {
   async function saveGame() {
@@ -34,15 +34,24 @@ export function useGameLibrary() {
     }
   }
 
-  async function installGame(installInfo: InstallParams) {
-    try {
-      await window.api.install(toRaw(installInfo))
-      toast.success(`Cài đặt Thanh cong  ${installInfo.gameInfo.title}...`)
-    } catch (error) {
-      console.error('Cài đặt thất bại:', error)
-      toast.error(`Cài đặt ${installInfo.gameInfo.title} thất bại`)
-      throw error
+  async function installGame(installInfo: InstallParams, downloadParams: DownloadInfo) {
+    console.log(`Installing game: ${installInfo.gameInfo.details.title} at ${installInfo.path}`)
+    console.log(`Download params:`, downloadParams)
+
+    // Kiểm tra các tham số cần thiết
+    if (!installInfo.path || !installInfo.gameInfo || !downloadParams) {
+      toast.error('Thiếu thông tin cần thiết để cài đặt game')
+      return
     }
+
+    await window.api.install(installInfo, downloadParams)
+    toast.success(`Cài đặt Thành công  ${installInfo.gameInfo.details.title}...`)
+
+    // catch (error) {
+    //   console.error('Cài đặt thất bại:', error)
+    //   toast.error(`Cài đặt ${installInfo.gameInfo.details.title} thất bại`)
+    //   throw error
+    // }
   }
 
   return {

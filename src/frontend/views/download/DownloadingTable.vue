@@ -6,8 +6,6 @@ import { computed } from 'vue'
 
 const QueueStore = useDownloadQueueStore()
 
-
-
 const formatTimestamp = (ts: number): string => {
   const d = new Date(ts)
   return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`
@@ -38,17 +36,19 @@ defineProps<{
               <td class="py-3">
                 <div class="flex items-center">
                   <img
-                    src="../../assets/img/1.jpg"
+                    :src="firstELement.params.gameInfo.details.thumbnail"
                     alt="Game cover"
                     class="w-12 h-12 object-cover rounded mr-3"
                   />
                   <div>
-                    <div class="font-medium text-sm">{{ firstELement.params.appName }}</div>
+                    <div class="font-medium text-sm">
+                      {{ firstELement.params.gameInfo.details.title }}
+                    </div>
                     <div class="text-xs text-muted-foreground">{{ firstELement.status }}</div>
                   </div>
                 </div>
               </td>
-              <td class="py-3">{{ formatTimestamp(firstELement.starTime || 0) }}</td>
+              <td class="py-3">{{ formatTimestamp(firstELement.startTime || 0) }}</td>
               <td class="py-3">{{ firstELement.type }}</td>
               <td class="py-3">Epic Games</td>
               <td class="py-3 flex justify-center gap-2" v-if="QueueStore.getState() === 'running'">

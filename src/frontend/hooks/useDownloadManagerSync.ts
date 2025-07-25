@@ -12,6 +12,8 @@ export function useDownloadManagerSync() {
         finished: DMQueueElement[],
         state: DownloadManagerState,
       ) => {
+        console.log('Received DM queue information:', elements, finished, state);
+        
         QueueStore.updateAll({ elements, finished, state })
       },
     )

@@ -7,6 +7,7 @@ import { mkdirp } from 'mkdirp'
 import { Entry, open } from 'yauzl'
 import { updateGameStatus } from './download'
 import { callAbortController } from './util/aborthandler/aborthandler'
+import { exec } from 'node:child_process'
 interface ProgressCallback {
   (downloadedBytes: number, downloadSpeed: number, progress: number, diskWriteSpeed: number): void
 }
@@ -22,13 +23,13 @@ function formatETA(seconds: number): string {
   const secs = Math.floor(seconds % 60)
   return `${mins}m ${secs}s`
 }
-const axiosClient = axios.create({
+export const axiosClient = axios.create({
   timeout: 10 * 1000,
   httpAgent: new https.Agent({ keepAlive: true }),
 })
 
 interface DownloadArgs {
-  appName: string
+  fileName: string
   url: string
   dest: string
   progressCallback?: ProgressCallback
@@ -111,10 +112,11 @@ export const unzip = (zipPath: string, unzipToDir: string): Promise<void> => {
     }
   })
 }
-export async function downloadFile({ url, dest, appName, signal }: DownloadArgs) {
-  const zipPath = path.join(dest, `${appName}.zip`)
+export async function downloadFile({ url, dest, fileName, signal }: DownloadArgs) {
+  const zipPath = path.join(dest, `${fileName}`)
   const pathOutDir = dest
   let fileSize = 0
+  console.log(`Starting download from ${pathOutDir} to ${zipPath}`)
 
   const connections = 5
 
@@ -132,7 +134,7 @@ export async function downloadFile({ url, dest, appName, signal }: DownloadArgs)
   const throttledProgress = throttle(
     (bytes: number, speed: number, percentage: number, writingSpeed: number, eta: string) => {
       updateGameStatus({
-        appName,
+        appName: fileName,
         folder: pathOutDir,
         status: 'downloading',
         progress: {
@@ -176,14 +178,20 @@ export async function downloadFile({ url, dest, appName, signal }: DownloadArgs)
     dl.on('retry', (ready) => {
       console.log(ready)
     })
-    const download=  await dl.wait()
+    const download = await dl.wait()
 
-    if (!download){
+    if (!download) {
       throw new Error('Download stopped or pausedd')
     }
     if (existsSync(zipPath) && statSync(zipPath).isFile()) {
-      await unzip(zipPath, pathOutDir)
-      await remove(zipPath)
+      await extractFileTarZst(zipPath, pathOutDir)
+      console.log(`Extracting tar.zst file: ${zipPath} to ${pathOutDir}`)
+
+      const zipFileTar = zipPath.replace('.tar.zst', '.tar')
+      console.log(`Extracting tar file: ${zipFileTar} to ${pathOutDir}`)
+
+      await extractFileTar(zipFileTar, pathOutDir)
+      console.log(`Download and extraction completed successfully.`)
     }
   } catch (error) {
     console.error(`Error downloading file: ${(error as Error).message}`)
@@ -208,4 +216,51 @@ export function removeFolder(pathFolder: string, folderName: string) {
   } else {
     console.warn(`Folder ${folderName} does not exist at path: ${path}`)
   }
+}
+export function toPascalCase(str: string): string {
+  return str
+    .trim() // loại bỏ khoảng trắng đầu/cuối
+    .split(/\s+/) // tách theo 1 hoặc nhiều khoảng trắng
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join('')
+}
+
+function runCommand(command: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    exec(command, (err, stdout, stderr) => {
+      if (err) return reject(stderr || err)
+      resolve()
+    })
+  })
+}
+
+export function extractFileTarZst(zstPath: string, dest: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const tarPath = zstPath.replace(/\.zst$/, '') // -> path/to/xxx.tar
+
+    const command = `zstd -d --long=31 ${zstPath} -o ${tarPath}`
+    runCommand(command)
+      .then(() => {
+        console.log(`Extracted ${tarPath} to ${dest}`)
+        resolve()
+      })
+      .catch((error) => {
+        console.error(`Error extracting tar.zst file: ${error}`)
+        reject(error)
+      })
+  })
+}
+export function extractFileTar(tarPath: string, dest: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const command = `tar -xf ${tarPath} -C ${dest}`
+    runCommand(command)
+      .then(() => {
+        console.log(`Extracted ${tarPath} to ${dest}`)
+        resolve()
+      })
+      .catch((error) => {
+        console.error(`Error extracting tar file: ${error}`)
+        reject(error)
+      })
+  })
 }

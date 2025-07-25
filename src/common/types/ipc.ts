@@ -1,4 +1,4 @@
-import { DMQueueElement, DownloadManagerState, GameStatus, InstallParams, UserInfo } from './type'
+import { DMQueueElement, DownloadInfo, DownloadManagerState, GameStatus, InstallParams, UserInfo } from './type'
 
 interface SyncIPCFunctions {
   openDialog: () => string[] | null
@@ -14,7 +14,7 @@ interface AsyncIPCFunctions {
   openWebViewDevTools: (webviewId: string) => Promise<void>
   login: (userInfo: UserInfo) => Promise<void>
   getUser: () => UserInfo | null
-  install: (args: InstallParams) => Promise<void>
+  install: (args: InstallParams , data: DownloadInfo) => Promise<void>
   openFolder: (path: string) => Promise<string | null>
   openFile: (path: string) => Promise<string | null>
   getHomePath: () => Promise<string>
