@@ -18,11 +18,17 @@ export interface InstallArgs {
 
 export interface InstallParams extends InstallArgs {
   appName: string
-  gameInfo: GameInfo
+  gameInfo: GameDetails
   size?: number
   installSize?: number
 }
 
+export interface GameDetails {
+  details: GameInfo
+  publisherName: string
+  genres: string[]
+  tags: string[]
+}
 export interface GameInfo {
   id: string
   title: string
@@ -43,12 +49,12 @@ export interface GameInfo {
 }
 
 export interface SystemRequirementEntry {
-  os: string
+  osVersion: string
   cpu: string
   memory: string
-  graphics: string
-  storage: string
+  gpu: string
   directX: string
+  storage: string
 }
 export interface InstalledInfo {
   executable: string
@@ -94,7 +100,7 @@ export type DMStatus = 'done' | 'error' | 'abort' | 'paused' | 'finished' | 'dow
 export interface DMQueueElement {
   type: 'install' | 'update'
   params: InstallParams
-  downloadInfo: DownloadInfo
+  downloadInfo?: DownloadInfo
   addToQueueTime: number
   startTime?: number
   endTime?: number
@@ -113,7 +119,7 @@ export const Platforms = ['windows', 'linux', 'macos', 'android', 'ios'] as cons
 export type Platform = (typeof Platforms)[number]
 export interface SystemRequirements {
   minimum: SystemRequirementEntry
-  recommended?: SystemRequirementEntry
+  recommend?: SystemRequirementEntry
 }
 
 export interface AppSettings {

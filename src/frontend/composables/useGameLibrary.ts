@@ -26,7 +26,7 @@ export function useGameLibrary() {
       } else {
         toast.error('Không chọn thư mục')
         return null
-      } Y
+      }
     } catch (error) {
       console.error('Mở thư mục thất bại:', error)
       toast.error('Không thể mở thư mục')
@@ -37,6 +37,12 @@ export function useGameLibrary() {
   async function installGame(installInfo: InstallParams, downloadParams: DownloadInfo) {
     console.log(`Installing game: ${installInfo.gameInfo.details.title} at ${installInfo.path}`)
     console.log(`Download params:`, downloadParams)
+
+    // Kiểm tra các tham số cần thiết
+    if (!installInfo.path || !installInfo.gameInfo || !downloadParams) {
+      toast.error('Thiếu thông tin cần thiết để cài đặt game')
+      return
+    }
 
     await window.api.install(installInfo, downloadParams)
     toast.success(`Cài đặt Thành công  ${installInfo.gameInfo.details.title}...`)
@@ -50,7 +56,7 @@ export function useGameLibrary() {
 
   return {
     saveGame,
-    openFolder, 
+    openFolder,
     installGame,
   }
 }

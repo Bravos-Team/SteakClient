@@ -23,17 +23,22 @@ import {
   Globe,
 } from 'lucide-vue-next'
 import { useGameDetails, useGameDownloadInfo } from '@/composables/useGameDetail'
-import { useGetGameDownloadInfo } from '@/stores/library/useMyLibrary'
+import { useGetGameDownloadInfo, useGetGameInfo } from '@/stores/library/useMyLibrary'
 import { Dialog } from '@/components/ui/dialog'
+import { DownloadInfo, InstallParams } from '@/types/type'
 const route = useRoute()
 const router = useRouter()
-const gameId = route.params.id as string
 
 // Route back to library
 const routeBackToLibrary = () => {
   router.push('/library')
 }
-const { InstallParamsInfo, isSuccess, isLoading, isError } = useGameDetails(gameId)
+const { data: gameInfo, isFetching: isGameInfoFetching } = useGetGameInfo(route.params.id as string)
+const InstallParamsInfo = ref<InstallParams>({} as InstallParams)
+const { data: downloadParams, isFetching: isDownloadParamsFetching } = useGetGameDownloadInfo(
+  route.params.id as string,
+)
+const DownloadParamsInfo = ref<DownloadInfo>({} as DownloadInfo)
 // InstallParamsInfo.size = downloadParams.fileSize || 0
 // InstallParamsInfo.installSize = downloadParams.installSize || 0
 const convertTimestampToDate = (timestamp: number): string => {
@@ -50,16 +55,24 @@ function formatSize(bytes: number): string {
   if (bytes >= 1024) return (bytes / 1024).toFixed(2) + ' KB'
   return bytes + ' B'
 }
+
+watchEffect(() => {
+  if (gameInfo.value) {
+    InstallParamsInfo.value.gameInfo = JSON.parse(JSON.stringify(gameInfo.value))
+    InstallParamsInfo.value.size = downloadParams.value?.fileSize || 0
+    InstallParamsInfo.value.installSize = downloadParams.value?.installSize || 0
+  }
+})
 </script>
 I
 
 <template>
   <Dialog>
-    <div class="flex w-full h-full relative">
+    <div v-if="InstallParamsInfo?.gameInfo?.details" class="flex w-full h-full relative">
       <!-- Back button -->
       <img
-        :src="InstallParamsInfo.gameInfo.details.thumbnail"
-        :alt="InstallParamsInfo.appName"
+        :src="InstallParamsInfo?.gameInfo?.details?.thumbnail"
+        :alt="InstallParamsInfo?.appName"
         class="w-full h-full object-cover absolute z-0 opacity-50 blur-sm rounded-t-md"
       />
       <div class="absolute inset-0 bg-black/50 z-10"></div>
@@ -85,7 +98,7 @@ I
             <div class="absolute inset-0 z-5">
               <div class="w-full h-full grayscale-25 relative">
                 <img
-                  :src="InstallParamsInfo.gameInfo.details.thumbnail"
+                  :src="InstallParamsInfo?.gameInfo?.details?.thumbnail"
                   :alt="InstallParamsInfo.appName"
                   class="w-full h-full object-cover rounded-md"
                 />
@@ -103,7 +116,7 @@ I
                 </CardTitle>
                 <div class="mb-2 flex w-full gap-2">
                   <span
-                    v-for="(value, key) in InstallParamsInfo.gameInfo.genres || []"
+                    v-for="(value, key) in InstallParamsInfo.gameInfo?.genres || []"
                     class="bg-[#303136] text-sm text-gray-300 px-2 py-1 rounded"
                     >{{ value }}
                   </span>

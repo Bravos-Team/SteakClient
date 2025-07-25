@@ -18,6 +18,7 @@ addHandler('install', async (e, args, data) => {
     endTime: 0,
     startTime: 0,
   }
+  console.log(`Adding to queue:`, dmQueueElement)
 
   await addToQueue(dmQueueElement)
 })

@@ -33,7 +33,8 @@ const getFinished = (): DMQueueElement[] => {
   return store.get('finished', [])
 }
 const setFinished = (elements: DMQueueElement[]) => {
-  store.set('finished', elements)
+  const cleanedElements = elements.map(({ downloadInfo, ...rest }) => rest)
+  store.set('finished', cleanedElements)
 }
 const removeFromQueue = (appName: string) => {
   const queue = getQueue()
@@ -56,5 +57,4 @@ export {
   getCurrentElement,
   setCurrentElement,
   removeFromQueue,
-  
 }

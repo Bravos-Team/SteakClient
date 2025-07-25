@@ -6,8 +6,6 @@ export function updateFrontendQueue(
   state: DownloadManagerState,
   finished?: DMQueueElement[] | null,
 ) {
-
-    
   sendFrontendMessage('changedDMQueueInformation', queue, finished || [], state)
 }
 

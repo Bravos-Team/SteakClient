@@ -53,8 +53,8 @@ export const useDownloadQueueStore = defineStore('downloadQueue', () => {
   }
 
   const addToQueue = (element: DMQueueElement) => {
-    console.log( element);
-    
+    console.log(element)
+
     const exists = elements.value.some((e) => e.params.appName === element.params.appName)
     if (!exists) elements.value.push(element)
   }
@@ -71,6 +71,7 @@ export const useDownloadQueueStore = defineStore('downloadQueue', () => {
       setFinished(payload.finished)
     }
     if (payload.state) {
+      console.log('QueueState:', payload.state)
       setState(payload.state)
     }
   }
@@ -92,6 +93,5 @@ export const useDownloadQueueStore = defineStore('downloadQueue', () => {
       finished: finished.value,
       state: state.value,
     }),
-
   }
 })
