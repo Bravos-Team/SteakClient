@@ -2,12 +2,13 @@
   <div
     class="group/game transition-transform duration-300 hover:scale-105 flex flex-col aspect-[3/4] rounded-sm bg-muted/50 relative"
   >
-    <img
-      class="grayscale group-hover/game:grayscale-0 transition-all h-5/6 w-full rounded-sm object-cover"
-      :src="game.image"
-      @click="navigateToGameDetail(1)"
-      alt=""
-    />
+    <RouterLink :to="`/library/${game.id}`">
+      <img
+        class="grayscale group-hover/game:grayscale-0 transition-all h-5/6 w-full rounded-sm object-cover"
+        :src="game.image"
+        alt=""
+      />
+    </RouterLink>
     <div
       class="absolute bottom-10 left-0 flex items-center right-0 bg-[#202024]/30 backdrop-blur-sm text-white p-2 rounded-b-sm opacity-0 group-hover/game:opacity-100 group-hover/game:translate-y-0 translate-y-4 transition-all duration-300"
     >
@@ -18,7 +19,7 @@
     >
       <button
         v-if="game.installable"
-        @click="$emit('delete', game.appName)"
+        @click="$emit('delete', game.id)"
         class="p-2 rounded-full bg-white/10 hover:bg-red-600 transition-all backdrop-blur-sm shadow hover:scale-105"
       >
         <Trash2 class="w-4 h-4 text-white" />
@@ -28,13 +29,13 @@
         as-child
         class="absolute left-1/2 -translate-x-1/2 p-3 rounded-full bg-white/10 hover:bg-green-600 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
       >
-        <button @click="$emit('install', game.appName)">
+        <button @click="$emit('install', game.id)">
           <Play class="w-5 h-5 text-white" />
         </button>
       </DialogTrigger>
       <button
         v-else
-        @click="$emit('save', game.appName)"
+        @click="$emit('save', game.id)"
         class="absolute left-1/2 -translate-x-1/2 p-3 rounded-full bg-white/10 hover:bg-blue-500 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
       >
         <ArrowDownToLine class="w-5 h-5 text-white" />
@@ -62,7 +63,7 @@ const navigateToGameDetail = (gameId: number) => {
 }
 defineProps<{
   game: {
-    appName: string
+    id: string
     title: string
     image: string
     installable: boolean

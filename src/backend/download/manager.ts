@@ -43,7 +43,7 @@ async function init() {
     const element = queue[0]
     queue[0].status = 'downloading' // Set the status of the first element to downloading
     // Log the start time for the current element
-    element.starTime = Date.now()
+    element.startTime = Date.now()
     setQueue(queue)
     setCurrentElement(element)
     setQueueState('running')

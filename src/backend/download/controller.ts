@@ -14,6 +14,7 @@ async function installGame(params: InstallParams, signal?: AbortSignal) {
   
   // Path zipURL
   const zipUrl = `https://mmatechnical.com/Download/Download-Test-File/(MMA)-500MB.zip`
+  
   // Path to download the file
   const downloadPath = paths.join(homePath,'Games', appName)
   const outputPath = paths.join(path,appName)

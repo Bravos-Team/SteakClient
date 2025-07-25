@@ -19,23 +19,27 @@ export interface InstallArgs {
 export interface InstallParams extends InstallArgs {
   appName: string
   gameInfo: GameInfo
-  size?: string
+  size?: number
+  installSize?: number
 }
 
 export interface GameInfo {
-  app_name: string
+  id: string
   title: string
-  art_cover?: string
-  install: InstalledInfo
-  installable: boolean
-  is_installed: boolean
+  thumbnail: string
+  installable?: boolean
+  is_installed?: boolean
+  developersTeams: string[]
   save_path?: string
   version?: string
-  system_requirements?: SystemRequirements
-  short_description?: string
+  shortDescription: string
+  longDescription: string
+  systemRequirements: SystemRequirements
   is_offline?: boolean
-  language?: string[]
-  platforms?: Platform[]
+  languageSupported?: string[]
+  platforms?: string[]
+  updatedAt?: number
+  regions: string[]
 }
 
 export interface SystemRequirementEntry {
@@ -90,10 +94,19 @@ export type DMStatus = 'done' | 'error' | 'abort' | 'paused' | 'finished' | 'dow
 export interface DMQueueElement {
   type: 'install' | 'update'
   params: InstallParams
+  downloadInfo: DownloadInfo
   addToQueueTime: number
-  starTime?: number
+  startTime?: number
   endTime?: number
   status?: DMStatus
+}
+export interface DownloadInfo {
+  downloadUrl: string
+  fileName: string
+  execPath: string
+  checksum: string
+  fileSize: number
+  installSize: number
 }
 export type DownloadManagerState = 'idle' | 'running' | 'paused' | 'stopped' | 'downloading'
 export const Platforms = ['windows', 'linux', 'macos', 'android', 'ios'] as const

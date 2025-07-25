@@ -11,9 +11,11 @@ export interface InstallArgs {
 
 export interface InstallParams extends InstallArgs {
   appName: string
-  gameInfo: GameInfo
-  size?: string
+  gameInfo: GameDetails
+  size?: number
+  installSize?: number
 }
+
 
 export type GameLibrary = {
   gameId: string
@@ -24,38 +26,53 @@ export type GameLibrary = {
 }
 
 export interface GameInfo {
-  app_name: string
+  id: string
   title: string
-  art_cover?: string
-  install: InstalledInfo
-  installable: boolean
-  is_installed: boolean
+  thumbnail: string
+  installable?: boolean
+  is_installed?: boolean
+  developersTeams: string[]
   save_path?: string
   version?: string
-  system_requirements?: SystemRequirements
-  short_description?: string
+  shortDescription: string
+  longDescription: string
+  systemRequirements: SystemRequirements
   is_offline?: boolean
-  language?: string[]
-  platforms?: Platform[]
+  languageSupported?: string[]
+  platforms?: string[]
+  updatedAt?: number
+  regions: string[]
+}
+
+export interface GameDetails {
+  details: GameInfo
+  publisherName: string
+  genres: string[]
+  tags: string[]
+}
+export interface DownloadInfo {
+  downloadUrl: string
+  fileName: string
+  execPath: string
+  checksum: string
+  fileSize: number
+  installSize: number
 }
 
 export interface SystemRequirementEntry {
-  os: string
+  osVersion: string
   cpu: string
   memory: string
-  graphics: string
-  storage: string
+  gpu: string
   directX: string
+  storage: string
 }
 export interface InstalledInfo {
   executable: string
   install_path: string
-  install_size: string
   launch_path?: string
   version?: string
   appName?: string
-  branch?: string
-  pinnedVersion?: string
 }
 
 export type Status =
@@ -91,8 +108,9 @@ export type DMStatus = 'done' | 'error' | 'abort' | 'paused' | 'downloading'
 export interface DMQueueElement {
   type: 'install' | 'update'
   params: InstallParams
+  downloadInfo: DownloadInfo
   addToQueueTime: number
-  starTime?: number
+  startTime?: number
   endTime?: number
   status?: DMStatus
 }
@@ -102,5 +120,5 @@ export type Platform = (typeof Platforms)[number]
 
 export interface SystemRequirements {
   minimum: SystemRequirementEntry
-  recommended?: SystemRequirementEntry
+  recommend?: SystemRequirementEntry
 }

@@ -9,13 +9,14 @@ import {
   resumeDownload,
 } from './manager'
 
-addHandler('install', async (e, args) => {
+addHandler('install', async (e, args, data) => {
   const dmQueueElement: DMQueueElement = {
     type: 'install',
     params: args,
+    downloadInfo: data,
     addToQueueTime: Date.now(),
     endTime: 0,
-    starTime: 0,
+    startTime: 0,
   }
 
   await addToQueue(dmQueueElement)
