@@ -57,14 +57,12 @@ export interface SystemRequirementEntry {
   storage: string
 }
 export interface InstalledInfo {
+  appName: string
   executable: string
   install_path: string
-  install_size: string
+  install_size: number
   launch_path?: string
   version?: string
-  appName?: string
-  branch?: string
-  pinnedVersion?: string
 }
 
 export type Status =

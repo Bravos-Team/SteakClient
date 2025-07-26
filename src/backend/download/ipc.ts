@@ -8,6 +8,8 @@ import {
   removeFinished,
   resumeDownload,
 } from './manager'
+import { getInstalledGames } from './state'
+import { launchGame } from '../utils'
 
 addHandler('install', async (e, args, data) => {
   const dmQueueElement: DMQueueElement = {
@@ -35,4 +37,13 @@ addListener('cancelDownload', async (e, appName) => {
 
 addListener('removeFinished', (e, appName) => {
   removeFinished(appName)
+})
+addHandler('launchGame', async (e, appName) => {
+  const installedElement = getInstalledGames()
+  if (installedElement[appName]) {
+    launchGame(
+      installedElement[appName].executable,
+      installedElement[appName].install_path
+    )
+  }
 })
