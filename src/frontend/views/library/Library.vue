@@ -1,5 +1,5 @@
 <template>
-  <Dialog v-model:open="isDialogOpen">
+  <Dialog>
     <div class="flex mb-3">
       <div class="ml-4 w-full max-w-[500px]">
         <ComboboxSearch />
@@ -16,193 +16,74 @@
           @save="saveGame"
         />
       </div>
+      <InstallDialog
+        v-if="isDialogOpen && !isQueryGameInfoFetching"
+        :installParams="installState.params"
+        @open-folder="handleOpenFolder"
+        @install="install"
+        :is-installing="isInstalling"
+        :is-fetching="false"
+      />
     </div>
-    <DialogContent v-if="installParams.gameInfo?.details" class="sm:max-w-[750px] p-8">
-      <DialogHeader>
-        <DialogTitle class="flex gap-8 font-semibold items-center text-3xl">
-          {{ installParams.gameInfo?.details?.title || '' }} <AppWindow class="w-6 h-6" />
-        </DialogTitle>
-        <DialogDescription class="my-2">
-          <span class="flex items-center gap-4">
-            <Download class="w-8 h-8" />
-            <span class="flex flex-col">
-              <span class="text-lg font-semibold">Download size</span>
-              <span class="text-sm text-muted-foreground">
-                {{ formatSize(installParams.installSize || 0) }}
-              </span>
-            </span>
-            <CircleDot class="w-8 h-8" />
-            <span class="flex flex-col">
-              <span class="text-lg font-semibold">Version</span>
-              <span class="text-sm text-muted-foreground">1.0.0</span>
-            </span>
-          </span>
-        </DialogDescription>
-      </DialogHeader>
-      <div class="flex flex-col gap-4">
-        <AlertTitle>Select installation path:</AlertTitle>
-        <AlertDescription class="flex flex-col gap-2">
-          <span class="flex items-center w-full">
-            <Input v-model="installParams.path" class="px-4 h-12 text-lg rounded-r-none" readonly />
-            <button
-              @click="handleOpenFolder"
-              class="w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-blue-500 transition-all backdrop-blur-sm shadow-lg rounded-r-md"
-            >
-              <Folder class="w-6 h-6" />
-            </button>
-          </span>
-          <span>
-            Free space: <span class="text-green-500 font-semibold">1.2 TB</span> /
-            <span class="text-red-500 font-semibold">2.0 TB</span> - After installation, remaining:
-            <span class="text-red-500 font-semibold">1.5 TB</span>
-          </span>
-        </AlertDescription>
-      </div>
-      <DialogFooter class="flex mt-12 gap-2 justify-end">
-        <Button variant="outline" class="w-32 h-12 text-lg hover:text-blue-500"> Enter Save</Button>
-        <Button
-          @click="install"
-          variant="default"
-          class="w-32 h-12 text-lg hover:bg-green-500"
-          :disabled="isInstalling"
-        >
-          {{ isInstalling ? 'Installing...' : 'Install' }}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
   </Dialog>
   <ul></ul>
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, toRaw, onMounted, computed, nextTick, watchEffect, watch } from 'vue'
+import { ref, toRaw, computed, onBeforeMount } from 'vue'
 import { toast } from 'vue-sonner'
 import ComboboxSearch from '@/components/ComboboxSearch.vue'
 
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { DownloadInfo, GameDetails, GameLibrary, InstallParams } from '@/types/type'
-import { Download, AppWindow, CircleDot, Folder } from 'lucide-vue-next'
 
 import GameCard from '@/components/library/GameCard.vue'
-import { useGameLibrary } from '@/composables/useGameLibrary'
 
+import { useGameLibrary } from '@/composables/useGameLibrary'
 import { useDownloadQueueStore } from '@/stores/download/useDownloadStore'
 import {
   useGetGameDownloadInfo,
   useGetGameInfo,
   useGetLibraryList,
 } from '@/stores/library/useMyLibrary'
-import { useGameDetails, useGameDownloadInfo } from '@/composables/useGameDetail'
+import InstallDialog from '@/components/library/InstallDialog.vue'
 
 const isDialogOpen = ref(false)
 const isInstalling = ref(false)
+const isFetching = ref(false)
 const LibraryStore = useGameLibrary()
 const QueueStore = useDownloadQueueStore()
 const selectedGameId = ref('')
-const installParams = ref<InstallParams>({} as InstallParams)
-const downloadInfo = ref<DownloadInfo>({} as DownloadInfo)
 const installPath = ref('')
-
+const installState = ref<{ params: InstallParams; downloadInfo: DownloadInfo }>({
+  params: {} as InstallParams,
+  downloadInfo: {} as DownloadInfo,
+})
+const { saveGame, openFolder, installGame } = LibraryStore
+const {
+  data: gameInfo,
+  refetch: refetchGameInfo,
+  isFetching: isQueryGameInfoFetching,
+} = useGetGameInfo(selectedGameId)
 const handleOpenFolder = async () => {
   const folderPath = await openFolder()
   if (folderPath) {
-    installParams.value.path = folderPath
-    toast.success(`Đã chọn thư mục: ${folderPath}`)
+    installState.value.params.path = folderPath
+    toast.success(`Selected folder: ${folderPath}`)
   }
-}
-
-const { saveGame, openFolder, installGame } = LibraryStore
-const { data: gameInfo, refetch: refetchGameInfo } = useGetGameInfo(selectedGameId)
-const { data: downloadParams, refetch: refetchDownloadParams } =
-  useGetGameDownloadInfo(selectedGameId)
-
-// Xử lý sự kiện cài đặt
-const handleInstall = async (Id: string) => {
-  // const game = games.value.find((g: { appName: string }) => g.appName === appName)
-  // const queuedGame = QueueStore.getQueue().find((g) => g.params.appName === appName)
-  // console.log(QueueStore.getQueue())
-  // if (queuedGame) {
-  //   toast.error(`Game ${appName} is already in the download queue.`)
-  //   isInstalling.value = true
-  //   return
-  // }
-  // if (!game) {
-  //   toast.error(`Game ${appName} not found.`)
-  //   return
-  // }
-  selectedGameId.value = Id
-  await refetchGameInfo()
-
-  installParams.value.gameInfo = JSON.parse(JSON.stringify(gameInfo.value || {}))
-  installParams.value.appName = installParams.value.gameInfo.details.id
-  installParams.value.path = installPath.value || ''
-  await refetchDownloadParams()
-  downloadInfo.value = JSON.parse(JSON.stringify(downloadParams.value || {}))
-  installParams.value.installSize = downloadInfo.value?.installSize || 0
-
-  console.log('Install Params:', installParams.value)
-
-  installPath.value = ''
-  isDialogOpen.value = true
-  try {
-  } catch (error) {
-    console.error('Error fetching download info:', error)
-  } finally {
-    isInstalling.value = false
-    isDialogOpen.value = true
-  }
-}
-
-const handleDelete = (appName: string) => {
-  toast.success(`Đã xóa ${appName}`)
-}
-
-// Cài đặt game
-const install = async () => {
-  if (!installParams.value.path) {
-    toast.error('Vui lòng chọn đường dẫn cài đặt')
+  if (folderPath === '') {
     return
   }
-
-  isInstalling.value = true
-  isDialogOpen.value = false
-  console.log(downloadInfo.value);
-  
-  QueueStore.addToQueue({
-    type: 'install',
-    params: toRaw(installParams.value),
-    downloadInfo: toRaw(downloadInfo.value),
-    addToQueueTime: Date.now(),
-  })
-
-  try {
-    await installGame(toRaw(installParams.value), toRaw(downloadInfo.value))
-    toast.success(`Đã cài đặt game ${installParams.value.appName} thành công!`)
-  } catch (error: any) {
-    toast.error('Lỗi khi cài đặt: ' + error.message)
-  } finally {
-    isInstalling.value = false
+  if (!folderPath) {
+    toast.error('Unable to open installation folder. Please try again.')
   }
 }
 
-function formatSize(bytes: number): string {
-  if (bytes >= 1024 ** 3) return (bytes / 1024 ** 3).toFixed(2) + ' GB'
-  if (bytes >= 1024 ** 2) return (bytes / 1024 ** 2).toFixed(2) + ' MB'
-  if (bytes >= 1024) return (bytes / 1024).toFixed(2) + ' KB'
-  return bytes + ' B'
-}
-
+const { data: downloadParams, refetch: refetchDownloadParams } =
+  useGetGameDownloadInfo(selectedGameId)
 const { data: libraryData } = useGetLibraryList()
-
 const games = computed(() => {
   return (
     libraryData.value?.data.map((game: GameLibrary) => ({
@@ -212,5 +93,76 @@ const games = computed(() => {
       installable: true,
     })) ?? []
   )
+})
+
+const fetchGameData = async (id: string) => {
+  try {
+    isFetching.value = true
+    selectedGameId.value = id
+    await Promise.all([refetchGameInfo(), refetchDownloadParams()])
+
+    if (!gameInfo.value || !downloadParams.value) {
+      toast.error('Unable to find game information or download information.')
+      return
+    }
+    installState.value.params = {
+      gameInfo: { ...gameInfo.value } as GameDetails,
+      appName: gameInfo.value.details.id,
+      path: '',
+      installSize: downloadParams.value?.installSize || 0,
+    }
+    installState.value.downloadInfo = { ...downloadParams.value } as DownloadInfo
+    console.log(installState.value.params)
+    console.log(installState.value.downloadInfo)
+    isFetching.value = false
+    return true
+  } catch (error) {
+    console.error('Error fetching game data:', error)
+    return false
+  }
+}
+
+// Xử lý sự kiện cài đặt
+const handleInstall = async (Id: string) => {
+  if (await fetchGameData(Id)) {
+    isDialogOpen.value = true
+  } else {
+    toast.error('Unable to fetch game data. Please try again later.')
+  }
+}
+
+const handleDelete = (appName: string) => {
+  toast.success(`Deleted ${appName}`)
+}
+
+const install = async (params: InstallParams) => {
+  if (!params.path) {
+    toast.error('Please select an installation path')
+    return
+  }
+  const clonedParams = JSON.parse(JSON.stringify(params))
+  const clonedDownloadInfo = JSON.parse(JSON.stringify(installState.value.downloadInfo))
+  isInstalling.value = true
+  isDialogOpen.value = false
+
+  QueueStore.addToQueue({
+    type: 'install',
+    params: toRaw(params),
+    downloadInfo: toRaw(installState.value.downloadInfo),
+    addToQueueTime: Date.now(),
+  })
+  try {
+    await installGame(toRaw(clonedParams), toRaw(clonedDownloadInfo))
+    toast.success(`Installed game ${params.appName} successfully!`)
+  } catch (error: any) {
+    toast.error('Error during installation: ' + error.message)
+  } finally {
+    isInstalling.value = false
+  }
+}
+
+onBeforeMount(async () => {
+  await refetchGameInfo()
+  await refetchDownloadParams()
 })
 </script>

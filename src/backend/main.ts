@@ -43,8 +43,22 @@ app.whenReady().then(async () => {
     // const count = 10
     // const versioninfo = await fetchReleases({ url, type, count })
     // console.log('Fetched Wine-GE releases:', versioninfo)
+    // const lsProcess = spawn('out/steak-client-app-linux-x64/steak-client-app')
+    // lsProcess.stdout.on('data', (data) => {
+    //   console.log(`stdout: ${data}`);
+    // });
+    // lsProcess.stderr.on('data', (data) => {
+    //   console.error(`stderr: ${data}`);
+    // });
+    // lsProcess.on('close', (code) => {
+    //   console.log(`ls process exited with code ${code}`);
+    // });
     const main_window = await initializeMainWindow()
-
+    notify({
+      title: 'Steak Client',
+      body :  path.join(process.resourcesPath, 'public', 'tools', 'zstd.exe')
+      
+    })
     console.log(configPath)
     
     main_window.show()
@@ -87,3 +101,6 @@ import './download/ipc'
 import './dialog/ipc_handler'
 import './auth/ipc'
 import { fetchReleases, VersionInfo } from './wine/util'
+import { spawn } from 'node:child_process'
+import { notify } from './dialog/dialog'
+

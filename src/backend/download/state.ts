@@ -1,4 +1,4 @@
-import { DMQueueElement, DownloadManagerState } from 'src/common/types/type'
+import { DMQueueElement, DownloadManagerState, InstalledInfo } from 'src/common/types/type'
 import { TypeCheckedStoreBackEnd } from '../electron_store'
 
 let queueState: DownloadManagerState = 'idle'
@@ -8,6 +8,13 @@ const store = new TypeCheckedStoreBackEnd('downloadManager', {
   cwd: 'store',
   name: 'download-manager',
 })
+
+const setInstalledGames = (installedGames: Record<string, InstalledInfo>) => {
+  store.set('installedGames', installedGames)
+}
+const getInstalledGames = (): Record<string, InstalledInfo> => {
+  return store.get('installedGames', {}) //
+}
 const setQueueState = (state: DownloadManagerState) => {
   queueState = state
 }
@@ -50,6 +57,8 @@ export {
   currentElement,
   getQueue,
   setQueue,
+  setInstalledGames,
+  getInstalledGames,
   getFinished,
   setFinished,
   setQueueState,

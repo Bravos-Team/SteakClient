@@ -1,7 +1,7 @@
 // export class TypeCheckedStoreBackEnd<Name extends>
 
 import { Get } from 'type-fest'
-import { AppSettings, DMQueueElement, UserInfo, WindowProps } from './type'
+import { AppSettings, DMQueueElement, InstalledInfo, UserInfo, WindowProps } from './type'
 
 export interface StoreStructure {
   configStore: {
@@ -31,6 +31,7 @@ export interface StoreStructure {
     }
   }
   downloadManager: {
+    installedGames: Record<string, InstalledInfo>
     queue: DMQueueElement[]
     finished: DMQueueElement[]
   }

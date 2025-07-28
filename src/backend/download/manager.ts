@@ -1,4 +1,4 @@
-import { DMQueueElement } from 'src/common/types/type'
+import { DMQueueElement, InstalledInfo } from 'src/common/types/type'
 import { createAbortController } from '../util/aborthandler/aborthandler'
 import { updateFrontendQueue, updateGameStatus } from './events'
 import { installGame, stopDownloadFile } from './controller'
@@ -6,11 +6,13 @@ import { installGame, stopDownloadFile } from './controller'
 import {
   getCurrentElement,
   getFinished,
+  getInstalledGames,
   getQueue,
   getQueueState,
   removeFromQueue,
   setCurrentElement,
   setFinished,
+  setInstalledGames,
   setQueue,
   setQueueState,
 } from './state'
@@ -59,6 +61,22 @@ async function init() {
       element.status = 'done'
 
       // Update the finished elements
+      console.log(element.downloadInfo)
+
+      const installedElements = getInstalledGames()
+      if (!installedElements[element.params.appName]) {
+        installedElements[element.params.appName] = {
+          appName: element.params.appName,
+          executable: element.downloadInfo?.execPath || '',
+          install_path: element.params.path,
+          install_size: element.params.installSize || 0,
+
+          version: element.params.gameInfo.details.version,
+        }
+      }
+
+      setInstalledGames(installedElements)
+
       const finishedElements = getFinished()
       if (!finishedElements.some((el) => el.params.appName === element.params.appName)) {
         finishedElements.push(element)
@@ -72,6 +90,7 @@ async function init() {
       // Remove the current element from the queue
       queue = getQueue()
       queue.shift()
+
       setQueue(queue)
       // Update the finished elements in the state
       setFinished(finishedElements)
@@ -110,6 +129,10 @@ async function init() {
       setCurrentElement(element)
       // Update the queue state to idle
       setQueueState('idle')
+      // Remove errored element from queue
+      queue = getQueue()
+      queue.shift()
+      setQueue(queue)
       // Remove the current element from the queue
       updateFrontendQueue(getQueue(), getQueueState(), getFinished())
       updateGameStatus({

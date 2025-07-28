@@ -7,7 +7,7 @@ import { mkdirp } from 'mkdirp'
 import { Entry, open } from 'yauzl'
 import { updateGameStatus } from './download'
 import { callAbortController } from './util/aborthandler/aborthandler'
-import { exec } from 'node:child_process'
+import { exec, spawn } from 'node:child_process'
 interface ProgressCallback {
   (downloadedBytes: number, downloadSpeed: number, progress: number, diskWriteSpeed: number): void
 }
@@ -184,14 +184,18 @@ export async function downloadFile({ url, dest, fileName, signal }: DownloadArgs
       throw new Error('Download stopped or pausedd')
     }
     if (existsSync(zipPath) && statSync(zipPath).isFile()) {
-      await extractFileTarZst(zipPath, pathOutDir)
-      console.log(`Extracting tar.zst file: ${zipPath} to ${pathOutDir}`)
+      // await extractFile(zipPath, pathOutDir)
+      // await extractFileTarZst(zipPath, pathOutDir)
+      // console.log(`Extracting tar.zst file: ${zipPath} to ${pathOutDir}`)
+      // const zipFileTar = zipPath.replace('.tar.zst', '.tar')
+      // console.log(`Extracting tar file: ${zipFileTar} to ${pathOutDir}`)
+      // await extractFileTar(zipFileTar, pathOutDir)
+      // console.log(`Download and extraction completed successfully.`)
+      console.log(dest + ' ' + path.basename(zipPath))
 
-      const zipFileTar = zipPath.replace('.tar.zst', '.tar')
-      console.log(`Extracting tar file: ${zipFileTar} to ${pathOutDir}`)
-
-      await extractFileTar(zipFileTar, pathOutDir)
-      console.log(`Download and extraction completed successfully.`)
+      removeFolder(dest, path.basename(zipPath))
+      const tarPath = zipPath.replace(/\.zst$/, '') // -> path/to/xxx.tar
+      removeFolder(tarPath, path.basename(tarPath))
     }
   } catch (error) {
     console.error(`Error downloading file: ${(error as Error).message}`)
@@ -234,20 +238,75 @@ function runCommand(command: string): Promise<void> {
   })
 }
 
-export function extractFileTarZst(zstPath: string, dest: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const tarPath = zstPath.replace(/\.zst$/, '') // -> path/to/xxx.tar
+// export function extractFileTarZst(zstPath: string, dest: string): Promise<void> {
+//   return new Promise((resolve, reject) => {
+//     const tarPath = zstPath.replace(/\.zst$/, '') // -> path/to/xxx.tar
 
-    const command = `zstd -d --long=31 ${zstPath} -o ${tarPath}`
-    runCommand(command)
-      .then(() => {
+//     const command = `zstd -d --long=31 ${zstPath} -o ${tarPath}`
+//     runCommand(command)
+//       .then(() => {
+//         console.log(`Extracted ${tarPath} to ${dest}`)
+//         resolve()
+//       })
+//       .catch((error) => {
+//         console.error(`Error extracting tar.zst file: ${error}`)
+//         reject(error)
+//       })
+//   })
+// }
+// export function extractFileTar(tarPath: string, dest: string): Promise<void> {
+//   return new Promise((resolve, reject) => {
+//     const command = `tar -xf ${tarPath} -C ${dest}`
+//     runCommand(command)
+//       .then(() => {
+//         console.log(`Extracted ${tarPath} to ${dest}`)
+//         resolve()
+//       })
+//       .catch((error) => {
+//         console.error(`Error extracting tar file: ${error}`)
+//         reject(error)
+//       })
+//   })
+// }
+
+export function extractFile(zstPath: string, dest: string): Promise<void> {
+  const tarPath = zstPath.replace(/\.zst$/, '') // -> path/to/xxx.tar
+  return new Promise((resolve, reject) => {
+    if (process.platform === 'win32') {
+      const zstdPath = path.join(process.resourcesPath, 'public', 'tools', 'zstd.exe')
+      const zstd = spawn(zstdPath, ['-d', '--long=31', zstPath, '-o', tarPath], { cwd: dest })
+      zstd.on('close', (code) => {
+        if (code !== 0) {
+          console.error(`zstd extraction failed with code ${code}`)
+          return reject(new Error(`Failed to extract ${zstPath}`))
+        }
         console.log(`Extracted ${tarPath} to ${dest}`)
-        resolve()
+        const tarExePath = path.join(process.resourcesPath, 'public', 'tools', 'tar.exe')
+        const tar = spawn(tarExePath, ['-xf', tarPath, '-C', dest])
+        tar.on('close', (code) => {
+          if (code !== 0) {
+            console.error(`tar extraction failed with code ${code}`)
+            return reject(new Error(`Failed to extract ${tarPath}`))
+          }
+          console.log(`Extracted ${tarPath} to ${dest}`)
+          resolve()
+        })
       })
-      .catch((error) => {
-        console.error(`Error extracting tar.zst file: ${error}`)
-        reject(error)
+      zstd.stderr.on('data', (data) => {
+        console.error(`[zstd error]: ${data}`)
       })
+      zstd.on('error', (err) => {
+        console.error(`Error extracting zst file: ${err}`)
+        reject(err)
+      })
+    } else {
+      const zstdCommand = `zstd -d --long=31 ${zstPath} -o ${tarPath}`
+      const tarCommand = `tar -xf ${tarPath} -C ${dest}`
+      runCommand(zstdCommand)
+        .then(() => runCommand(tarCommand))
+        .then(() => resolve())
+        .catch(reject)
+    }
   })
 }
 export function extractFileTar(tarPath: string, dest: string): Promise<void> {
@@ -263,4 +322,33 @@ export function extractFileTar(tarPath: string, dest: string): Promise<void> {
         reject(error)
       })
   })
+}
+
+export function launchGame(exePath: string, workingDir: string) {
+  const child = spawn(exePath, {
+    cwd: workingDir,
+    detached: true,
+    stdio: 'ignore',
+  })
+  if (child.stdout) {
+    child.stdout.on('data', (data) => {
+      console.log(`[stdout] ${data}`)
+    })
+  }
+
+  if (child.stderr) {
+    child.stderr.on('data', (data) => {
+      console.error(`[stderr] ${data}`)
+    })
+  }
+
+  child.on('close', (code) => {
+    console.log(`Game exited with code ${code}`)
+  })
+
+  child.on('error', (err) => {
+    console.error('Failed to launch game:', err)
+  })
+
+  child.unref()
 }
