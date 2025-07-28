@@ -61,8 +61,8 @@ async function init() {
       element.status = 'done'
 
       // Update the finished elements
-      console.log(element.downloadInfo);
-      
+      console.log(element.downloadInfo)
+
       const installedElements = getInstalledGames()
       if (!installedElements[element.params.appName]) {
         installedElements[element.params.appName] = {
@@ -129,6 +129,10 @@ async function init() {
       setCurrentElement(element)
       // Update the queue state to idle
       setQueueState('idle')
+      // Remove errored element from queue
+      queue = getQueue()
+      queue.shift()
+      setQueue(queue)
       // Remove the current element from the queue
       updateFrontendQueue(getQueue(), getQueueState(), getFinished())
       updateGameStatus({

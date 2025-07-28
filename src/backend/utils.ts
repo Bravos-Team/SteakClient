@@ -184,13 +184,18 @@ export async function downloadFile({ url, dest, fileName, signal }: DownloadArgs
       throw new Error('Download stopped or pausedd')
     }
     if (existsSync(zipPath) && statSync(zipPath).isFile()) {
-      await extractFile(zipPath, pathOutDir)
+      // await extractFile(zipPath, pathOutDir)
       // await extractFileTarZst(zipPath, pathOutDir)
       // console.log(`Extracting tar.zst file: ${zipPath} to ${pathOutDir}`)
       // const zipFileTar = zipPath.replace('.tar.zst', '.tar')
       // console.log(`Extracting tar file: ${zipFileTar} to ${pathOutDir}`)
       // await extractFileTar(zipFileTar, pathOutDir)
       // console.log(`Download and extraction completed successfully.`)
+      console.log(dest + ' ' + path.basename(zipPath))
+
+      removeFolder(dest, path.basename(zipPath))
+      const tarPath = zipPath.replace(/\.zst$/, '') // -> path/to/xxx.tar
+      removeFolder(tarPath, path.basename(tarPath))
     }
   } catch (error) {
     console.error(`Error downloading file: ${(error as Error).message}`)
@@ -269,7 +274,7 @@ export function extractFile(zstPath: string, dest: string): Promise<void> {
   return new Promise((resolve, reject) => {
     if (process.platform === 'win32') {
       const zstdPath = path.join(process.resourcesPath, 'public', 'tools', 'zstd.exe')
-      const zstd = spawn(zstdPath, ['-d', '--long=31', zstPath, '-o'], { cwd: dest })
+      const zstd = spawn(zstdPath, ['-d', '--long=31', zstPath, '-o', tarPath], { cwd: dest })
       zstd.on('close', (code) => {
         if (code !== 0) {
           console.error(`zstd extraction failed with code ${code}`)
@@ -286,6 +291,9 @@ export function extractFile(zstPath: string, dest: string): Promise<void> {
           console.log(`Extracted ${tarPath} to ${dest}`)
           resolve()
         })
+      })
+      zstd.stderr.on('data', (data) => {
+        console.error(`[zstd error]: ${data}`)
       })
       zstd.on('error', (err) => {
         console.error(`Error extracting zst file: ${err}`)
