@@ -1,4 +1,4 @@
-import { useGetGameDownloadInfo, useGetGameInfo } from '@/stores/library/useMyLibrary'
+import { useGetGameDownloadInfo, useGetGameInfo } from '@/hooks/library/useMyLibrary'
 import { InstallParams } from '@/types/type'
 import { reactive, Ref, watch, watchEffect } from 'vue'
 

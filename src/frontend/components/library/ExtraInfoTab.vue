@@ -14,7 +14,7 @@
         <Users class="w-6 h-6 mr-2" />
         <span class="text-[#00b8d4] min-w-[120px]">Developers:</span>
       </div>
-      <span class="text-right">{{ installParams.gameInfo.details.developersTeams.join(', ') }}</span>
+      <span class="text-right">{{ installParams.gameInfo?.details?.developersTeams?.join(', ') || '' }}</span>
     </div>
     <div class="border-b border-gray-700 my-4"></div>
     <div class="flex items-start justify-between">
@@ -22,7 +22,7 @@
         <Rocket class="w-6 h-6 mr-2" />
         <span class="text-[#00b8d4] min-w-[120px]">Release Date:</span>
       </div>
-      <span class="text-right">{{ convertTimestampToDate(installParams.gameInfo.details.updatedAt || 0) }}</span>
+      <span class="text-right">{{ convertTimestampToDate(installParams.gameInfo?.details?.updatedAt || 0) }}</span>
     </div>
     <div class="border-b border-gray-700 my-4"></div>
     <div class="flex items-start justify-between">
@@ -31,7 +31,7 @@
         <span class="text-[#00b8d4] min-w-[120px]">Platforms:</span>
       </div>
       <div class="text-right">
-        <span v-if="installParams.gameInfo.details.platforms?.length">
+        <span v-if="installParams.gameInfo?.details?.platforms?.length">
           {{ installParams.gameInfo.details.platforms.join(', ') }}
         </span>
         <span v-else>Unknown</span>
@@ -44,7 +44,7 @@
         <span class="text-[#00b8d4] min-w-[120px]">Regions:</span>
       </div>
       <div class="text-right">
-        <span v-if="installParams.gameInfo.details.regions?.length">
+        <span v-if="installParams.gameInfo?.details?.regions?.length">
           {{ installParams.gameInfo.details.regions.join(', ') }}
         </span>
         <span v-else>Unknown</span>
@@ -57,7 +57,7 @@
         <span class="text-[#00b8d4] min-w-[120px]">Language Supported:</span>
       </div>
       <div class="text-right">
-        <span v-if="installParams.gameInfo.details.languageSupported?.length">
+        <span v-if="installParams.gameInfo?.details?.languageSupported?.length">
           {{ installParams.gameInfo.details.languageSupported?.join(', ') }}
         </span>
         <span v-else>Unknown</span>

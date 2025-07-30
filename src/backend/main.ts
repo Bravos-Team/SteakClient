@@ -53,14 +53,14 @@ app.whenReady().then(async () => {
     // lsProcess.on('close', (code) => {
     //   console.log(`ls process exited with code ${code}`);
     // });
+    const totalSize = (await getCapacitySystem()).totalSize
+    const freeSize = (await getCapacitySystem()).freeSize
+    console.log('Total system capacity:', totalSize)
+    console.log('Free system capacity:', freeSize)
     const main_window = await initializeMainWindow()
-    notify({
-      title: 'Steak Client',
-      body :  path.join(process.resourcesPath, 'public', 'tools', 'zstd.exe')
-      
-    })
-    console.log(configPath)
-    
+    // console.log(configPath)
+    // console.log(await getSystemInfo())
+
     main_window.show()
 
     main_window.focus()
@@ -70,12 +70,11 @@ app.whenReady().then(async () => {
   }
 })
 
+addHandler('openWebViewDevTools', (event, webviewId: string) => {
+  console.log(`Opening DevTools for webview with ID: ${webviewId}`)
 
-addHandler('openWebViewDevTools', (event, webviewId :string) => {
-  console.log(`Opening DevTools for webview with ID: ${webviewId}`);
-  
   const webview = document.getElementById(webviewId) as Electron.WebviewTag
-  
+
   if (webview) {
     webview.openDevTools()
   } else {
@@ -85,7 +84,13 @@ addHandler('openWebViewDevTools', (event, webviewId :string) => {
 addHandler('getHomePath', () => {
   return app.getPath('home')
 })
-
+addHandler('getSystemInfo', async (_e, path?: string) => {
+  return (await getSystemInfo(path)).systemInfo
+})
+addHandler('getCapacitySystem', async (e, path?: string) => {
+  const { totalSize, freeSize } = await getCapacitySystem(path)
+  return { totalSize, freeSize }
+})
 export const contentSecurityPolicy =
   process.env.APP_CSP ??
   [
@@ -100,7 +105,4 @@ export const contentSecurityPolicy =
 import './download/ipc'
 import './dialog/ipc_handler'
 import './auth/ipc'
-import { fetchReleases, VersionInfo } from './wine/util'
-import { spawn } from 'node:child_process'
-import { notify } from './dialog/dialog'
-
+import { getCapacitySystem, getSystemInfo } from './utils'

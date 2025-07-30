@@ -41,10 +41,14 @@ export function useGameLibrary() {
       throw error
     }
   }
+  async function getCapacitySystem(path?: string) {
+    return await window.api.getCapacitySystem(path)
+  }
 
   return {
     saveGame,
     openFolder,
     installGame,
+    getCapacitySystem,
   }
 }

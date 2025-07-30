@@ -31,10 +31,10 @@
           <Folder class="w-6 h-6" />
         </button>
       </span>
-      <span>
-        Free space: <span class="text-green-500 font-semibold">1.2 TB</span> /
-        <span class="text-red-500 font-semibold">2.0 TB</span> - After installation, remaining:
-        <span class="text-red-500 font-semibold">1.5 TB</span>
+      <span v-if="installParams.path">
+        Free space: <span class="text-green-500 font-semibold">{{ formatSize(capacityDisks.freeSize) }}</span> /
+        <span class="text-red-500 font-semibold">{{ formatSize(capacityDisks.totalSize) }}</span> - After installation, remaining:
+        <span class="text-red-500 font-semibold">{{ formatSize(capacityDisks.remaining) }}</span>
       </span>
     </div>
     <DialogFooter class="flex mt-12 gap-2 justify-end">
@@ -70,15 +70,16 @@ import { Download, AppWindow, CircleDot, Folder } from 'lucide-vue-next'
 
 import GameCard from '@/components/library/GameCard.vue'
 
-import { useGameLibrary } from '@/composables/useGameLibrary'
+import { useGameLibrary } from '@/composables/useGameLibraryIpc'
 import { useDownloadQueueStore } from '@/stores/download/useDownloadStore'
 import {
   useGetGameDownloadInfo,
   useGetGameInfo,
   useGetLibraryList,
-} from '@/stores/library/useMyLibrary'
+} from '@/hooks/library/useMyLibrary'
 import { emit } from 'process'
 function formatSize(bytes: number): string {
+  if (bytes >= 1024 ** 4) return (bytes / 1024 ** 4).toFixed(2) + ' TB'
   if (bytes >= 1024 ** 3) return (bytes / 1024 ** 3).toFixed(2) + ' GB'
   if (bytes >= 1024 ** 2) return (bytes / 1024 ** 2).toFixed(2) + ' MB'
   if (bytes >= 1024) return (bytes / 1024).toFixed(2) + ' KB'
@@ -89,6 +90,11 @@ defineProps<{
   installParams: InstallParams
   isInstalling: boolean
   isFetching: boolean
+  capacityDisks: {
+    totalSize: number
+    freeSize: number
+    remaining: number
+  }
 }>()
 
 defineEmits<{

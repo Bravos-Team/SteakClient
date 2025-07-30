@@ -19,6 +19,7 @@ const routes = [
       { path: 'store', component: () => import('@/views/Store.vue') },
       { path: 'download', component: () => import('@/layout/download/DownloadLayout.vue') },
       { path: 'account', component: () => import('@/views/Account.vue') },
+      { path: 'settings', component: () => import('@/views/Setting.vue') },
       { path: 'test', component: () => import('@/views/library/GameDetail.vue') },
       { path: ':pathMatch(.*)*', component: () => import('@/views/NotFound.vue') },
     ],
