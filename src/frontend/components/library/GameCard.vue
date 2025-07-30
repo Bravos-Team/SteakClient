@@ -1,22 +1,24 @@
 <template>
   <div
-    class="group/game transition-transform duration-300 hover:scale-105 flex flex-col aspect-[3/4] rounded-sm bg-muted/50 relative"
+    class="group/game transition-transform duration-300 hover:scale-105  flex flex-col rounded-md bg-muted/50 overflow-hidden"
   >
-    <RouterLink :to="`/library/${game.id}`">
+    
+    <RouterLink :to="`/library/${game.id}`" class="relative w-full aspect-[3/4]">
       <img
-        class="grayscale group-hover/game:grayscale-0 transition-all h-5/6 w-full rounded-sm object-cover"
+        class="grayscale group-hover/game:grayscale-0 transition-all w-full h-full object-cover"
         :src="game.image"
         alt=""
       />
-    </RouterLink>
-    <div
-      class="absolute bottom-10 left-0 flex items-center right-0 bg-[#202024]/30 backdrop-blur-sm text-white p-2 rounded-b-sm opacity-0 group-hover/game:opacity-100 group-hover/game:translate-y-0 translate-y-4 transition-all duration-300"
+      <div
+      class="absolute bottom-0 left-0 flex items-center w-full bg-[#202024]/30 backdrop-blur-sm text-white px-3 py-2  opacity-0 group-hover/game:opacity-100 group-hover/game:translate-y-0 translate-y-4 transition-all duration-300"
     >
-      <h1 class="font-serif text-lg">{{ game.title }}</h1>
+      <h1 class="font-serif text-lg truncate">{{ game.title }}</h1>
     </div>
-    <div
-      class="relative flex justify-between items-center h-2/12 bg-[#202024] w-full rounded-b-sm px-4"
-    >
+    </RouterLink>
+
+    
+     <!-- Nút thao tác -->
+    <div class="flex flex-wrap justify-between items-center gap-2 p-2 bg-[#202024] w-full">
       <button
         v-if="game.installable"
         @click="$emit('delete', game.id)"
@@ -24,22 +26,25 @@
       >
         <Trash2 class="w-4 h-4 text-white" />
       </button>
+
       <DialogTrigger
         v-if="game.installable"
         as-child
-        class="absolute left-1/2 -translate-x-1/2 p-3 rounded-full bg-white/10 hover:bg-green-600 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
+        class="p-2 rounded-full bg-white/10 hover:bg-green-600 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
       >
         <button @click="$emit('install', game.id)">
-          <Play class="w-5 h-5 text-white" />
+          <Play class="w-6 h-6 text-white" />
         </button>
       </DialogTrigger>
+
       <button
         v-else
         @click="$emit('save', game.id)"
-        class="absolute left-1/2 -translate-x-1/2 p-3 rounded-full bg-white/10 hover:bg-blue-500 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
+        class="p-2 rounded-full bg-white/10 hover:bg-blue-500 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
       >
         <ArrowDownToLine class="w-5 h-5 text-white" />
       </button>
+
       <button
         v-if="game.installable"
         class="p-2 rounded-full bg-white/10 hover:bg-blue-500 transition-all backdrop-blur-sm shadow hover:scale-105"

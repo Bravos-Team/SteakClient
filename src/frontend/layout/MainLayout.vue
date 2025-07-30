@@ -3,7 +3,7 @@
   <SidebarProvider>
     <div class="flex w-full h-screen">
       <MainSidebar />
-      <MainContent />
+      <MainContent class="flex-1 overflow-y-auto bg-[#101014]" />
     </div>
   </SidebarProvider>
 </template>
@@ -11,7 +11,7 @@
 import { SidebarProps, SidebarProvider } from '@/components/ui/sidebar'
 import MainSidebar from './MainSidebar.vue'
 import MainContent from './MainContent.vue'
-import { useUseFromIpc } from '@/hooks/useUseFromIpc'
+import { useUseFromIpc } from '@/composables/useUseFromIpc'
 import { Toaster } from '@/components/ui/sonner'
 const QueueStore = useDownloadQueueStore()
 

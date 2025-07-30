@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { useDownloadManagerSync } from '@/hooks/useDownloadManagerSync'
+import { useDownloadManagerSync } from '@/composables/useDownloadManagerSync'
 import { useDownloadQueueStore } from '@/stores/download/useDownloadStore'
 import DownloadChart from '@/views/download/DownloadChart.vue'
 import DownloadingTable from '@/views/download/DownloadingTable.vue'

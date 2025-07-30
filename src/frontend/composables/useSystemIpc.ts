@@ -1,0 +1,9 @@
+import { useSystemInfo } from '@/stores/util'
+
+export async function useSystemIpc() {
+  const systemInfoStore = useSystemInfo()
+  const info = await window.api.getSystemInfo()
+  console.log('System Info:', info);
+  
+  systemInfoStore.setSystemInfo(info)
+}

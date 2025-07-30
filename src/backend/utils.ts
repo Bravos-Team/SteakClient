@@ -8,6 +8,16 @@ import { Entry, open } from 'yauzl'
 import { updateGameStatus } from './download'
 import { callAbortController } from './util/aborthandler/aborthandler'
 import { exec, spawn } from 'node:child_process'
+import {
+  cpu,
+  fsSize,
+  graphics,
+  mem,
+  networkStats,
+  osInfo,
+  wifiConnections,
+} from 'systeminformation'
+import { SystemInfo } from 'src/common/types/type'
 interface ProgressCallback {
   (downloadedBytes: number, downloadSpeed: number, progress: number, diskWriteSpeed: number): void
 }
@@ -114,6 +124,8 @@ export const unzip = (zipPath: string, unzipToDir: string): Promise<void> => {
 }
 export async function downloadFile({ url, dest, fileName, signal }: DownloadArgs) {
   const zipPath = path.join(dest, `${fileName}`)
+  console.log(`Downloading from ${url} to ${zipPath}`)
+
   const pathOutDir = dest
   let fileSize = 0
   console.log(`Starting download from ${pathOutDir} to ${zipPath}`)
@@ -184,14 +196,14 @@ export async function downloadFile({ url, dest, fileName, signal }: DownloadArgs
       throw new Error('Download stopped or pausedd')
     }
     if (existsSync(zipPath) && statSync(zipPath).isFile()) {
-      // await extractFile(zipPath, pathOutDir)
+      await extractFile(zipPath, pathOutDir)
       // await extractFileTarZst(zipPath, pathOutDir)
       // console.log(`Extracting tar.zst file: ${zipPath} to ${pathOutDir}`)
       // const zipFileTar = zipPath.replace('.tar.zst', '.tar')
       // console.log(`Extracting tar file: ${zipFileTar} to ${pathOutDir}`)
       // await extractFileTar(zipFileTar, pathOutDir)
       // console.log(`Download and extraction completed successfully.`)
-      console.log(dest + ' ' + path.basename(zipPath))
+      // console.log(dest + ' ' + path.basename(zipPath))
 
       removeFolder(dest, path.basename(zipPath))
       const tarPath = zipPath.replace(/\.zst$/, '') // -> path/to/xxx.tar
@@ -270,7 +282,9 @@ function runCommand(command: string): Promise<void> {
 // }
 
 export function extractFile(zstPath: string, dest: string): Promise<void> {
-  const tarPath = zstPath.replace(/\.zst$/, '') // -> path/to/xxx.tar
+  const tarPath = zstPath.replace(/\.zst$/, '')
+  console.log(`Extracting ${zstPath} to ${dest}`) // -> path/to/xxx.zst;
+  console.log(`Extracting ${tarPath} to ${dest}`) // -> path/to/xxx.tar
   return new Promise((resolve, reject) => {
     if (process.platform === 'win32') {
       const zstdPath = path.join(process.resourcesPath, 'public', 'tools', 'zstd.exe')
@@ -282,7 +296,8 @@ export function extractFile(zstPath: string, dest: string): Promise<void> {
         }
         console.log(`Extracted ${tarPath} to ${dest}`)
         const tarExePath = path.join(process.resourcesPath, 'public', 'tools', 'tar.exe')
-        const tar = spawn(tarExePath, ['-xf', tarPath, '-C', dest])
+
+        const tar = spawn(tarExePath, ['-xf', tarPath, '-C', dest], { cwd: dest })
         tar.on('close', (code) => {
           if (code !== 0) {
             console.error(`tar extraction failed with code ${code}`)
@@ -351,4 +366,99 @@ export function launchGame(exePath: string, workingDir: string) {
   })
 
   child.unref()
+}
+
+export async function getCapacitySystem(path?: string) {
+  const disk = await fsSize()
+  let totalSize = 0
+  let freeSize = 0
+  const driveLetter = path?.slice(0, 2)
+  if (process.platform === 'win32') {
+    const mainDrive = disk.find((d) => d.mount === driveLetter || d.mount === 'C:')
+    totalSize = mainDrive ? mainDrive.size : 0
+    freeSize = mainDrive ? mainDrive.available : 0
+  }
+  if (process.platform === 'linux' || process.platform === 'darwin') {
+    const mainDrive = disk.find((d) => d.mount === driveLetter || d.mount === '/')
+    totalSize = mainDrive ? mainDrive.size : 0
+    freeSize = mainDrive ? mainDrive.available : 0
+  }
+  return { totalSize, freeSize }
+}
+
+function filterRealStorage(disks: Awaited<ReturnType<typeof fsSize>>, path?: string) {
+  const driveLetter = path?.slice(0, 2)
+
+  if (path) {
+    const match = disks.find((d) =>
+      process.platform === 'win32' ? d.mount === driveLetter : d.mount === '/',
+    )
+    return match ? [match] : []
+  }
+
+  // Nếu không có path, lọc toàn bộ ổ thật
+  if (process.platform === 'win32') {
+    return disks.filter(
+      (d) =>
+        /^[A-Z]:\\$/.test(d.mount) &&
+        ['NTFS', 'FAT32'].includes(d.type) &&
+        d.size > 10 * 1024 * 1024 * 1024,
+    )
+  } else {
+    return disks.filter((d) => d.mount === '/' && d.size > 1 * 1024 * 1024 * 1024)
+  }
+}
+export async function getSystemInfo(path?: string): Promise<{ systemInfo: SystemInfo }> {
+  const [cpuRaw, memRaw, gpuRaw, osRaw, wifiRaw, diskRaw] = await Promise.all([
+    cpu(),
+    mem(),
+    graphics(),
+    osInfo(),
+    wifiConnections(),
+    fsSize(),
+  ])
+  console.log(memRaw)
+
+  const storage = filterRealStorage(diskRaw, path)
+  const wifi = wifiRaw[0] || null
+  const systemInfo: SystemInfo = {
+    cpu: {
+      manufacturer: cpuRaw.manufacturer,
+      model: cpuRaw.model,
+      brand: cpuRaw.brand,
+      cores: cpuRaw.cores,
+      speed: cpuRaw.speed,
+    },
+    memory: {
+      total: memRaw.total,
+      free: memRaw.free,
+      available: memRaw.available,
+    },
+    gpu:
+      gpuRaw.controllers.map((gpu) => ({
+        model: gpu.model || '',
+        vendor: gpu.vendor || '',
+        vram: gpu.vram || 0, // Some GPUs may not have vram info
+      })) || [],
+    os: {
+      platform: osRaw.platform,
+      distro: osRaw.distro || '',
+      release: osRaw.release || '',
+      codename: osRaw.codename || '',
+    },
+    wifi: wifi
+      ? {
+          ssid: wifi.ssid || '',
+          signalLevel: wifi.signalLevel || 0,
+        }
+      : null,
+    storage: storage.map((disk) => ({
+      mount: disk.mount || '',
+      size: disk.size || 0,
+      used: disk.used || 0,
+
+      available: disk.available || 0,
+    })),
+  }
+  return { systemInfo }
 }

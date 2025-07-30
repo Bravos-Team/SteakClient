@@ -93,5 +93,5 @@ dist/
 
 # Electron-Forge
 out/
-
+yarn.lick
 package-lock.json

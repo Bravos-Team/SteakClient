@@ -1,12 +1,14 @@
 <template>
   <Dialog>
-    <div class="flex mb-3">
+    <div class="flex my-2">
       <div class="ml-4 w-full max-w-[500px]">
         <ComboboxSearch />
       </div>
     </div>
-    <div class="w-full flex flex-1 flex-col h-full p-4 overflow-y-hidden">
-      <div class="grid auto-rows-min gap-4 md:grid-cols-8">
+    <div class="w-full flex flex-1 flex-col h-screen p-4">
+      <div
+        class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4 auto-rows-min"
+      >
         <GameCard
           v-for="game in games"
           :key="game.id"
@@ -23,6 +25,7 @@
         @install="install"
         :is-installing="isInstalling"
         :is-fetching="false"
+        :capacity-disks="capacityDisks"
       />
     </div>
   </Dialog>
@@ -41,18 +44,25 @@ import { DownloadInfo, GameDetails, GameLibrary, InstallParams } from '@/types/t
 
 import GameCard from '@/components/library/GameCard.vue'
 
-import { useGameLibrary } from '@/composables/useGameLibrary'
+import { useGameLibrary } from '@/composables/useGameLibraryIpc'
 import { useDownloadQueueStore } from '@/stores/download/useDownloadStore'
 import {
   useGetGameDownloadInfo,
   useGetGameInfo,
   useGetLibraryList,
-} from '@/stores/library/useMyLibrary'
+} from '@/hooks/library/useMyLibrary'
 import InstallDialog from '@/components/library/InstallDialog.vue'
+import { useSystemIpc } from '@/composables/useSystemIpc'
+import { useSystemInfo } from '@/stores/util'
 
 const isDialogOpen = ref(false)
 const isInstalling = ref(false)
 const isFetching = ref(false)
+const capacityDisks = ref<{ totalSize: number; freeSize: number; remaining: number }>({
+  totalSize: 0,
+  freeSize: 0,
+  remaining: 0,
+})
 const LibraryStore = useGameLibrary()
 const QueueStore = useDownloadQueueStore()
 const selectedGameId = ref('')
@@ -67,10 +77,12 @@ const {
   refetch: refetchGameInfo,
   isFetching: isQueryGameInfoFetching,
 } = useGetGameInfo(selectedGameId)
+
 const handleOpenFolder = async () => {
   const folderPath = await openFolder()
+  checkCapacity(folderPath)
+  installState.value.params.path = folderPath
   if (folderPath) {
-    installState.value.params.path = folderPath
     toast.success(`Selected folder: ${folderPath}`)
   }
   if (folderPath === '') {
@@ -81,8 +93,31 @@ const handleOpenFolder = async () => {
   }
 }
 
+const checkCapacity = async (path: string) => {
+  await useSystemIpc()
+  const systemInfoStore = useSystemInfo()
+  console.log(systemInfoStore.getSystemInfo())
+
+  const systemInfo = systemInfoStore.getSystemInfo()
+  const totalSize = systemInfo?.storage?.[0]?.size || 0
+  const freeSize = systemInfo?.storage?.[0]?.available || 0
+
+  if (!installState.value.params.installSize) {
+    installState.value.params.installSize = 0
+  }
+  if (freeSize < installState.value.params.installSize) {
+    toast.error('Not enough space to install the game.')
+    return
+  }
+  capacityDisks.value = {
+    totalSize,
+    freeSize,
+    remaining: freeSize - installState.value.params.installSize,
+  }
+}
 const { data: downloadParams, refetch: refetchDownloadParams } =
   useGetGameDownloadInfo(selectedGameId)
+
 const { data: libraryData } = useGetLibraryList()
 const games = computed(() => {
   return (
@@ -162,7 +197,7 @@ const install = async (params: InstallParams) => {
 }
 
 onBeforeMount(async () => {
-  await refetchGameInfo()
-  await refetchDownloadParams()
+  // await refetchGameInfo()
+  // await refetchDownloadParams()
 })
 </script>

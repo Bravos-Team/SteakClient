@@ -36,13 +36,14 @@ I
       @install="install"
       :is-installing="isInstalling"
       :is-fetching="false"
+      :capacity-disks="capacityDisks"
     />
   </Dialog>
 </template>
 <script setup lang="ts">
 import { nextTick, onBeforeMount, ref, toRaw, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useGetGameInfo, useGetGameDownloadInfo } from '@/stores/library/useMyLibrary'
+import { useGetGameInfo, useGetGameDownloadInfo } from '@/hooks/library/useMyLibrary'
 import type { DownloadInfo, InstallParams } from '@/types/type'
 import GameDetailHeader from '../../components/library/GameDetailHeader.vue'
 import { Dialog } from '@/components/ui/dialog'
@@ -50,9 +51,11 @@ import GameInfoTabs from '../../components/library/GameInfoTabs.vue'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-vue-next'
 import InstallDialog from '@/components/library/InstallDialog.vue'
-import { useGameLibrary } from '@/composables/useGameLibrary'
+import { useGameLibrary } from '@/composables/useGameLibraryIpc'
 import { toast } from 'vue-sonner'
 import { useDownloadQueueStore } from '@/stores/download/useDownloadStore'
+import { useSystemIpc } from '@/composables/useSystemIpc'
+import { useSystemInfo } from '@/stores/util'
 const LibraryStore = useGameLibrary()
 const QueueStore = useDownloadQueueStore()
 
@@ -61,6 +64,11 @@ const router = useRouter()
 const installParamsInfo = ref<InstallParams>({} as InstallParams)
 const downloadParamsInfo = ref<DownloadInfo>({} as DownloadInfo)
 
+const capacityDisks = ref<{ totalSize: number; freeSize: number; remaining: number }>({
+  totalSize: 0,
+  freeSize: 0,
+  remaining: 0,
+})
 const isDialogOpen = ref(false)
 const isInstalling = ref(false)
 const isFetching = ref(false)
@@ -91,8 +99,9 @@ watchEffect(() => {
 const { saveGame, openFolder, installGame } = LibraryStore
 const handleOpenFolder = async () => {
   const folderPath = await openFolder()
+  checkCapacity(folderPath)
+  installParamsInfo.value.path = folderPath
   if (folderPath) {
-    installParamsInfo.value.path = folderPath
     toast.success(`Selected folder: ${folderPath}`)
   }
   if (folderPath === '') {
@@ -100,6 +109,26 @@ const handleOpenFolder = async () => {
   }
   if (!folderPath) {
     toast.error('Unable to open installation folder. Please try again.')
+  }
+}
+const checkCapacity = async (path: string) => {
+  await useSystemIpc()
+  const systemInfoStore = useSystemInfo()
+  const systemInfo = systemInfoStore.getSystemInfo()
+  const totalSize = systemInfo?.storage?.[0]?.size || 0
+  const freeSize = systemInfo?.storage?.[0]?.available || 0
+
+  if (!installParamsInfo.value.installSize) {
+    installParamsInfo.value.installSize = 0
+  }
+  if (freeSize < installParamsInfo.value.installSize) {
+    toast.error('Not enough space to install the game.')
+    return
+  }
+  capacityDisks.value = {
+    totalSize,
+    freeSize,
+    remaining: freeSize - installParamsInfo.value.installSize,
   }
 }
 const handleInstall = async (Id: string) => {
