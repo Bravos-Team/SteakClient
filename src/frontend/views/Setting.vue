@@ -104,36 +104,43 @@
         <h1 class="text-2xl font-bold">System Information</h1>
         <div class="flex flex-wrap items-stretch pt-2">
           <!-- Wifi Connection -->
-          <div v-if="systemInfo.wifi" class="flex w-1/2 flex-col p-2 gap-1">
+          <div class="flex w-1/2 flex-col p-2 gap-1">
             <span class="text-lg font-semibold font-sans">Wifi Connection</span>
             <hr class="bg-white h-1" />
             <div
               class="flex flex-col gap-2 bg-[#52525c] rounded-lg shadow-md h-full p-2 hover:bg-[#52525c]/80 hover:scale-105 transition-all duration-300"
             >
               <span class="flex h-full justify-between items-center gap-2">
-                <span class="flex items-center text-xl text-green-500 font-bold gap-4">
+                <span class="flex  items-center text-xl gap-4">
                   <img
                     src="../assets/image/icons8-online.gif"
                     class="h-full object-cover rounded-full"
                   />
-                  {{ systemInfo.wifi?.ssid || 'No WiFi' }}
+                  <span
+                    :class="[
+                      'text-lg font-semibold',
+                      `text-${getWifiSignalInfo(systemInfo.wifi?.signalLevel)?.color}-500`,
+                    ]"
+                  >
+                    {{ systemInfo.wifi?.ssid || 'No WiFi' }}</span
+                  >
                 </span>
-                <span class="flex  items-center gap-2">
+                <span class="flex items-center gap-2">
                   <component
-                    :is="getWifiSignalInfo(systemInfo.wifi?.signalLevel || 0)?.icon"
+                    :is="getWifiSignalInfo(systemInfo.wifi?.signalLevel)?.icon"
                     :class="[
                       'size-6',
-                      `text-${getWifiSignalInfo(systemInfo.wifi?.signalLevel || 0)?.color}-500`,
+                      `text-${getWifiSignalInfo(systemInfo.wifi?.signalLevel)?.color}-500`,
                     ]"
                   />
                   <span
                     :class="[
                       'text-lg font-semibold',
-                      `text-${getWifiSignalInfo(systemInfo.wifi?.signalLevel || 0)?.color}-500`,
+                      `text-${getWifiSignalInfo(systemInfo.wifi?.signalLevel)?.color}-500`,
                       'hidden 2xl:block',
                     ]"
                   >
-                    {{ getWifiSignalInfo(systemInfo.wifi?.signalLevel || 0)?.label }}
+                    {{ getWifiSignalInfo(systemInfo.wifi?.signalLevel)?.label }}
                   </span>
                 </span>
               </span>
@@ -281,6 +288,51 @@
               </span>
             </div>
           </div>
+          <!-- Disk -->
+          <div
+            v-if="systemInfo.storage"
+            v-for="(disk, index) in systemInfo.storage"
+            :key="index"
+            class="flex w-1/2 flex-col p-2 gap-1"
+          >
+            <span class="flex gap-2 text-lg font-semibold font-sans"
+              >Disk ( {{ disk.mount }} )</span
+            >
+            <hr class="bg-white h-1" />
+            <div
+              class="flex flex-col gap-2 bg-[#52525c] rounded-lg shadow-md h-full p-2 hover:bg-[#52525c]/80 hover:scale-105 transition-all duration-300"
+            >
+              <span class="flex pr-4 gap-2">
+                <span class="flex w-full items-center font-bold gap-2">
+                  <span>
+                    <img
+                      src="../assets/image/save_78348.ico"
+                      class="max-h-16 max-w-16 rounded-md object-contain"
+                    />
+                  </span>
+
+                  <div class="flex w-full flex-col">
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-gray-300 rounded-full h-2">
+                      <div
+                        class="bg-green-500 h-2 rounded-full transition-all duration-300"
+                        :style="{
+                          width: `${((1 - disk.available / disk.size) * 100).toFixed(1)}%`,
+                        }"
+                      ></div>
+                      <span class="text-sm text-gray-400">
+                        {{ ((1 - disk.available / disk.size) * 100).toFixed(1) }}% ({{
+                          formatSize(disk.size - disk.available || 0)
+                        }}
+                        /
+                        {{ formatSize(disk.size || 0) }})
+                      </span>
+                    </div>
+                  </div>
+                </span>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -364,7 +416,7 @@ const statusSignalWifi = [
   },
   {
     threshold: -65,
-    color: 'blue',
+    color: 'green',
     icon: WifiHigh,
     label: 'Good',
   },
@@ -387,10 +439,12 @@ const statusSignalWifi = [
     label: 'No Signal',
   },
 ]
-const getWifiSignalInfo = (dbm: number) => {
-  if (dbm == null) return null
+
+const getWifiSignalInfo = (dbm: number | null | undefined) => {
+  if (dbm == null || isNaN(dbm)) return statusSignalWifi.at(-1) // No Signal
   return statusSignalWifi.find((s) => dbm >= s.threshold) ?? statusSignalWifi.at(-1)!
 }
+
 onMounted(async () => {
   await useSystemIpc()
   systemInfo.value = systemStore.getSystemInfo() as SystemInfo

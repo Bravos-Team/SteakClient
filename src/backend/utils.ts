@@ -207,7 +207,7 @@ export async function downloadFile({ url, dest, fileName, signal }: DownloadArgs
 
       removeFolder(dest, path.basename(zipPath))
       const tarPath = zipPath.replace(/\.zst$/, '') // -> path/to/xxx.tar
-      removeFolder(tarPath, path.basename(tarPath))
+      removeFolder(dest, path.basename(tarPath))
     }
   } catch (error) {
     console.error(`Error downloading file: ${(error as Error).message}`)
@@ -282,12 +282,16 @@ function runCommand(command: string): Promise<void> {
 // }
 
 export function extractFile(zstPath: string, dest: string): Promise<void> {
-  const tarPath = zstPath.replace(/\.tar\.zst$/, '.tar')
+  const fileBase = path.basename(zstPath).replace(/\.tar\.zst$/, '')
+  const tarPath = path.join(dest, `${fileBase}.tar`)
   console.log(`Extracting .zst: ${zstPath} → .tar: ${tarPath} → folder: ${dest}`)
   return new Promise((resolve, reject) => {
     if (process.platform === 'win32') {
       const zstdPath = path.join(process.resourcesPath, 'public', 'tools', 'zstd.exe')
-       const tarExePath = path.join(process.resourcesPath, 'public', 'tools', 'tar.exe')
+      const tarExePath = path.join(process.resourcesPath, 'public', 'tools', 'tar.exe')
+
+      if (!existsSync(zstdPath)) return reject(new Error(`zstd.exe not found at ${zstdPath}`))
+      if (!existsSync(tarExePath)) return reject(new Error(`tar.exe not found at ${tarExePath}`))
       const zstd = spawn(zstdPath, ['-d', '--long=31', zstPath, '-o', tarPath], { cwd: dest })
       zstd.on('close', (code) => {
         if (code !== 0) {
@@ -296,9 +300,7 @@ export function extractFile(zstPath: string, dest: string): Promise<void> {
         }
         console.log(`Extracted ${tarPath} to ${dest}`)
         const tar = spawn(tarExePath, ['-xf', tarPath, '-C', dest], { cwd: dest })
-        if(!existsSync(tarExePath)) {
-          reject(new Error(`tar.exe not found at ${tarExePath}`))
-        }
+
         tar.on('close', (code) => {
           if (code !== 0) {
             console.error(`tar extraction failed with code ${code}`)
