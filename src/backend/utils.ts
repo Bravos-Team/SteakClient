@@ -140,61 +140,61 @@ export async function downloadFile({ url, dest, fileName, signal }: DownloadArgs
     throw new Error(`Failed to get headers: ${(error as Error).message}`)
   }
 
-  let lastBytesWritten = 0
-  let lastProgressUpdateTime = Date.now()
+  // let lastBytesWritten = 0
+  // let lastProgressUpdateTime = Date.now()
 
-  const throttledProgress = throttle(
-    (bytes: number, speed: number, percentage: number, writingSpeed: number, eta: string) => {
-      updateGameStatus({
-        appName: fileName,
-        folder: pathOutDir,
-        status: 'downloading',
-        progress: {
-          bytes: bytes.toString(),
-          eta: eta, // Placeholder, calculate ETA if needed
-          downSpeed: speed.toString(),
-          diskWriteSpeed: writingSpeed.toString(),
-          percent: percentage,
-        },
-      })
-    },
-    1000, // Throttle to 1 second
-  )
+  // const throttledProgress = throttle(
+  //   (bytes: number, speed: number, percentage: number, writingSpeed: number, eta: string) => {
+  //     updateGameStatus({
+  //       appName: fileName,
+  //       folder: pathOutDir,
+  //       status: 'downloading',
+  //       progress: {
+  //         bytes: bytes.toString(),
+  //         eta: eta, // Placeholder, calculate ETA if needed
+  //         downSpeed: speed.toString(),
+  //         diskWriteSpeed: writingSpeed.toString(),
+  //         percent: percentage,
+  //       },
+  //     })
+  //   },
+  //   1000, // Throttle to 1 second
+  // )
 
   try {
-    await ensureDir(pathOutDir)
-    const dl = new EasyDl(url, zipPath, { existBehavior: 'overwrite', connections })
-    dl.on('progress', ({ total }) => {
-      const { bytes = 0, speed = 0, percentage = 0 } = total
-      const now = Date.now()
-      const elapsed = now - lastProgressUpdateTime
-      if (elapsed < 1000) return
-      const byteWritten = bytes - lastBytesWritten
-      const writingSpeed = byteWritten / (elapsed / 1000)
-      const remainingBytes = fileSize - bytes
-      const etaSeconds = speed > 0 ? remainingBytes / speed : 0
-      const etaStr = formatETA(etaSeconds)
+    // await ensureDir(pathOutDir)
+    // const dl = new EasyDl(url, zipPath, { existBehavior: 'overwrite', connections })
+    // dl.on('progress', ({ total }) => {
+    //   const { bytes = 0, speed = 0, percentage = 0 } = total
+    //   const now = Date.now()
+    //   const elapsed = now - lastProgressUpdateTime
+    //   if (elapsed < 1000) return
+    //   const byteWritten = bytes - lastBytesWritten
+    //   const writingSpeed = byteWritten / (elapsed / 1000)
+    //   const remainingBytes = fileSize - bytes
+    //   const etaSeconds = speed > 0 ? remainingBytes / speed : 0
+    //   const etaStr = formatETA(etaSeconds)
 
-      throttledProgress(bytes, speed, percentage, writingSpeed, etaStr)
+    //   throttledProgress(bytes, speed, percentage, writingSpeed, etaStr)
 
-      lastProgressUpdateTime = now
-      lastBytesWritten = bytes
-    })
+    //   lastProgressUpdateTime = now
+    //   lastBytesWritten = bytes
+    // })
 
-    signal?.addEventListener('abort', () => {
-      dl.destroy()
-    })
-    dl.on('error', (err) => {
-      console.error(err)
-    })
-    dl.on('retry', (ready) => {
-      console.log(ready)
-    })
-    const download = await dl.wait()
+    // signal?.addEventListener('abort', () => {
+    //   dl.destroy()
+    // })
+    // dl.on('error', (err) => {
+    //   console.error(err)
+    // })
+    // dl.on('retry', (ready) => {
+    //   console.log(ready)
+    // })
+    // const download = await dl.wait()
 
-    if (!download) {
-      throw new Error('Download stopped or pausedd')
-    }
+    // if (!download) {
+    //   throw new Error('Download stopped or pausedd')
+    // }
     if (existsSync(zipPath) && statSync(zipPath).isFile()) {
       await extractFile(zipPath, pathOutDir)
       // await extractFileTarZst(zipPath, pathOutDir)
@@ -282,12 +282,12 @@ function runCommand(command: string): Promise<void> {
 // }
 
 export function extractFile(zstPath: string, dest: string): Promise<void> {
-  const tarPath = zstPath.replace(/\.zst$/, '')
-  console.log(`Extracting ${zstPath} to ${dest}`) // -> path/to/xxx.zst;
-  console.log(`Extracting ${tarPath} to ${dest}`) // -> path/to/xxx.tar
+  const tarPath = zstPath.replace(/\.tar\.zst$/, '.tar')
+  console.log(`Extracting .zst: ${zstPath} → .tar: ${tarPath} → folder: ${dest}`)
   return new Promise((resolve, reject) => {
     if (process.platform === 'win32') {
       const zstdPath = path.join(process.resourcesPath, 'public', 'tools', 'zstd.exe')
+       const tarExePath = path.join(process.resourcesPath, 'public', 'tools', 'tar.exe')
       const zstd = spawn(zstdPath, ['-d', '--long=31', zstPath, '-o', tarPath], { cwd: dest })
       zstd.on('close', (code) => {
         if (code !== 0) {
@@ -295,9 +295,10 @@ export function extractFile(zstPath: string, dest: string): Promise<void> {
           return reject(new Error(`Failed to extract ${zstPath}`))
         }
         console.log(`Extracted ${tarPath} to ${dest}`)
-        const tarExePath = path.join(process.resourcesPath, 'public', 'tools', 'tar.exe')
-
         const tar = spawn(tarExePath, ['-xf', tarPath, '-C', dest], { cwd: dest })
+        if(!existsSync(tarExePath)) {
+          reject(new Error(`tar.exe not found at ${tarExePath}`))
+        }
         tar.on('close', (code) => {
           if (code !== 0) {
             console.error(`tar extraction failed with code ${code}`)

@@ -7,15 +7,29 @@ import { VitePlugin } from '@electron-forge/plugin-vite'
 import { FusesPlugin } from '@electron-forge/plugin-fuses'
 import { FuseV1Options, FuseVersion } from '@electron/fuses'
 import path from 'path'
+import { MakerRpm } from '@electron-forge/maker-rpm'
 
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
+    name: 'Steak',
+    executableName: 'Steak',
     extraResource: [path.resolve(__dirname, 'public')],
+    icon: path.resolve(__dirname, 'public/favicon.ico'),
+    buildVersion: '0.1.0-beta',
   },
   rebuildConfig: {},
   // makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
-  makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerDeb({})],
+  makers: [
+    new MakerSquirrel({
+      setupIcon: path.resolve(__dirname, 'public/favicon.ico'),
+      name: 'Steak',
+      setupExe: 'SteakSetup.exe',
+    }),
+    new MakerZIP({}, ['darwin', 'linux', 'win32']),
+    new MakerDeb({}),
+    new MakerRpm({}),
+  ],
   plugins: [
     new VitePlugin({
       // `build` can specify multiple entry builds, which can be Main process, Preload scripts, Worker process, etc.
