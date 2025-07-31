@@ -94,7 +94,7 @@ const handleOpenFolder = async () => {
 }
 
 const checkCapacity = async (path: string) => {
-  await useSystemIpc()
+  await useSystemIpc(path )
   const systemInfoStore = useSystemInfo()
   console.log(systemInfoStore.getSystemInfo())
 
