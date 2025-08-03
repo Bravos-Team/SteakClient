@@ -1,14 +1,11 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import path, { dirname } from 'node:path'
 import started from 'electron-squirrel-startup'
 import { fileURLToPath } from 'node:url'
 import { config } from 'dotenv'
-import { createMainWindow, getMainWindow } from './main_window'
-import { createLoginWindow, getLoginWindow } from './login_window'
-import { addHandler, addListener, sendFrontendMessage } from './ipc'
-import { configPath } from './constants/path'
-import { electronRendererUrl, steakLoginUrl } from './constants/url'
-import { UserInfo } from 'src/common/types/type'
+import { createMainWindow } from './main_window'
+import { addHandler } from './ipc'
+import { electronRendererUrl } from './constants/url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -53,10 +50,6 @@ app.whenReady().then(async () => {
     // lsProcess.on('close', (code) => {
     //   console.log(`ls process exited with code ${code}`);
     // });
-    const totalSize = (await getCapacitySystem()).totalSize
-    const freeSize = (await getCapacitySystem()).freeSize
-    console.log('Total system capacity:', totalSize)
-    console.log('Free system capacity:', freeSize)
     const main_window = await initializeMainWindow()
     // console.log(configPath)
     // console.log(await getSystemInfo())

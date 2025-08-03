@@ -40,6 +40,7 @@ const getFinished = (): DMQueueElement[] => {
   return store.get('finished', [])
 }
 const setFinished = (elements: DMQueueElement[]) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const cleanedElements = elements.map(({ downloadInfo, ...rest }) => rest)
   store.set('finished', cleanedElements)
 }

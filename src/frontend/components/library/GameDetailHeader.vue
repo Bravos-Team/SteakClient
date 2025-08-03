@@ -1,7 +1,7 @@
 <!-- GameDetailHeader.vue -->
 <template>
-  <div class="w-8/12 h-full p-2 gap-4">
-    <Card class="h-full p-0 gap-2 border-0 bg-[#1a1b1e] relative">
+  <div class="w-full min-h-full p-2 gap-4">
+    <Card class="h-full p-0 gap-2 border-0  bg-[#1a1b1e] relative">
       <div class="absolute top-4 left-4 z-10 bg-[#1a1b1e] p-2 rounded-md">
         <img
           src="https://ccdn.steak.io.vn/logo_steak.svg"

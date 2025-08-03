@@ -1,9 +1,9 @@
 <template>
   <Toaster />
   <SidebarProvider>
-    <div class="flex w-full h-screen">
+    <div class="flex w-full">
       <MainSidebar />
-      <MainContent class="flex-1 overflow-y-auto bg-[#101014]" />
+      <MainContent class="flex-1 bg-[#101014]" />
     </div>
   </SidebarProvider>
 </template>
@@ -17,11 +17,15 @@ const QueueStore = useDownloadQueueStore()
 
 import 'vue-sonner/style.css'
 import { useDownloadQueueStore } from '@/stores/download/useDownloadStore'
-useUseFromIpc()
-const info = await window.api.getDMQueueInformation()
-QueueStore.updateAll({
-  elements: info.elements,
-  finished: info.finished,
-  state: info.state,
+import { onMounted } from 'vue'
+onMounted(async () => {
+  await useUseFromIpc()
+  const info = await window.api.getDMQueueInformation()
+  QueueStore.updateAll({
+    elements: info.elements,
+    finished: info.finished,
+    state: info.state,
+  })
 })
+useUseFromIpc()
 </script>

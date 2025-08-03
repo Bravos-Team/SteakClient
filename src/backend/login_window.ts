@@ -1,4 +1,4 @@
-import { BrowserWindow, Menu, screen } from 'electron'
+import { BrowserWindow, screen } from 'electron'
 
 import path, { dirname } from 'path'
 

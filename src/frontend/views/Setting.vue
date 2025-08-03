@@ -111,17 +111,12 @@
               class="flex flex-col gap-2 bg-[#52525c] rounded-lg shadow-md h-full p-2 hover:bg-[#52525c]/80 hover:scale-105 transition-all duration-300"
             >
               <span class="flex h-full justify-between items-center gap-2">
-                <span class="flex  items-center text-xl gap-4">
+                <span class="flex items-center text-xl gap-4">
                   <img
                     src="../assets/image/icons8-online.gif"
                     class="h-full object-cover rounded-full"
                   />
-                  <span
-                    :class="[
-                      'text-lg font-semibold',
-                      `text-${getWifiSignalInfo(systemInfo.wifi?.signalLevel)?.color}-500`,
-                    ]"
-                  >
+                  <span :class="['text-lg font-semibold', ,]">
                     {{ systemInfo.wifi?.ssid || 'No WiFi' }}</span
                   >
                 </span>

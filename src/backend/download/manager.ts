@@ -1,4 +1,4 @@
-import { DMQueueElement, InstalledInfo } from 'src/common/types/type'
+import { DMQueueElement } from 'src/common/types/type'
 import { createAbortController } from '../util/aborthandler/aborthandler'
 import { updateFrontendQueue, updateGameStatus } from './events'
 import { installGame, stopDownloadFile } from './controller'
@@ -139,6 +139,11 @@ async function init() {
         appName: element.params.appName,
         folder: element.params.path,
         status: 'error',
+      })
+      stopDownloadFile(element.params.appName) // Stop the download if it failed
+      notify({
+        title: element.params.gameInfo.details.title || 'Download Failed',
+        body: `Download failed: ${(error as Error).message}`,
       })
     }
   }

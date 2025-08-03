@@ -1,7 +1,10 @@
 import { dialog, Notification } from 'electron'
 import { getMainWindow } from '../main_window'
 import { configPath, homePath } from '../constants/path'
-
+import path, { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 export type DialogProperty =
   | 'openFile'
   | 'openDirectory'
@@ -49,6 +52,9 @@ let currentNotify: Notification | null = null
 function notify({ title, body, icon }: NotifyType) {
   const main_window = getMainWindow()
   if (Notification.isSupported()) {
+    const pathicon = icon || path.join(__dirname, '../../frontend/assets/logo.svg.ico')
+    console.log(pathicon)
+
     if (currentNotify) {
       currentNotify.close() // Close the previous notification if it exists
       currentNotify = null
@@ -56,7 +62,7 @@ function notify({ title, body, icon }: NotifyType) {
     const notify = new Notification({
       title,
       body,
-      icon: icon,
+      icon: icon || pathicon,
     })
     notify.on('click', () => {
       if (main_window) {

@@ -8,15 +8,7 @@ import { Entry, open } from 'yauzl'
 import { updateGameStatus } from './download'
 import { callAbortController } from './util/aborthandler/aborthandler'
 import { exec, spawn } from 'node:child_process'
-import {
-  cpu,
-  fsSize,
-  graphics,
-  mem,
-  networkStats,
-  osInfo,
-  wifiConnections,
-} from 'systeminformation'
+import { cpu, fsSize, graphics, mem, osInfo, wifiConnections } from 'systeminformation'
 import { SystemInfo } from 'src/common/types/type'
 interface ProgressCallback {
   (downloadedBytes: number, downloadSpeed: number, progress: number, diskWriteSpeed: number): void
@@ -124,21 +116,21 @@ export const unzip = (zipPath: string, unzipToDir: string): Promise<void> => {
 }
 export async function downloadFile({ url, dest, fileName, signal }: DownloadArgs) {
   const zipPath = path.join(dest, `${fileName}`)
-  console.log(`Downloading from ${url} to ${zipPath}`)
+  // console.log(`Downloading from ${url} to ${zipPath}`)
 
-  const pathOutDir = dest
-  let fileSize = 0
-  console.log(`Starting download from ${pathOutDir} to ${zipPath}`)
+  // const pathOutDir = dest
+  // let fileSize = 0
+  // console.log(`Starting download from ${pathOutDir} to ${zipPath}`)
 
-  const connections = 5
+  // const connections = 5
 
-  try {
-    const response = await axiosClient.head(url)
-    fileSize = parseInt(response.headers['content-length'], 10)
-    console.log(`Expected file size: ${bytesToSize(fileSize)}`)
-  } catch (error) {
-    throw new Error(`Failed to get headers: ${(error as Error).message}`)
-  }
+  // try {
+  //   const response = await axiosClient.head(url)
+  //   fileSize = parseInt(response.headers['content-length'], 10)
+  //   console.log(`Expected file size: ${bytesToSize(fileSize)}`)
+  // } catch (error) {
+  //   throw new Error(`Failed to get headers: ${(error as Error).message}`)
+  // }
 
   // let lastBytesWritten = 0
   // let lastProgressUpdateTime = Date.now()
@@ -193,20 +185,23 @@ export async function downloadFile({ url, dest, fileName, signal }: DownloadArgs
     // const download = await dl.wait()
 
     // if (!download) {
-    //   throw new Error('Download stopped or pausedd')
+    //   throw new Error('Download stopped or paused')
     // }
     if (existsSync(zipPath) && statSync(zipPath).isFile()) {
-      await extractFile(zipPath, pathOutDir)
+      // await extractFile(zipPath, pathOutDir)
       // await extractFileTarZst(zipPath, pathOutDir)
       // console.log(`Extracting tar.zst file: ${zipPath} to ${pathOutDir}`)
       // const zipFileTar = zipPath.replace('.tar.zst', '.tar')
       // console.log(`Extracting tar file: ${zipFileTar} to ${pathOutDir}`)
       // await extractFileTar(zipFileTar, pathOutDir)
       // console.log(`Download and extraction completed successfully.`)
-      // console.log(dest + ' ' + path.basename(zipPath))
+      // console.log(dest + ' ' + path.basename(zipPath))]
+      const tarPath = zipPath.replace(/\.zst$/, '')
 
+      await extractFileTarZst(zipPath, tarPath)
       removeFolder(dest, path.basename(zipPath))
-      const tarPath = zipPath.replace(/\.zst$/, '') // -> path/to/xxx.tar
+      // -> path/to/xxx.tar
+      await extractFileTar(tarPath, dest)
       removeFolder(dest, path.basename(tarPath))
     }
   } catch (error) {
@@ -327,18 +322,85 @@ export function extractFile(zstPath: string, dest: string): Promise<void> {
     }
   })
 }
-export function extractFileTar(tarPath: string, dest: string): Promise<void> {
+
+export async function extractFileTarZst(zstPath: string, tarPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const command = `tar -xf ${tarPath} -C ${dest}`
-    runCommand(command)
-      .then(() => {
+    if (!existsSync(zstPath)) {
+      return reject(new Error(`File not found: ${zstPath}`))
+    }
+    if (process.platform === 'win32') {
+      const zstdPath = path.join(process.resourcesPath, 'public', 'tools', 'zstd.exe')
+      const tarExePath = path.join(process.resourcesPath, 'public', 'tools', 'tar.exe')
+
+      if (!existsSync(zstdPath)) return reject(new Error(`zstd.exe not found at ${zstdPath}`))
+      if (!existsSync(tarExePath)) return reject(new Error(`tar.exe not found at ${tarExePath}`))
+
+      const zstd = spawn(zstdPath, ['-d', '--long=31', zstPath, '-o', tarPath], {})
+      zstd.on('close', (code) => {
+        if (code !== 0) {
+          console.error(`zstd extraction failed with code ${code}`)
+          return reject(new Error(`Failed to extract ${zstPath}`))
+        }
+        console.log(`Extracted ${zstPath} to ${tarPath}`)
+        resolve()
+      })
+      zstd.stderr.on('data', (data) => {
+        console.error(`[zstd error]: ${data}`)
+      })
+      zstd.on('error', (err) => {
+        console.error(`Error extracting zst file: ${err}`)
+        reject(err)
+      })
+    } else {
+      const command = `zstd -d --long=31 ${zstPath} -o ${tarPath}`
+      runCommand(command)
+        .then(() => {
+          console.log(`Extracted ${zstPath} to ${tarPath}`)
+          resolve()
+        })
+        .catch((error) => {
+          console.error(`Error extracting zst file: ${error}`)
+          reject(error)
+        })
+    }
+  })
+}
+export async function extractFileTar(tarPath: string, dest: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (!existsSync(tarPath)) {
+      return reject(new Error(`File not found: ${tarPath}`))
+    }
+    if (process.platform === 'win32') {
+      const tarExePath = path.join(process.resourcesPath, 'public', 'tools', 'tar.exe')
+      if (!existsSync(tarExePath)) return reject(new Error(`tar.exe not found at ${tarExePath}`))
+      const tar = spawn(tarExePath, ['-xf', tarPath, '-C', dest], { cwd: dest })
+      tar.on('close', (code) => {
+        if (code !== 0) {
+          console.error(`tar extraction failed with code ${code}`)
+          return reject(new Error(`Failed to extract ${tarPath}`))
+        }
         console.log(`Extracted ${tarPath} to ${dest}`)
         resolve()
       })
-      .catch((error) => {
-        console.error(`Error extracting tar file: ${error}`)
-        reject(error)
+      tar.stderr.on('data', (data) => {
+        console.error(`[tar error]: ${data}`)
       })
+      tar.on('error', (err) => {
+        console.error(`Error extracting tar file: ${err}`)
+        reject(err)
+      })
+    } else {
+      const command = `tar -xf ${tarPath} -C ${dest}`
+      runCommand(command)
+        .then(() => {
+          console.log(`Extracted ${tarPath} to ${dest}`)
+          resolve()
+        })
+        .catch((error) => {
+          console.error(`Error extracting tar file: ${error}`)
+          reject(error)
+        })
+    }
   })
 }
 
@@ -420,7 +482,6 @@ export async function getSystemInfo(path?: string): Promise<{ systemInfo: System
     wifiConnections(),
     fsSize(),
   ])
-  console.log(memRaw)
 
   const storage = filterRealStorage(diskRaw, path)
   const wifi = wifiRaw[0] || null

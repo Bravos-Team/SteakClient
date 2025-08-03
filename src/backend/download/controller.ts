@@ -1,14 +1,13 @@
 import { ensureDir } from 'fs-extra'
 import { downloadFile, stopDownload, toPascalCase } from '../utils'
-import { DMQueueElement, DownloadInfo, InstallParams } from 'src/common/types/type'
+import { DMQueueElement, DownloadInfo } from 'src/common/types/type'
 import paths from 'path'
-import { homePath } from '../constants/path'
 import { updateGameStatus } from './events'
 import { notify } from '../dialog/dialog'
 
 async function installGame(element: DMQueueElement, signal?: AbortSignal) {
   const { appName, path, gameInfo } = element.params
-  const { downloadUrl, fileName } = element.downloadInfo as DownloadInfo
+  const { fileName } = element.downloadInfo as DownloadInfo
   console.log(`Installing game ${appName} at path ${path}`)
 
   // Path zipURL
@@ -16,7 +15,7 @@ async function installGame(element: DMQueueElement, signal?: AbortSignal) {
 
   // Path to download the file
   // const downloadPath = paths.join(homePath, 'Games', appName)
-  const outputPath = paths.join(path, toPascalCase(gameInfo.details.title))
+  const outputPath = paths.join(path, appName.toString())
 
   // console.log(`Downloading ${appName} from ${zipUrl} to ${outputPath}`)
 

@@ -1,6 +1,6 @@
 <!-- InstallInfoTab.vue -->
 <template>
-  <div class="mt-6 px-4 h-full w-full font-semibold text-white/75">
+  <div class="mt-6 px-4 w-full font-semibold text-white/75">
     <div class="flex items-center justify-between">
       <div class="flex items-center">
         <CloudDownload class="w-6 h-6 mr-2" />
