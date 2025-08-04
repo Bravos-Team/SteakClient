@@ -30,7 +30,7 @@
         as-child
         class="p-2 rounded-full bg-white/10 hover:bg-green-600 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
       >
-        <button @click="$emit('install', game.id)">
+        <button @click="$emit('launch', game.id)">
           <Play class="w-6 h-6 text-white" />
         </button>
       </DialogTrigger>
@@ -81,5 +81,6 @@ defineEmits<{
   (e: 'install', appName: string): void
   (e: 'delete', appName: string): void
   (e: 'save', appName: string): void
+  (e: 'launch', appName: string): void
 }>()
 </script>

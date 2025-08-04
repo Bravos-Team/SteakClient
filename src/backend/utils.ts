@@ -116,87 +116,80 @@ export const unzip = (zipPath: string, unzipToDir: string): Promise<void> => {
 }
 export async function downloadFile({ url, dest, fileName, signal }: DownloadArgs) {
   const zipPath = path.join(dest, `${fileName}`)
-  // console.log(`Downloading from ${url} to ${zipPath}`)
+  console.log(`Downloading from ${url} to ${zipPath}`)
 
-  // const pathOutDir = dest
-  // let fileSize = 0
-  // console.log(`Starting download from ${pathOutDir} to ${zipPath}`)
+  const pathOutDir = dest
+  let fileSize = 0
+  console.log(`Starting download from ${pathOutDir} to ${zipPath}`)
 
-  // const connections = 5
-
-  // try {
-  //   const response = await axiosClient.head(url)
-  //   fileSize = parseInt(response.headers['content-length'], 10)
-  //   console.log(`Expected file size: ${bytesToSize(fileSize)}`)
-  // } catch (error) {
-  //   throw new Error(`Failed to get headers: ${(error as Error).message}`)
-  // }
-
-  // let lastBytesWritten = 0
-  // let lastProgressUpdateTime = Date.now()
-
-  // const throttledProgress = throttle(
-  //   (bytes: number, speed: number, percentage: number, writingSpeed: number, eta: string) => {
-  //     updateGameStatus({
-  //       appName: fileName,
-  //       folder: pathOutDir,
-  //       status: 'downloading',
-  //       progress: {
-  //         bytes: bytes.toString(),
-  //         eta: eta, // Placeholder, calculate ETA if needed
-  //         downSpeed: speed.toString(),
-  //         diskWriteSpeed: writingSpeed.toString(),
-  //         percent: percentage,
-  //       },
-  //     })
-  //   },
-  //   1000, // Throttle to 1 second
-  // )
+  const connections = 5
 
   try {
-    // await ensureDir(pathOutDir)
-    // const dl = new EasyDl(url, zipPath, { existBehavior: 'overwrite', connections })
-    // dl.on('progress', ({ total }) => {
-    //   const { bytes = 0, speed = 0, percentage = 0 } = total
-    //   const now = Date.now()
-    //   const elapsed = now - lastProgressUpdateTime
-    //   if (elapsed < 1000) return
-    //   const byteWritten = bytes - lastBytesWritten
-    //   const writingSpeed = byteWritten / (elapsed / 1000)
-    //   const remainingBytes = fileSize - bytes
-    //   const etaSeconds = speed > 0 ? remainingBytes / speed : 0
-    //   const etaStr = formatETA(etaSeconds)
+    const response = await axiosClient.head(url)
+    fileSize = parseInt(response.headers['content-length'], 10)
+    console.log(`Expected file size: ${bytesToSize(fileSize)}`)
+  } catch (error) {
+    throw new Error(`Failed to get headers: ${(error as Error).message}`)
+  }
 
-    //   throttledProgress(bytes, speed, percentage, writingSpeed, etaStr)
+  let lastBytesWritten = 0
+  let lastProgressUpdateTime = Date.now()
 
-    //   lastProgressUpdateTime = now
-    //   lastBytesWritten = bytes
-    // })
+  const throttledProgress = throttle(
+    (bytes: number, speed: number, percentage: number, writingSpeed: number, eta: string) => {
+      updateGameStatus({
+        appName: fileName,
+        folder: pathOutDir,
+        status: 'downloading',
+        progress: {
+          bytes: bytes.toString(),
+          eta: eta, // Placeholder, calculate ETA if needed
+          downSpeed: speed.toString(),
+          diskWriteSpeed: writingSpeed.toString(),
+          percent: percentage,
+        },
+      })
+    },
+    1000, // Throttle to 1 second
+  )
 
-    // signal?.addEventListener('abort', () => {
-    //   dl.destroy()
-    // })
-    // dl.on('error', (err) => {
-    //   console.error(err)
-    // })
-    // dl.on('retry', (ready) => {
-    //   console.log(ready)
-    // })
-    // const download = await dl.wait()
+  try {
+    await ensureDir(pathOutDir)
+    const dl = new EasyDl(url, zipPath, { existBehavior: 'overwrite', connections })
+    dl.on('progress', ({ total }) => {
+      const { bytes = 0, speed = 0, percentage = 0 } = total
+      const now = Date.now()
+      const elapsed = now - lastProgressUpdateTime
+      if (elapsed < 1000) return
+      const byteWritten = bytes - lastBytesWritten
+      const writingSpeed = byteWritten / (elapsed / 1000)
+      const remainingBytes = fileSize - bytes
+      const etaSeconds = speed > 0 ? remainingBytes / speed : 0
+      const etaStr = formatETA(etaSeconds)
 
-    // if (!download) {
-    //   throw new Error('Download stopped or paused')
-    // }
+      throttledProgress(bytes, speed, percentage, writingSpeed, etaStr)
+
+      lastProgressUpdateTime = now
+      lastBytesWritten = bytes
+    })
+
+    signal?.addEventListener('abort', () => {
+      dl.destroy()
+    })
+    dl.on('error', (err) => {
+      console.error(err)
+    })
+    dl.on('retry', (ready) => {
+      console.log(ready)
+    })
+    const download = await dl.wait()
+
+    if (!download) {
+      throw new Error('Download stopped or paused')
+    }
     if (existsSync(zipPath) && statSync(zipPath).isFile()) {
-      // await extractFile(zipPath, pathOutDir)
-      // await extractFileTarZst(zipPath, pathOutDir)
-      // console.log(`Extracting tar.zst file: ${zipPath} to ${pathOutDir}`)
-      // const zipFileTar = zipPath.replace('.tar.zst', '.tar')
-      // console.log(`Extracting tar file: ${zipFileTar} to ${pathOutDir}`)
-      // await extractFileTar(zipFileTar, pathOutDir)
-      // console.log(`Download and extraction completed successfully.`)
-      // console.log(dest + ' ' + path.basename(zipPath))]
       const tarPath = zipPath.replace(/\.zst$/, '')
+      console.log(`Extracting ${zipPath} to ${tarPath}`)
 
       await extractFileTarZst(zipPath, tarPath)
       removeFolder(dest, path.basename(zipPath))
@@ -352,15 +345,18 @@ export async function extractFileTarZst(zstPath: string, tarPath: string): Promi
         reject(err)
       })
     } else {
-      const command = `zstd -d --long=31 ${zstPath} -o ${tarPath}`
-      runCommand(command)
-        .then(() => {
+      spawn('zstd', ['-d', '--long=31', zstPath, '-o', tarPath], {})
+        .on('close', (code) => {
+          if (code !== 0) {
+            console.error(`zstd extraction failed with code ${code}`)
+            return reject(new Error(`Failed to extract ${zstPath}`))
+          }
           console.log(`Extracted ${zstPath} to ${tarPath}`)
           resolve()
         })
-        .catch((error) => {
-          console.error(`Error extracting zst file: ${error}`)
-          reject(error)
+        .on('error', (err) => {
+          console.error(`Error extracting zst file: ${err}`)
+          reject(err)
         })
     }
   })
@@ -370,11 +366,8 @@ export async function extractFileTar(tarPath: string, dest: string): Promise<voi
     if (!existsSync(tarPath)) {
       return reject(new Error(`File not found: ${tarPath}`))
     }
-    if (process.platform === 'win32') {
-      const tarExePath = path.join(process.resourcesPath, 'public', 'tools', 'tar.exe')
-      if (!existsSync(tarExePath)) return reject(new Error(`tar.exe not found at ${tarExePath}`))
-      const tar = spawn(tarExePath, ['-xf', tarPath, '-C', dest], { cwd: dest })
-      tar.on('close', (code) => {
+    spawn('tar', ['-xf', tarPath, '-C', dest], {})
+      .on('close', (code) => {
         if (code !== 0) {
           console.error(`tar extraction failed with code ${code}`)
           return reject(new Error(`Failed to extract ${tarPath}`))
@@ -382,25 +375,10 @@ export async function extractFileTar(tarPath: string, dest: string): Promise<voi
         console.log(`Extracted ${tarPath} to ${dest}`)
         resolve()
       })
-      tar.stderr.on('data', (data) => {
-        console.error(`[tar error]: ${data}`)
-      })
-      tar.on('error', (err) => {
+      .on('error', (err) => {
         console.error(`Error extracting tar file: ${err}`)
         reject(err)
       })
-    } else {
-      const command = `tar -xf ${tarPath} -C ${dest}`
-      runCommand(command)
-        .then(() => {
-          console.log(`Extracted ${tarPath} to ${dest}`)
-          resolve()
-        })
-        .catch((error) => {
-          console.error(`Error extracting tar file: ${error}`)
-          reject(error)
-        })
-    }
   })
 }
 

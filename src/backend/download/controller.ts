@@ -7,7 +7,8 @@ import { notify } from '../dialog/dialog'
 
 async function installGame(element: DMQueueElement, signal?: AbortSignal) {
   const { appName, path, gameInfo } = element.params
-  const { fileName } = element.downloadInfo as DownloadInfo
+
+  const { fileName, downloadUrl } = element.downloadInfo as DownloadInfo
   console.log(`Installing game ${appName} at path ${path}`)
 
   // Path zipURL
@@ -37,7 +38,7 @@ async function installGame(element: DMQueueElement, signal?: AbortSignal) {
   // Download the file
   await downloadFile({
     fileName,
-    url: zipUrl,
+    url: downloadUrl,
     dest: outputPath,
     signal,
   })

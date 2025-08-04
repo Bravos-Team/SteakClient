@@ -16,6 +16,7 @@
           @install="handleInstall"
           @delete="handleDelete"
           @save="saveGame"
+          @launch="handleLaunch"
         />
       </div>
       <div></div>
@@ -162,6 +163,9 @@ const fetchGameData = async (id: string) => {
   }
 }
 
+const handleLaunch = async (Id: string) => {
+  await window.api.launchGame(Id)
+}
 // Xử lý sự kiện cài đặt
 const handleInstall = async (Id: string) => {
   if (await fetchGameData(Id)) {
@@ -193,7 +197,6 @@ const install = async (params: InstallParams) => {
   })
   try {
     await installGame(toRaw(clonedParams), toRaw(clonedDownloadInfo))
- 
   } catch (error: any) {
     toast.error('Error during installation: ' + error.message)
   } finally {
