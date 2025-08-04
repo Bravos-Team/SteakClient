@@ -3,14 +3,21 @@ I
   <Dialog v-model:open="isDialogOpen">
     <div
       v-if="installParamsInfo?.gameInfo?.details && !isGameInfoFetching"
-      class="flex w-full h-full relative"
+      class="flex w-full h-full relative z-10"
     >
-      <img
-        :src="installParamsInfo?.gameInfo?.details?.thumbnail"
-        :alt="installParamsInfo?.appName"
-        class="w-full h-full object-cover absolute z-0 opacity-50 blur-sm rounded-t-md"
-      />
-      <div class="absolute inset-0 bg-black/50 z-10"></div>
+      <div
+        class="absolute inset-0 max-h-[100rem] min-w-full bg-cover bg-center blur-xs z-0 2xl:block md:hidden"
+        :style="{
+          background: `url(${showBgUrl(installParamsInfo?.gameInfo?.details?.thumbnail)}) no-repeat center center / cover`,
+        }"
+      ></div>
+
+      <div
+        class="absolute inset-0 max-h-[200rem] min-h-[110rem] min-w-full bg-cover bg-center blur-xs z-0 md:block 2xl:hidden"
+        :style="{
+          background: `url(${showBgUrl(installParamsInfo?.gameInfo?.details?.thumbnail)}) no-repeat center center / cover`,
+        }"
+      ></div>
       <div class="absolute top-6 left-6 z-20">
         <Button
           @click="routeBackToLibrary"
@@ -20,13 +27,17 @@ I
         </Button>
       </div>
 
-      <div class="min-w-[1600px] h-4/5 m-auto flex gap-2">
+      <div
+        class="w-full h-full py-[5rem] m-auto flex 2xl:px-[2rem] px-0 sm:px-[1rem] flex-wrap 2xl:flex-nowrap gap-2"
+      >
         <GameDetailHeader
           :game-info="installParamsInfo.gameInfo"
           :install-params="installParamsInfo"
           @install="handleInstall"
         />
-        <GameInfoTabs :install-params="installParamsInfo" />
+        <div class="w-full h-full 2xl:basis-6/12">
+          <GameInfoTabs :install-params="installParamsInfo" />
+        </div>
       </div>
     </div>
     <InstallDialog
@@ -41,7 +52,7 @@ I
   </Dialog>
 </template>
 <script setup lang="ts">
-import { nextTick, onBeforeMount, ref, toRaw, watchEffect } from 'vue'
+import { nextTick, onBeforeMount, onMounted, ref, toRaw, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGetGameInfo, useGetGameDownloadInfo } from '@/hooks/library/useMyLibrary'
 import type { DownloadInfo, InstallParams } from '@/types/type'
@@ -58,21 +69,7 @@ import { useSystemIpc } from '@/composables/useSystemIpc'
 import { useSystemInfo } from '@/stores/util'
 const LibraryStore = useGameLibrary()
 const QueueStore = useDownloadQueueStore()
-
 const route = useRoute()
-const router = useRouter()
-const installParamsInfo = ref<InstallParams>({} as InstallParams)
-const downloadParamsInfo = ref<DownloadInfo>({} as DownloadInfo)
-
-const capacityDisks = ref<{ totalSize: number; freeSize: number; remaining: number }>({
-  totalSize: 0,
-  freeSize: 0,
-  remaining: 0,
-})
-const isDialogOpen = ref(false)
-const isInstalling = ref(false)
-const isFetching = ref(false)
-
 const {
   data: gameInfo,
   isFetching: isGameInfoFetching,
@@ -84,18 +81,23 @@ const {
   refetch: refetchDownloadParams,
 } = useGetGameDownloadInfo(route.params.id as string)
 
+const router = useRouter()
+const installParamsInfo = ref<InstallParams>({ ...gameInfo.value } as InstallParams)
+const downloadParamsInfo = ref<DownloadInfo>({ ...downloadParams.value } as DownloadInfo)
+
+const capacityDisks = ref<{ totalSize: number; freeSize: number; remaining: number }>({
+  totalSize: 0,
+  freeSize: 0,
+  remaining: 0,
+})
+const isDialogOpen = ref(false)
+const isInstalling = ref(false)
+const isFetching = ref(false)
+
 const routeBackToLibrary = () => {
   router.push('/library')
 }
 
-watchEffect(() => {
-  if (gameInfo.value) {
-    installParamsInfo.value.gameInfo = { ...gameInfo.value }
-    downloadParamsInfo.value = { ...downloadParams.value }
-    installParamsInfo.value.size = downloadParams.value?.fileSize || 0
-    installParamsInfo.value.installSize = downloadParams.value?.installSize || 0
-  }
-})
 const { saveGame, openFolder, installGame } = LibraryStore
 const handleOpenFolder = async () => {
   const folderPath = await openFolder()
@@ -158,6 +160,10 @@ const fetchGameData = async () => {
     return false
   }
 }
+
+const showBgUrl = (url: string) => {
+  return url ? url : 'https://ccdn.steak.io.vn/logo_steak.svg'
+}
 const install = async (params: InstallParams) => {
   if (!params.path) {
     toast.error('Please select an installation path')
@@ -188,5 +194,10 @@ onBeforeMount(async () => {
   await nextTick()
   await refetchGameInfo()
   await refetchDownloadParams()
+  installParamsInfo.value.gameInfo = { ...gameInfo.value }
+  downloadParamsInfo.value = { ...downloadParams.value }
+  installParamsInfo.value.size = downloadParams.value?.fileSize || 0
+  installParamsInfo.value.installSize = downloadParams.value?.installSize || 0
 })
+onMounted(async () => {})
 </script>

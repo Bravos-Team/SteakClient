@@ -1,4 +1,3 @@
-import router from '@/router'
 import axios from 'axios'
 
 export const SteakApi = axios.create({

@@ -1,7 +1,6 @@
 import { getGameDownloadInfo, getGameInfo, getMyLibrary } from '@/apis/library/library'
-import { GameLibrary } from '@/types/type'
 import { useQuery } from '@tanstack/vue-query'
-import { computed, Ref } from 'vue'
+import { Ref } from 'vue'
 
 export const useGetLibraryList = () => {
   return useQuery({

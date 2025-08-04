@@ -1,6 +1,6 @@
 import { useGetGameDownloadInfo, useGetGameInfo } from '@/hooks/library/useMyLibrary'
 import { InstallParams } from '@/types/type'
-import { reactive, Ref, watch, watchEffect } from 'vue'
+import { reactive, watch } from 'vue'
 
 // composables/useGameDetails.ts
 export function useGameDetails(gameId: string) {

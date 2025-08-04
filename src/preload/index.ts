@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, shell } from 'electron'
+import { contextBridge } from 'electron'
 
 import api from './api'
 contextBridge.exposeInMainWorld('api', api)

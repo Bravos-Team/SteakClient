@@ -7,16 +7,18 @@ export function useDownloadManagerSync() {
   onMounted(() => {
     const handleDMQueueInformation = window.api.handleDMQueueInformation(
       async (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         e: any,
         elements: DMQueueElement[],
         finished: DMQueueElement[],
         state: DownloadManagerState,
       ) => {
-        console.log('Received DM queue information:', elements, finished, state);
-        
+        console.log('Received DM queue information:', elements, finished, state)
+
         QueueStore.updateAll({ elements, finished, state })
       },
     )
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleGameStatus = window.api.handleGameStatus((e: any, payload: GameStatus) => {
       DownloadStore.setGameStatus(payload)
       console.log('Game status updated:', payload)
@@ -25,8 +27,7 @@ export function useDownloadManagerSync() {
     onUnmounted(() => {
       handleDMQueueInformation()
       handleGameStatus()
-      console.log('Unmounting useDownloadManagerSync, cleaning up listeners');
-      
+      console.log('Unmounting useDownloadManagerSync, cleaning up listeners')
     })
   })
 }

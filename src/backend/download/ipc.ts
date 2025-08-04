@@ -4,6 +4,7 @@ import {
   addToQueue,
   cancelDownload,
   getQueueInformation,
+  launch,
   paused,
   removeFinished,
   resumeDownload,
@@ -39,11 +40,7 @@ addListener('removeFinished', (e, appName) => {
   removeFinished(appName)
 })
 addHandler('launchGame', async (e, appName) => {
-  const installedElement = getInstalledGames()
-  if (installedElement[appName]) {
-    launchGame(
-      installedElement[appName].executable,
-      installedElement[appName].install_path
-    )
-  }
+  console.log(appName);
+  
+  launch(appName)
 })

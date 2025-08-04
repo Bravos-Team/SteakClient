@@ -1,4 +1,4 @@
-type QUERY_KEY_TYPE<T = any> = (...args: any[]) => readonly [string, ...any[]]
+type QUERY_KEY_TYPE = (...args: unknown[]) => readonly [string, ...unknown[]]
 
 export default QUERY_KEY_TYPE
 

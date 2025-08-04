@@ -16,8 +16,10 @@
           @install="handleInstall"
           @delete="handleDelete"
           @save="saveGame"
+          @launch="handleLaunch"
         />
       </div>
+      <div></div>
       <InstallDialog
         v-if="isDialogOpen && !isQueryGameInfoFetching"
         :installParams="installState.params"
@@ -33,14 +35,14 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, toRaw, computed, onBeforeMount } from 'vue'
+import { ref, toRaw, computed, onBeforeMount, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
 import ComboboxSearch from '@/components/ComboboxSearch.vue'
 
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { DownloadInfo, GameDetails, GameLibrary, InstallParams } from '@/types/type'
+import { DMQueueElement, DownloadInfo, GameDetails, GameLibrary, InstallParams } from '@/types/type'
 
 import GameCard from '@/components/library/GameCard.vue'
 
@@ -65,12 +67,15 @@ const capacityDisks = ref<{ totalSize: number; freeSize: number; remaining: numb
 })
 const LibraryStore = useGameLibrary()
 const QueueStore = useDownloadQueueStore()
+const DMQueueElements = ref([] as string[])
+const DMFinished = ref([] as string[])
 const selectedGameId = ref('')
 const installPath = ref('')
 const installState = ref<{ params: InstallParams; downloadInfo: DownloadInfo }>({
   params: {} as InstallParams,
   downloadInfo: {} as DownloadInfo,
 })
+
 const { saveGame, openFolder, installGame } = LibraryStore
 const {
   data: gameInfo,
@@ -94,7 +99,7 @@ const handleOpenFolder = async () => {
 }
 
 const checkCapacity = async (path: string) => {
-  await useSystemIpc(path )
+  await useSystemIpc(path)
   const systemInfoStore = useSystemInfo()
   console.log(systemInfoStore.getSystemInfo())
 
@@ -125,7 +130,8 @@ const games = computed(() => {
       id: game.gameId,
       title: game.title,
       image: game.thumbnailUrl,
-      installable: true,
+      isInQueue: DMQueueElements.value.includes(game.gameId),
+      isFinished: DMFinished.value.includes(game.gameId),
     })) ?? []
   )
 })
@@ -157,6 +163,9 @@ const fetchGameData = async (id: string) => {
   }
 }
 
+const handleLaunch = async (Id: string) => {
+  await window.api.launchGame(Id)
+}
 // Xử lý sự kiện cài đặt
 const handleInstall = async (Id: string) => {
   if (await fetchGameData(Id)) {
@@ -188,7 +197,6 @@ const install = async (params: InstallParams) => {
   })
   try {
     await installGame(toRaw(clonedParams), toRaw(clonedDownloadInfo))
-    toast.success(`Installed game ${params.appName} successfully!`)
   } catch (error: any) {
     toast.error('Error during installation: ' + error.message)
   } finally {
@@ -196,8 +204,18 @@ const install = async (params: InstallParams) => {
   }
 }
 
-onBeforeMount(async () => {
-  // await refetchGameInfo()
-  // await refetchDownloadParams()
+onMounted(async () => {
+  const info = await window.api.getDMQueueInformation()
+  QueueStore.updateAll({
+    elements: info.elements,
+    finished: info.finished,
+    state: info.state,
+  })
+  DMQueueElements.value = QueueStore.getQueue().map(
+    (item: DMQueueElement) => item.params.appName as string,
+  )
+  DMFinished.value = QueueStore.getFinished().map(
+    (item: DMQueueElement) => item.params.appName as string,
+  )
 })
 </script>

@@ -1,4 +1,4 @@
-import { DMQueueElement, InstalledInfo } from 'src/common/types/type'
+import { DMQueueElement } from 'src/common/types/type'
 import { createAbortController } from '../util/aborthandler/aborthandler'
 import { updateFrontendQueue, updateGameStatus } from './events'
 import { installGame, stopDownloadFile } from './controller'
@@ -16,7 +16,7 @@ import {
   setQueue,
   setQueueState,
 } from './state'
-import { removeFolder, toPascalCase } from '../utils'
+import { launchGame, removeFolder, toPascalCase } from '../utils'
 import path from 'path'
 import { homePath } from '../constants/path'
 import { notify } from '../dialog/dialog'
@@ -60,15 +60,12 @@ async function init() {
       element.endTime = Date.now()
       element.status = 'done'
 
-      // Update the finished elements
-      console.log(element.downloadInfo)
-
       const installedElements = getInstalledGames()
       if (!installedElements[element.params.appName]) {
         installedElements[element.params.appName] = {
           appName: element.params.appName,
           executable: element.downloadInfo?.execPath || '',
-          install_path: element.params.path,
+          install_path: path.join(element.params.path, element.params.appName.toString()),
           install_size: element.params.installSize || 0,
 
           version: element.params.gameInfo.details.version,
@@ -139,6 +136,11 @@ async function init() {
         appName: element.params.appName,
         folder: element.params.path,
         status: 'error',
+      })
+      stopDownloadFile(element.params.appName) // Stop the download if it failed
+      notify({
+        title: element.params.gameInfo.details.title || 'Download Failed',
+        body: `Download failed: ${(error as Error).message}`,
       })
     }
   }
@@ -240,7 +242,7 @@ function cancelDownload(appName: string) {
   }
 
   notify({
-    title: queue[index]?.params.gameInfo.details.title || 'Download Cancelled',
+    title: queue[index]?.params.gameInfo.details.id || 'Download Cancelled',
     body: `Download cancelled`,
   })
   // Remove the app from the queue
@@ -250,7 +252,7 @@ function cancelDownload(appName: string) {
     setCurrentElement(null)
     stopDownloadFile(appName) // Stop the download using the utility function
 
-    removeFolder(outputPath, toPascalCase(queue[index]?.params.gameInfo.details.title || '')) // Remove the folder if needed
+    removeFolder(outputPath, queue[index]?.params.gameInfo.details.id || '') // Remove the folder if needed
     setQueueState('idle') // Update the queue state to idle
   }
   // Update the current element status to aborted
@@ -308,10 +310,7 @@ function removeFinished(appName: string) {
   const index = finishedElements.findIndex((el) => el.params.appName === appName)
   const outputPath = finishedElements[index]?.params.path || path.join(homePath, 'Games')
   console.log(`Removing finished download for app: ${appName} at path: ${outputPath}`)
-  removeFolder(
-    outputPath,
-    toPascalCase(finishedElements[index]?.params.gameInfo.details.title || ''),
-  )
+  removeFolder(outputPath, finishedElements[index]?.params.gameInfo.details.id.toString() || '')
   notify({
     title: finishedElements[index]?.params.gameInfo.details.title || 'Download Finished',
     body: `Removed finished download`,
@@ -334,6 +333,22 @@ function getQueueInformation() {
     state: getQueueState(),
   }
 }
+
+function launch(appName: string) {
+  const installedElements = getInstalledGames()
+  if (installedElements[appName]) {
+    const { executable, install_path } = installedElements[appName]
+    notify({
+      title: appName,
+      body: `Launching game...`,
+    })
+    const safeExecutable = executable.replace(/^[/\\]+/, '')
+
+    const fullPath = path.join(install_path, safeExecutable)
+
+    launchGame(fullPath, install_path)
+  }
+}
 export {
   init,
   addToQueue,
@@ -342,4 +357,5 @@ export {
   resumeDownload,
   getQueueInformation,
   removeFinished,
+  launch,
 }
