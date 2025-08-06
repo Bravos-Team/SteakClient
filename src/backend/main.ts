@@ -33,23 +33,12 @@ if (process.platform === 'linux')
 app.whenReady().then(async () => {
   try {
     if (process.platform === 'darwin') {
-      app.setAppUserModelId('steak-client-app')
+      app.setAppUserModelId('steak')
     }
     // const url = 'https://api.github.com/repos/GloriousEggroll/wine-ge-custom/releases'
     // const type = 'Wine-GE' as VersionInfo['type']
     // const count = 10
-    // const versioninfo = await fetchReleases({ url, type, count })
-    // console.log('Fetched Wine-GE releases:', versioninfo)
-    // const lsProcess = spawn('out/steak-client-app-linux-x64/steak-client-app')
-    // lsProcess.stdout.on('data', (data) => {
-    //   console.log(`stdout: ${data}`);
-    // });
-    // lsProcess.stderr.on('data', (data) => {
-    //   console.error(`stderr: ${data}`);
-    // });
-    // lsProcess.on('close', (code) => {
-    //   console.log(`ls process exited with code ${code}`);
-    // });
+   
     const main_window = await initializeMainWindow()
     // console.log(configPath)
     // console.log(await getSystemInfo())

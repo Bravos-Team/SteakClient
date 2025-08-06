@@ -53,7 +53,6 @@ function notify({ title, body, icon }: NotifyType) {
   const main_window = getMainWindow()
   if (Notification.isSupported()) {
     const pathicon = icon || path.join(__dirname, '../../frontend/assets/logo.svg.ico')
-    console.log(pathicon)
 
     if (currentNotify) {
       currentNotify.close() // Close the previous notification if it exists

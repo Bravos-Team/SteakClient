@@ -9,8 +9,7 @@ import {
   removeFinished,
   resumeDownload,
 } from './manager'
-import { getInstalledGames } from './state'
-import { launchGame } from '../utils'
+
 
 addHandler('install', async (e, args, data) => {
   const dmQueueElement: DMQueueElement = {
