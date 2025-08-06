@@ -52,6 +52,33 @@ const removeFromQueue = (appName: string) => {
     setQueue(queue)
   }
 }
+const removeFromFinished = (appName: string) => {
+  const finished = getFinished()
+  const index = finished.findIndex((el) => el.params.appName === appName)
+  if (index !== -1) {
+    finished.splice(index, 1)
+    setFinished(finished)
+  }
+}
+const removeFromInstalledGames = (appName: string) => {
+  const installedGames = getInstalledGames()
+  if (installedGames[appName]) {
+    delete installedGames[appName]
+    setInstalledGames(installedGames)
+  }
+}
+const indexOfQueueElement = (appName: string): number => {
+  const queue = getQueue()
+  return queue.findIndex((el) => el.params.appName === appName)
+}
+const indexOfFinishedElement = (appName: string): number => {
+  const finished = getFinished()
+  return finished.findIndex((el) => el.params.appName === appName)
+}
+const indexOfInstalledGame = (appName: string): number => {
+  const installedGames = getInstalledGames()
+  return Object.keys(installedGames).indexOf(appName)
+}
 
 export {
   queueState,
@@ -67,4 +94,9 @@ export {
   getCurrentElement,
   setCurrentElement,
   removeFromQueue,
+  removeFromFinished,
+  removeFromInstalledGames,
+  indexOfQueueElement,
+  indexOfFinishedElement,
+  indexOfInstalledGame,
 }

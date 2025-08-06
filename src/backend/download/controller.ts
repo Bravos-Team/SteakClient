@@ -12,7 +12,7 @@ async function installGame(element: DMQueueElement, signal?: AbortSignal) {
   console.log(`Installing game ${appName} at path ${path}`)
 
   // Path zipURL
-  const zipUrl = `https://mmatechnical.com/Download/Download-Test-File/(MMA)-500MB.zip`
+  const testUrl = `https://mmatechnical.com/Download/Download-Test-File/(MMA)-500MB.zip`
 
   // Path to download the file
   // const downloadPath = paths.join(homePath, 'Games', appName)

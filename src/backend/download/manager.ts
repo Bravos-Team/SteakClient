@@ -9,6 +9,10 @@ import {
   getInstalledGames,
   getQueue,
   getQueueState,
+  indexOfFinishedElement,
+  indexOfQueueElement,
+  removeFromFinished,
+  removeFromInstalledGames,
   removeFromQueue,
   setCurrentElement,
   setFinished,
@@ -16,15 +20,18 @@ import {
   setQueue,
   setQueueState,
 } from './state'
-import { launchGame, removeFolder, toPascalCase } from '../utils'
+import { launchGame, removeFolder } from '../utils'
 import path from 'path'
 import { homePath } from '../constants/path'
 import { notify } from '../dialog/dialog'
+import { getMainWindow } from '../main_window'
+import axios, { AxiosError } from 'axios'
+import { DownloadInfo } from '@/types/type'
 
 // Function to initialize the download queue
 
 async function init() {
-  let queue = getQueue()
+  const queue = getQueue()
   if (!queue.length) {
     setQueueState('idle')
     return
@@ -85,8 +92,7 @@ async function init() {
       }
 
       // Remove the current element from the queue
-      queue = getQueue()
-      queue.shift()
+      removeFromQueue(element.params.appName)
 
       setQueue(queue)
       // Update the finished elements in the state
@@ -126,10 +132,10 @@ async function init() {
       setCurrentElement(element)
       // Update the queue state to idle
       setQueueState('idle')
-      // Remove errored element from queue
-      queue = getQueue()
-      queue.shift()
+      queue[0].status = 'error' // Set the status of the first element to error
       setQueue(queue)
+      // Remove errored element from queue
+
       // Remove the current element from the queue
       updateFrontendQueue(getQueue(), getQueueState(), getFinished())
       updateGameStatus({
@@ -138,10 +144,57 @@ async function init() {
         status: 'error',
       })
       stopDownloadFile(element.params.appName) // Stop the download if it failed
+
+      if (error instanceof Error && error.message.includes('headers')) {
+        const mainWindow = getMainWindow()
+        if (mainWindow) {
+          const url = new URL('/api/v1/user', 'https://api.steak.io.vn')
+          const cookie = await mainWindow.webContents.session.cookies.get({
+            url: url.href,
+            name: 'access_token',
+          })
+          const token = cookie[0]?.value
+          const res = await axios
+            .get(
+              'https://api.steak.io.vn/api/v1/store/public/games/download/' +
+                element.params.appName,
+              {
+                headers: {
+                  Cookie: `access_token=${token}`,
+                  'Content-Type': 'application/json',
+                },
+              },
+            )
+            .catch((err: AxiosError) => {
+              if (err.response?.status === 401) {
+                notify({
+                  title: element.params.gameInfo.details.title || 'Download Failed',
+                  body: `Login expired, please login again`,
+                })
+              } else {
+                notify({
+                  title: element.params.gameInfo.details.title || 'Download Failed',
+                  body: `Download failed: ${(err as Error).message}`,
+                })
+              }
+              return null
+            })
+
+          if (res && res.data) {
+            queue[0].downloadInfo = res.data as DownloadInfo
+            queue[0].status = 'downloading'
+            setQueue(queue)
+            init() // Reinitialize the queue to start the download again
+          }
+        }
+        return
+      }
       notify({
         title: element.params.gameInfo.details.title || 'Download Failed',
         body: `Download failed: ${(error as Error).message}`,
       })
+      removeFromQueue(element.params.appName) // Remove the element from the queue
+      setQueue(queue)
     }
   }
 }
@@ -152,11 +205,12 @@ async function addToQueue(element: DMQueueElement) {
     throw new Error('Invalid element or missing appName in params')
   }
   const elements = getQueue()
+  const index = indexOfQueueElement(element.params.appName)
   // Check if the element already exists in the queue
-  const elementIndex = elements.findIndex((el) => el.params.appName === element.params.appName)
-  if (elementIndex >= 0) {
+
+  if (index >= 0) {
     // If it exists, update the existing element
-    elements[elementIndex] = element
+    elements[index] = element
   } else {
     // If it doesn't exist, add the new element to the queue
     elements.push(element)
@@ -218,6 +272,7 @@ function paused(appName: string) {
     title: queue[0]?.params.gameInfo.details.title || 'Download Paused',
     body: `Paused ...`,
   })
+
   const remainingQueue = queue.filter((el) => el.status !== 'paused')
   if (remainingQueue.length > 0) {
     init() // Reinitialize the queue to handle the paused state
@@ -227,15 +282,15 @@ function paused(appName: string) {
 }
 
 // Function to cancel a download
-
 function cancelDownload(appName: string) {
   if (!appName) {
     throw new Error('App name is required to cancel the download')
   }
   // Check if the current element is downloading the specified app
   const queue = getQueue()
-  const index = queue.findIndex((el) => el.params.appName === appName)
+  const index = indexOfQueueElement(appName)
   const outputPath = queue[index]?.params.path || path.join(homePath, 'Games')
+
   if (index < 0) {
     console.warn(`No download found for ${appName} in the queue`)
     return
@@ -251,10 +306,9 @@ function cancelDownload(appName: string) {
     // If the current element is the one being cancelled, set it to null
     setCurrentElement(null)
     stopDownloadFile(appName) // Stop the download using the utility function
-
-    removeFolder(outputPath, queue[index]?.params.gameInfo.details.id || '') // Remove the folder if needed
     setQueueState('idle') // Update the queue state to idle
   }
+  setQueueState('idle') // Update the queue state to idle
   // Update the current element status to aborted
   const isCurrent = getCurrentElement()?.params.appName === appName
   if (isCurrent) {
@@ -279,53 +333,79 @@ function cancelDownload(appName: string) {
 
 // Function to resume a paused download
 function resumeDownload(appName: string) {
-  console.log(`Resuming download for app: ${appName}`)
-  console.log(`Current queue state: ${getQueueState()}`)
-
+  console.log(123)
+  const queue = getQueue()
+  const index = indexOfQueueElement(appName)
   const currentElement = getCurrentElement()
-  const queue = [...getQueue()]
-  console.log(`Current element: ${currentElement ? currentElement.params.appName : 'none'}`)
+  const queueState = getQueueState()
 
-  if (getQueueState() === 'running' && currentElement?.params.appName !== appName) {
-    if (currentElement) {
-      stopDownloadFile(currentElement.params.appName) // Stop the current download if it's running
-      setCurrentElement(null) // Clear the current element
+  console.log(queue[index].status)
+
+  if (!appName) {
+    throw new Error('App name is required to resume the download')
+  }
+  // Check if the app exists in the queue
+  if (queueState === 'running' && currentElement?.params.appName !== appName) {
+    if (currentElement !== null) {
+      stopDownloadFile(currentElement.params.appName)
+      setCurrentElement(null)
     }
   }
-  const index = queue.findIndex((el) => el.params.appName === appName)
-  if (index >= 0) {
+
+  if (index >= 0 && (queue[index].status === 'error' || queue[index].status === 'paused')) {
+    console.log(432)
+
+    queue[index].status = 'downloading' // Set the status of the resumed element to downloading
+    queue[index].startTime = Date.now() // Reset the start time for the resumed element
+
     const [resumedElement] = queue.splice(index, 1)
     queue.unshift(resumedElement)
-    queue[0].status = 'downloading' // Set the resumed element status to downloading
+    setCurrentElement(null)
     setQueue(queue)
   }
-  console.log(getQueueState())
 
   if (!getCurrentElement()) {
+    console.log(21312321)
+
     init()
   }
 }
+
 function removeFinished(appName: string) {
-  const finishedElements = getFinished()
-  const index = finishedElements.findIndex((el) => el.params.appName === appName)
-  const outputPath = finishedElements[index]?.params.path || path.join(homePath, 'Games')
-  console.log(`Removing finished download for app: ${appName} at path: ${outputPath}`)
-  removeFolder(outputPath, finishedElements[index]?.params.gameInfo.details.id.toString() || '')
+  // Check if the app exists in the finished downloads
+  if (!appName) {
+    throw new Error('App name is required to remove a finished download')
+  }
+
+  // Find the index of the finished element
+  const index = indexOfFinishedElement(appName)
+  if (index < 0) {
+    console.warn(`No finished download found for ${appName}`)
+    return
+  }
+
+  // find the output path for the finished element
+  const outputPath = getFinished()[index]?.params.path || path.join(homePath, 'Games')
+
+  // Remove folder in the output path for the finished element
+  removeFolder(outputPath, getFinished()[index]?.params.gameInfo.details.id.toString() || '')
+
+  // Remove the finished element from the state
+  removeFromFinished(appName)
+
+  // Remove the installed game information
+  removeFromInstalledGames(appName)
+
+  // Notify the frontend about the removed finished download
   notify({
-    title: finishedElements[index]?.params.gameInfo.details.title || 'Download Finished',
+    title: getFinished()[index]?.params.gameInfo.details.title || 'Download Finished',
     body: `Removed finished download`,
   })
-  if (index >= 0) {
-    finishedElements.splice(index, 1)
-    setFinished(finishedElements)
-  } else {
-    console.warn(`No finished download found for ${appName}`)
-  }
-  updateFrontendQueue(getQueue(), getQueueState(), finishedElements)
-  console.log(`Removed finished download for ${appName}`)
 
-  // Remove the folder if needed
+  // Update the queue state and current element
+  updateFrontendQueue(getQueue(), getQueueState(), getFinished())
 }
+// Function to get the current queue information
 function getQueueInformation() {
   return {
     elements: getQueue(),
@@ -333,7 +413,7 @@ function getQueueInformation() {
     state: getQueueState(),
   }
 }
-
+// Function to launch a game
 function launch(appName: string) {
   const installedElements = getInstalledGames()
   if (installedElements[appName]) {
