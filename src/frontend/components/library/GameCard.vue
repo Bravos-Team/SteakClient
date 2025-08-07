@@ -2,7 +2,10 @@
   <div
     class="group/game transition-transform duration-300 hover:scale-105 flex flex-col rounded-md bg-muted/50 overflow-hidden"
   >
-    <RouterLink :to="`/library/${game.id}`" class="relative w-full aspect-[3/4]">
+    <RouterLink
+      :to="`/library/${game.id}?${game.lastPlayedAt}`"
+      class="relative w-full aspect-[3/4]"
+    >
       <img
         class="grayscale group-hover/game:grayscale-0 transition-all w-full h-full object-cover"
         :src="game.image"
@@ -25,15 +28,15 @@
         <Trash2 class="w-4 h-4 text-white" />
       </button>
 
-      <DialogTrigger
+      <button
         v-if="game.isFinished"
         as-child
         class="p-2 rounded-full bg-white/10 hover:bg-green-600 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
+        @click="$emit('launch', game.id)"
       >
-        <button @click="$emit('launch', game.id)">
-          <Play class="w-6 h-6 text-white" />
-        </button>
-      </DialogTrigger>
+        <Play class="w-6 h-6 text-white" />
+      </button>
+
       <DialogTrigger
         v-if="!game.isFinished"
         as-child
@@ -71,6 +74,7 @@ defineProps<{
     id: string
     title: string
     image: string
+    lastPlayedAt: string
     installable: boolean
     isInQueue: boolean
     isFinished: boolean

@@ -30,7 +30,7 @@ export interface GameInfo {
   thumbnail: string
   installable?: boolean
   is_installed?: boolean
-  developersTeams: string[]
+  developerTeams: string[]
   save_path?: string
   version?: string
   shortDescription: string

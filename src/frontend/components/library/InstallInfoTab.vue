@@ -33,12 +33,12 @@
       <span class="text-[#00b8d4]">{{ installParams.gameInfo.details.is_offline ? 'Yes' : 'No' }}</span>
     </div>
     <div class="border-b border-gray-700 my-4"></div>
-    <div v-if="installParams.gameInfo.details.save_path" class="flex items-center justify-between">
+    <div v-if="DMFinished" class="flex items-center justify-between">
       <div class="flex items-center">
         <Cable class="w-6 h-6 mr-2" />
         <span>Save Path:</span>
       </div>
-      <span class="text-[#00b8d4]">{{ installParams.gameInfo.details.save_path }}</span>
+      <span class="text-[#00b8d4]">{{ DMFinished.params.path }}</span>
     </div>
     <div class="border-b border-gray-700 my-4"></div>
   </div>
@@ -46,10 +46,11 @@
 
 <script setup lang="ts">
 import { CloudDownload, FolderDown, CircleDot, Wifi, Cable } from 'lucide-vue-next'
-import type { InstallParams } from '@/types/type'
+import type { DMQueueElement, InstallParams } from '@/types/type'
 
 defineProps<{
-  installParams: InstallParams
+  installParams: InstallParams,
+  DMFinished: DMQueueElement 
 }>()
 
 const formatSize = (bytes: number): string => {

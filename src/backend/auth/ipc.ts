@@ -14,7 +14,7 @@ addListener('openLoginWindow', () => {
   loginWindow.focus()
 })
 addHandler('login', async (e, userInfo: UserInfo) => {
-  login(userInfo)
+  await login(userInfo)
 })
 addHandler('getUser', () => {
   const user = getUser()

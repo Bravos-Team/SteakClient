@@ -16,7 +16,7 @@ const config: ForgeConfig = {
     executableName: 'Steak',
     extraResource: [path.resolve(__dirname, 'public')],
     icon: path.resolve(__dirname, 'public/favicon.ico'),
-    buildVersion: '0.1.0-beta',
+    buildVersion: '0.1.0',
   },
   rebuildConfig: {},
   // makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
@@ -29,6 +29,7 @@ const config: ForgeConfig = {
     new MakerZIP({}, ['darwin', 'linux', 'win32']),
     new MakerDeb({}),
     new MakerRpm({}),
+    
   ],
   plugins: [
     new VitePlugin({

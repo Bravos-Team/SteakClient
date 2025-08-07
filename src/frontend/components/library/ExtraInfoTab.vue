@@ -14,7 +14,7 @@
         <Users class="w-6 h-6 mr-2" />
         <span class="text-[#00b8d4] min-w-[120px]">Developers:</span>
       </div>
-      <span class="text-right">{{ installParams.gameInfo?.details?.developersTeams?.join(', ') || '' }}</span>
+      <span class="text-right">{{ (installParams.gameInfo?.details?.developerTeams || []).join(', ') }}</span>
     </div>
     <div class="border-b border-gray-700 my-4"></div>
     <div class="flex items-start justify-between">

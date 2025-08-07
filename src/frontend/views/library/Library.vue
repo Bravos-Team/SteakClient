@@ -56,6 +56,7 @@ import {
 import InstallDialog from '@/components/library/InstallDialog.vue'
 import { useSystemIpc } from '@/composables/useSystemIpc'
 import { useSystemInfo } from '@/stores/util'
+import { generateDeviceId } from '@/utils/fingerprint'
 
 const isDialogOpen = ref(false)
 const isInstalling = ref(false)
@@ -130,6 +131,7 @@ const games = computed(() => {
       id: game.gameId,
       title: game.title,
       image: game.thumbnailUrl,
+      lastPlayedAt: game.lastPlayedAt,
       isInQueue: DMQueueElements.value.includes(game.gameId),
       isFinished: DMFinished.value.includes(game.gameId),
     })) ?? []
@@ -153,8 +155,7 @@ const fetchGameData = async (id: string) => {
       installSize: downloadParams.value?.installSize || 0,
     }
     installState.value.downloadInfo = { ...downloadParams.value } as DownloadInfo
-    console.log(installState.value.params)
-    console.log(installState.value.downloadInfo)
+
     isFetching.value = false
     return true
   } catch (error) {
@@ -164,11 +165,14 @@ const fetchGameData = async (id: string) => {
 }
 
 const handleLaunch = async (Id: string) => {
-  await window.api.launchGame(Id)
+  const deviceId = await generateDeviceId()
+  await window.api.launchGame(Id, deviceId)
 }
 // Xử lý sự kiện cài đặt
 const handleInstall = async (Id: string) => {
   if (await fetchGameData(Id)) {
+    isInstalling.value = DMQueueElements.value.includes(Id)
+
     isDialogOpen.value = true
   } else {
     toast.error('Unable to fetch game data. Please try again later.')

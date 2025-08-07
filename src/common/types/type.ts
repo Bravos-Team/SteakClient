@@ -2,6 +2,10 @@ import { TitleBarOverlay } from 'electron'
 export interface UserInfo {
   displayName: string | null
   avatarUrl: string | null
+  Authentication: {
+    accessToken: string | null
+    refreshToken: string | null
+  }
 }
 export interface WindowProps extends Electron.Rectangle {
   maximize: boolean
@@ -35,7 +39,7 @@ export interface GameInfo {
   thumbnail: string
   installable?: boolean
   is_installed?: boolean
-  developersTeams: string[]
+  developerTeams: string[]
   save_path?: string
   version?: string
   shortDescription: string
@@ -75,6 +79,7 @@ export type Status =
   | 'error'
   | 'aborted'
   | 'paused'
+  | 'launching'
 
 export interface GameStatus {
   appName: string

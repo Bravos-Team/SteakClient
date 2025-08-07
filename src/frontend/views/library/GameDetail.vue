@@ -36,7 +36,7 @@ I
           @install="handleInstall"
         />
         <div class="w-full h-full 2xl:basis-6/12">
-          <GameInfoTabs :install-params="installParamsInfo" />
+          <GameInfoTabs :install-params="installParamsInfo" :DMFinished="DMFinished" />
         </div>
       </div>
     </div>
@@ -55,7 +55,7 @@ I
 import { nextTick, onBeforeMount, onMounted, ref, toRaw, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGetGameInfo, useGetGameDownloadInfo } from '@/hooks/library/useMyLibrary'
-import type { DownloadInfo, InstallParams } from '@/types/type'
+import type { DMQueueElement, DownloadInfo, InstallParams } from '@/types/type'
 import GameDetailHeader from '../../components/library/GameDetailHeader.vue'
 import { Dialog } from '@/components/ui/dialog'
 import GameInfoTabs from '../../components/library/GameInfoTabs.vue'
@@ -75,6 +75,11 @@ const {
   isFetching: isGameInfoFetching,
   refetch: refetchGameInfo,
 } = useGetGameInfo(route.params.id as string)
+const lastPlayedAt = ref((route.query.lastPlayedAt as string) || '')
+console.log('Game ID:', route.params.id)
+console.log('Last Played At:', lastPlayedAt.value)
+const DMFinished = ref<DMQueueElement>({} as DMQueueElement)
+
 const {
   data: downloadParams,
   isFetching: isDownloadParamsFetching,
@@ -84,7 +89,6 @@ const {
 const router = useRouter()
 const installParamsInfo = ref<InstallParams>({ ...gameInfo.value } as InstallParams)
 const downloadParamsInfo = ref<DownloadInfo>({ ...downloadParams.value } as DownloadInfo)
-
 const capacityDisks = ref<{ totalSize: number; freeSize: number; remaining: number }>({
   totalSize: 0,
   freeSize: 0,
@@ -199,5 +203,15 @@ onBeforeMount(async () => {
   installParamsInfo.value.size = downloadParams.value?.fileSize || 0
   installParamsInfo.value.installSize = downloadParams.value?.installSize || 0
 })
-onMounted(async () => {})
+onMounted(async () => {
+  const info = await window.api.getDMQueueInformation()
+  QueueStore.updateAll({
+    elements: info.elements,
+    finished: info.finished,
+    state: info.state,
+  })
+  DMFinished.value =
+    QueueStore.getFinished().find((el) => el.params.appName.toString() === route.params.id) ||
+    ({} as DMQueueElement)
+})
 </script>
