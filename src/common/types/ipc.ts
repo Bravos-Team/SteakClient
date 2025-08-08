@@ -1,4 +1,3 @@
-
 import {
   DMQueueElement,
   DownloadInfo,
@@ -20,6 +19,7 @@ interface SyncIPCFunctions {
 }
 
 interface AsyncIPCFunctions {
+  removeToken: () => Promise<void>
   getCapacitySystem: (path?: string) => Promise<{ totalSize: number; freeSize: number }>
   getSystemInfo: (path?: string) => Promise<SystemInfo>
   launchGame: (appName: string, deviceId: string) => Promise<void>

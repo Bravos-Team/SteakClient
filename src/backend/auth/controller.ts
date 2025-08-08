@@ -5,7 +5,7 @@ import { getMainWindow } from '../main_window'
 import { sendFrontendMessage } from '../ipc'
 import { UserInfo } from 'src/common/types/type'
 import { notify } from '../dialog/dialog'
-import { getRefreshToken, getToken } from '../utils'
+import { getRefreshToken, getToken } from '../auth/util'
 
 const logout = () => {
   if (!isLogin) {

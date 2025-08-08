@@ -30,7 +30,9 @@
         <Wifi class="w-6 h-6 mr-2" />
         <span>Online Required:</span>
       </div>
-      <span class="text-[#00b8d4]">{{ installParams.gameInfo.details.is_offline ? 'Yes' : 'No' }}</span>
+      <span class="text-[#00b8d4]">{{
+        installParams.gameInfo.details.is_offline ? 'Yes' : 'No'
+      }}</span>
     </div>
     <div class="border-b border-gray-700 my-4"></div>
     <div v-if="DMFinished" class="flex items-center justify-between">
@@ -38,7 +40,9 @@
         <Cable class="w-6 h-6 mr-2" />
         <span>Save Path:</span>
       </div>
-      <span class="text-[#00b8d4]">{{ DMFinished.params.path }}</span>
+      <span class="text-[#00b8d4]">{{
+        DMFinished?.params?.path ? DMFinished.params.path : 'Unknown'
+      }}</span>
     </div>
     <div class="border-b border-gray-700 my-4"></div>
   </div>
@@ -49,8 +53,8 @@ import { CloudDownload, FolderDown, CircleDot, Wifi, Cable } from 'lucide-vue-ne
 import type { DMQueueElement, InstallParams } from '@/types/type'
 
 defineProps<{
-  installParams: InstallParams,
-  DMFinished: DMQueueElement 
+  installParams: InstallParams
+  DMFinished: DMQueueElement
 }>()
 
 const formatSize = (bytes: number): string => {

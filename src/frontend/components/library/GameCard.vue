@@ -3,7 +3,7 @@
     class="group/game transition-transform duration-300 hover:scale-105 flex flex-col rounded-md bg-muted/50 overflow-hidden"
   >
     <RouterLink
-      :to="`/library/${game.id}?${game.lastPlayedAt}`"
+      :to="`/library/${game.gameId}?${game.lastPlayedAt}`"
       class="relative w-full aspect-[3/4]"
     >
       <img
@@ -22,7 +22,7 @@
     <div class="flex flex-wrap justify-between items-center gap-2 p-2 bg-[#202024] w-full">
       <button
         v-if="game.isFinished"
-        @click="$emit('delete', game.id)"
+        @click="$emit('delete', game.gameId)"
         class="p-2 rounded-full bg-white/10 hover:bg-red-600 transition-all backdrop-blur-sm shadow hover:scale-105"
       >
         <Trash2 class="w-4 h-4 text-white" />
@@ -32,7 +32,7 @@
         v-if="game.isFinished"
         as-child
         class="p-2 rounded-full bg-white/10 hover:bg-green-600 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
-        @click="$emit('launch', game.id)"
+        @click="$emit('launch', game.gameId)"
       >
         <Play class="w-6 h-6 text-white" />
       </button>
@@ -40,10 +40,10 @@
       <DialogTrigger
         v-if="!game.isFinished"
         as-child
-        @click="$emit('install', game.id)"
+        @click="$emit('install', game.gameId)"
         class="p-2 rounded-full bg-white/10 hover:bg-blue-500 transition-all backdrop-blur-sm shadow-lg hover:scale-105"
       >
-        <button @click="$emit('install', game.id)">
+        <button @click="$emit('install', game.gameId)">
           <ArrowDownToLine class="w-6 h-6 text-white" />
         </button>
       </DialogTrigger>
@@ -71,7 +71,7 @@ const navigateToGameDetail = (gameId: number) => {
 }
 defineProps<{
   game: {
-    id: string
+    gameId: string
     title: string
     image: string
     lastPlayedAt: string

@@ -22,6 +22,8 @@ export type GameLibrary = {
   thumbnailUrl: string
   ownedDate: number
   lastPlayedAt: number | null
+  isInQueue?: boolean
+  isInstalled?: boolean
 }
 
 export interface GameInfo {

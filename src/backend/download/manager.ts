@@ -24,12 +24,11 @@ import { launchGame, removeFolder } from '../utils'
 import path from 'path'
 import { homePath } from '../constants/path'
 import { notify } from '../dialog/dialog'
-import { getMainWindow } from '../main_window'
 import axios, { AxiosError } from 'axios'
 import { DownloadInfo } from '@/types/type'
 import { getUser } from '../auth'
 import { initWebSocket } from '../ws/util'
-import { generateDeviceId } from '../../frontend/utils/fingerprint'
+
 
 // Function to initialize the download queue
 

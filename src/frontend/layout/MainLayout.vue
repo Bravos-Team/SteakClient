@@ -17,8 +17,8 @@ const QueueStore = useDownloadQueueStore()
 
 import 'vue-sonner/style.css'
 import { useDownloadQueueStore } from '@/stores/download/useDownloadStore'
-import { onMounted } from 'vue'
-onMounted(async () => {
+import { onBeforeMount, onMounted } from 'vue'
+onBeforeMount(async () => {
   await useUseFromIpc()
   const info = await window.api.getDMQueueInformation()
   QueueStore.updateAll({
@@ -27,5 +27,5 @@ onMounted(async () => {
     state: info.state,
   })
 })
-useUseFromIpc()
+
 </script>

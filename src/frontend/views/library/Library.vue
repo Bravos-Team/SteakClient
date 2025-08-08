@@ -11,7 +11,7 @@
       >
         <GameCard
           v-for="game in games"
-          :key="game.id"
+          :key="game.gameId"
           :game="game"
           @install="handleInstall"
           @delete="handleDelete"
@@ -35,7 +35,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, toRaw, computed, onBeforeMount, onMounted } from 'vue'
+import { ref, toRaw, computed, onBeforeMount, onMounted, onUnmounted } from 'vue'
 import { toast } from 'vue-sonner'
 import ComboboxSearch from '@/components/ComboboxSearch.vue'
 
@@ -57,6 +57,7 @@ import InstallDialog from '@/components/library/InstallDialog.vue'
 import { useSystemIpc } from '@/composables/useSystemIpc'
 import { useSystemInfo } from '@/stores/util'
 import { generateDeviceId } from '@/utils/fingerprint'
+import { useLibraryStore } from '@/stores/library/useLibrary'
 
 const isDialogOpen = ref(false)
 const isInstalling = ref(false)
@@ -66,7 +67,8 @@ const capacityDisks = ref<{ totalSize: number; freeSize: number; remaining: numb
   freeSize: 0,
   remaining: 0,
 })
-const LibraryStore = useGameLibrary()
+const LibraryStoreIpc = useGameLibrary()
+const LibraryStore = useLibraryStore()
 const QueueStore = useDownloadQueueStore()
 const DMQueueElements = ref([] as string[])
 const DMFinished = ref([] as string[])
@@ -76,8 +78,8 @@ const installState = ref<{ params: InstallParams; downloadInfo: DownloadInfo }>(
   params: {} as InstallParams,
   downloadInfo: {} as DownloadInfo,
 })
-
-const { saveGame, openFolder, installGame } = LibraryStore
+const { setLibrary, addGame } = LibraryStore
+const { saveGame, openFolder, installGame } = LibraryStoreIpc
 const {
   data: gameInfo,
   refetch: refetchGameInfo,
@@ -128,7 +130,7 @@ const { data: libraryData } = useGetLibraryList()
 const games = computed(() => {
   return (
     libraryData.value?.data.map((game: GameLibrary) => ({
-      id: game.gameId,
+      gameId: game.gameId,
       title: game.title,
       image: game.thumbnailUrl,
       lastPlayedAt: game.lastPlayedAt,
@@ -215,11 +217,18 @@ onMounted(async () => {
     finished: info.finished,
     state: info.state,
   })
+
   DMQueueElements.value = QueueStore.getQueue().map(
     (item: DMQueueElement) => item.params.appName as string,
   )
   DMFinished.value = QueueStore.getFinished().map(
     (item: DMQueueElement) => item.params.appName as string,
   )
+})
+onUnmounted(() => {
+ 
+  setLibrary(games.value)
+  console.log('Library updated:', games.value);
+  
 })
 </script>

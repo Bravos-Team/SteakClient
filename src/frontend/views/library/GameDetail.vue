@@ -33,6 +33,7 @@ I
         <GameDetailHeader
           :game-info="installParamsInfo.gameInfo"
           :install-params="installParamsInfo"
+          :last-played-at="lastPlayedAt"
           @install="handleInstall"
         />
         <div class="w-full h-full 2xl:basis-6/12">
@@ -67,7 +68,9 @@ import { toast } from 'vue-sonner'
 import { useDownloadQueueStore } from '@/stores/download/useDownloadStore'
 import { useSystemIpc } from '@/composables/useSystemIpc'
 import { useSystemInfo } from '@/stores/util'
-const LibraryStore = useGameLibrary()
+import { useLibraryStore } from '@/stores/library/useLibrary'
+const LibraryStoreIpc = useGameLibrary()
+const LibraryStore = useLibraryStore()
 const QueueStore = useDownloadQueueStore()
 const route = useRoute()
 const {
@@ -75,7 +78,7 @@ const {
   isFetching: isGameInfoFetching,
   refetch: refetchGameInfo,
 } = useGetGameInfo(route.params.id as string)
-const lastPlayedAt = ref((route.query.lastPlayedAt as string) || '')
+const lastPlayedAt = ref(0)
 console.log('Game ID:', route.params.id)
 console.log('Last Played At:', lastPlayedAt.value)
 const DMFinished = ref<DMQueueElement>({} as DMQueueElement)
@@ -102,7 +105,7 @@ const routeBackToLibrary = () => {
   router.push('/library')
 }
 
-const { saveGame, openFolder, installGame } = LibraryStore
+const { saveGame, openFolder, installGame } = LibraryStoreIpc
 const handleOpenFolder = async () => {
   const folderPath = await openFolder()
   checkCapacity(folderPath)
@@ -213,5 +216,10 @@ onMounted(async () => {
   DMFinished.value =
     QueueStore.getFinished().find((el) => el.params.appName.toString() === route.params.id) ||
     ({} as DMQueueElement)
+  lastPlayedAt.value =
+    LibraryStore.getLibrary().find((game) => game.gameId.toString() === route.params.id)?.lastPlayedAt || 0
+  console.log(LibraryStore.getLibrary());
+  
+    
 })
 </script>
