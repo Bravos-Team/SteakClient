@@ -10,6 +10,9 @@ import { callAbortController } from './util/aborthandler/aborthandler'
 import { exec, spawn } from 'node:child_process'
 import { cpu, fsSize, graphics, mem, osInfo, wifiConnections } from 'systeminformation'
 import { SystemInfo } from 'src/common/types/type'
+
+import { steakApiUrl } from './constants/url'
+import { getMainWindow } from './main_window'
 interface ProgressCallback {
   (downloadedBytes: number, downloadSpeed: number, progress: number, diskWriteSpeed: number): void
 }
@@ -323,11 +326,7 @@ export async function extractFileTarZst(zstPath: string, tarPath: string): Promi
     }
     if (process.platform === 'win32') {
       const zstdPath = path.join(process.resourcesPath, 'public', 'tools', 'zstd.exe')
-      const tarExePath = path.join(process.resourcesPath, 'public', 'tools', 'tar.exe')
-
       if (!existsSync(zstdPath)) return reject(new Error(`zstd.exe not found at ${zstdPath}`))
-      if (!existsSync(tarExePath)) return reject(new Error(`tar.exe not found at ${tarExePath}`))
-
       const zstd = spawn(zstdPath, ['-d', '--long=31', zstPath, '-o', tarPath], {})
       zstd.on('close', (code) => {
         if (code !== 0) {
@@ -388,27 +387,8 @@ export function launchGame(exePath: string, workingDir: string) {
     detached: true,
     stdio: 'ignore',
   })
-  if (child.stdout) {
-    child.stdout.on('data', (data) => {
-      console.log(`[stdout] ${data}`)
-    })
-  }
-
-  if (child.stderr) {
-    child.stderr.on('data', (data) => {
-      console.error(`[stderr] ${data}`)
-    })
-  }
-
-  child.on('close', (code) => {
-    console.log(`Game exited with code ${code}`)
-  })
-
-  child.on('error', (err) => {
-    console.error('Failed to launch game:', err)
-  })
-
-  child.unref()
+  child.unref() // Detach the child process
+  return child
 }
 
 export async function getCapacitySystem(path?: string) {
@@ -504,3 +484,4 @@ export async function getSystemInfo(path?: string): Promise<{ systemInfo: System
   }
   return { systemInfo }
 }
+

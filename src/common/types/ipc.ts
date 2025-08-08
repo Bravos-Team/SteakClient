@@ -1,10 +1,10 @@
-import { SystemInfo } from 'src/backend/utils'
 import {
   DMQueueElement,
   DownloadInfo,
   DownloadManagerState,
   GameStatus,
   InstallParams,
+  SystemInfo,
   UserInfo,
 } from './type'
 
@@ -19,9 +19,10 @@ interface SyncIPCFunctions {
 }
 
 interface AsyncIPCFunctions {
+  removeToken: () => Promise<void>
   getCapacitySystem: (path?: string) => Promise<{ totalSize: number; freeSize: number }>
   getSystemInfo: (path?: string) => Promise<SystemInfo>
-  launchGame: (appName: string) => Promise<void>
+  launchGame: (appName: string, deviceId: string) => Promise<void>
   openWebViewDevTools: (webviewId: string) => Promise<void>
   login: (userInfo: UserInfo) => Promise<void>
   getUser: () => UserInfo | null

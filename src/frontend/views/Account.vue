@@ -26,7 +26,6 @@ const handleOpenLoginWindow = async () => {
 const handleLogOut = () => {
   AuthStore.clearUser()
   window.api.logout()
-  
 }
 </script>
 
@@ -99,7 +98,7 @@ const handleLogOut = () => {
               <UserCheck class="w-8 h-8" />
             </div>
             <div class="flex-1 text-lg flex justify-between px-12 text-left font-bold">
-              <span class="text-center">vanthuatdaklak</span>
+              <span class="text-center">{{ AuthStore.getUser()?.displayName }}</span>
               <LogOut
                 class="w-8 h-8 text-white cursor-pointer hover:text-red-900 transition duration-300"
                 @click="handleLogOut"

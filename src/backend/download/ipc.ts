@@ -10,7 +10,6 @@ import {
   resumeDownload,
 } from './manager'
 
-
 addHandler('install', async (e, args, data) => {
   const dmQueueElement: DMQueueElement = {
     type: 'install',
@@ -38,8 +37,8 @@ addListener('cancelDownload', async (e, appName) => {
 addListener('removeFinished', (e, appName) => {
   removeFinished(appName)
 })
-addHandler('launchGame', async (e, appName) => {
-  console.log(appName);
-  
-  launch(appName)
+addHandler('launchGame', async (e, appName, deviceId) => {
+  console.log(appName)
+
+  await launch(appName, deviceId)
 })

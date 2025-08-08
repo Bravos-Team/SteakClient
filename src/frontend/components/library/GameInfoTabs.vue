@@ -1,7 +1,7 @@
 <!-- GameInfoTabs.vue -->
 <template>
   <div class="w-full h-full rounded-md p-2">
-    <Card class="h-full p-0 bg-black/25 border-0 relative">
+    <Card class="h-full p-0 bg-black/75 border-0 relative">
       <div class="absolute inset-0 z-5">
         <div class="w-full h-full grayscale-25 rounded-md relative">
           <div
@@ -11,7 +11,7 @@
       </div>
       <Tabs default-value="install" class="w-full z-10">
         <TabsList
-          class="flex flex-wrap gap-x-4   justify-between w-full border-b rounded-b-none border-gray-700"
+          class="flex flex-wrap gap-x-4 justify-between w-full border-b rounded-b-none border-gray-700"
         >
           <TabsTrigger
             value="install"
@@ -36,7 +36,7 @@
           </TabsTrigger>
         </TabsList>
         <TabsContent value="install">
-          <InstallInfoTab :install-params="installParams" />
+          <InstallInfoTab :install-params="installParams" :DMFinished="DMFinished" />
         </TabsContent>
         <TabsContent value="extra">
           <ExtraInfoTab :install-params="installParams" />
@@ -53,7 +53,7 @@
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
-import type { InstallParams } from '@/types/type'
+import type { DMQueueElement, InstallParams } from '@/types/type'
 import InstallInfoTab from './InstallInfoTab.vue'
 import ExtraInfoTab from './ExtraInfoTab.vue'
 import SystemRequirementsTab from './SystemRequirementsTab.vue'
@@ -61,5 +61,6 @@ import { Info, Star, TvMinimal } from 'lucide-vue-next'
 
 defineProps<{
   installParams: InstallParams
+  DMFinished: DMQueueElement 
 }>()
 </script>

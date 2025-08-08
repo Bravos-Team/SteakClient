@@ -1,5 +1,8 @@
 import axios from 'axios'
-
+import { toast } from 'vue-sonner'
+import { renewUserRefreshToken } from './library/library'
+import { useAuthStore } from '@/stores/auth/useAuthStore'
+const AuthStore = useAuthStore()
 export const SteakApi = axios.create({
   baseURL: 'https://api.steak.io.vn/api/v1',
   timeout: 10000,
@@ -14,7 +17,8 @@ SteakApi.interceptors.response.use(
   async (error) => {
     const status = error.response?.status
     if (status === 401) {
-      console.log('Unauthorized access, redirecting to login...')
+      toast.error('Unauthorized access. Please log in again.')
     }
   },
 )
+export default SteakApi

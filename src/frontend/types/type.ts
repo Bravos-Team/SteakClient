@@ -22,6 +22,8 @@ export type GameLibrary = {
   thumbnailUrl: string
   ownedDate: number
   lastPlayedAt: number | null
+  isInQueue?: boolean
+  isInstalled?: boolean
 }
 
 export interface GameInfo {
@@ -30,7 +32,7 @@ export interface GameInfo {
   thumbnail: string
   installable?: boolean
   is_installed?: boolean
-  developersTeams: string[]
+  developerTeams: string[]
   save_path?: string
   version?: string
   shortDescription: string

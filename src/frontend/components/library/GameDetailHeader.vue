@@ -1,7 +1,7 @@
 <!-- GameDetailHeader.vue -->
 <template>
   <div class="w-full min-h-full p-2 gap-4">
-    <Card class="h-full p-0 gap-2 border-0  bg-[#1a1b1e] relative">
+    <Card class="h-full p-0 gap-2 border-0 bg-[#1a1b1e] relative">
       <div class="absolute top-4 left-4 z-10 bg-[#1a1b1e] p-2 rounded-md">
         <img
           src="https://ccdn.steak.io.vn/logo_steak.svg"
@@ -55,7 +55,8 @@
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              Last Played: {{ gameInfo.details.id }}
+              Last Played:
+              {{ lastPlayedAt ? convertTimestampToDate(lastPlayedAt) : 'Never Played' }}
             </span>
           </div>
           <div class="mt-4">
@@ -88,6 +89,7 @@ import type { GameDetails, InstallParams } from '@/types/type'
 defineProps<{
   gameInfo: GameDetails
   installParams: InstallParams
+  lastPlayedAt?: number
 }>()
 defineEmits<{
   (e: 'install', gameId: string): void

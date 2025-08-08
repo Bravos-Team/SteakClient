@@ -4,6 +4,7 @@ import { addHandler, addListener } from '../ipc'
 import { createLoginWindow } from '../login_window'
 import { getUser } from './state'
 import { login, logout } from './controller'
+import { removeToken } from './util'
 
 addListener('openLoginWindow', () => {
   const loginWindow = createLoginWindow()
@@ -14,7 +15,7 @@ addListener('openLoginWindow', () => {
   loginWindow.focus()
 })
 addHandler('login', async (e, userInfo: UserInfo) => {
-  login(userInfo)
+  await login(userInfo)
 })
 addHandler('getUser', () => {
   const user = getUser()
@@ -26,4 +27,8 @@ addHandler('getUser', () => {
 
 addListener('logout', () => {
   logout()
+})
+
+addHandler('removeToken', async () => {
+  await removeToken()
 })

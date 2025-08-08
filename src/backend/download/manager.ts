@@ -24,9 +24,11 @@ import { launchGame, removeFolder } from '../utils'
 import path from 'path'
 import { homePath } from '../constants/path'
 import { notify } from '../dialog/dialog'
-import { getMainWindow } from '../main_window'
 import axios, { AxiosError } from 'axios'
 import { DownloadInfo } from '@/types/type'
+import { getUser } from '../auth'
+import { initWebSocket } from '../ws/util'
+
 
 // Function to initialize the download queue
 
@@ -92,7 +94,7 @@ async function init() {
       }
 
       // Remove the current element from the queue
-      removeFromQueue(element.params.appName)
+      queue.shift()
 
       setQueue(queue)
       // Update the finished elements in the state
@@ -102,7 +104,7 @@ async function init() {
 
       console.log(`Download for ${element.params.appName} completed`)
 
-      updateFrontendQueue(queue, getQueueState(), finishedElements)
+      updateFrontendQueue(getQueue(), getQueueState(), getFinished())
       // Notify the frontend about the updated queue and game status
       setQueueState('idle') // Set the queue state to idle after processing the element
       setCurrentElement(null) // Clear the current element after processing
@@ -146,47 +148,40 @@ async function init() {
       stopDownloadFile(element.params.appName) // Stop the download if it failed
 
       if (error instanceof Error && error.message.includes('headers')) {
-        const mainWindow = getMainWindow()
-        if (mainWindow) {
-          const url = new URL('/api/v1/user', 'https://api.steak.io.vn')
-          const cookie = await mainWindow.webContents.session.cookies.get({
-            url: url.href,
-            name: 'access_token',
+        const token = getUser()?.Authentication?.accessToken
+        if (!token) {
+          notify({
+            title: element.params.gameInfo.details.title || 'Download Failed',
+            body: `Login expired, please login again`,
           })
-          const token = cookie[0]?.value
-          const res = await axios
-            .get(
-              'https://api.steak.io.vn/api/v1/store/public/games/download/' +
-                element.params.appName,
-              {
-                headers: {
-                  Cookie: `access_token=${token}`,
-                  'Content-Type': 'application/json',
-                },
+          return
+        }
+        const res = await axios
+          .get(
+            'https://api.steak.io.vn/api/v1/store/public/games/download/' + element.params.appName,
+            {
+              headers: {
+                Cookie: `access_token=${token}`,
+                'Content-Type': 'application/json',
               },
-            )
-            .catch((err: AxiosError) => {
-              if (err.response?.status === 401) {
-                notify({
-                  title: element.params.gameInfo.details.title || 'Download Failed',
-                  body: `Login expired, please login again`,
-                })
-              } else {
-                notify({
-                  title: element.params.gameInfo.details.title || 'Download Failed',
-                  body: `Download failed: ${(err as Error).message}`,
-                })
-              }
-              return null
+            },
+          )
+          .catch((err: AxiosError) => {
+            notify({
+              title: element.params.gameInfo.details.title || 'Download Failed',
+              body: `Download failed: ${(err as Error).message}`,
             })
 
-          if (res && res.data) {
-            queue[0].downloadInfo = res.data as DownloadInfo
-            queue[0].status = 'downloading'
-            setQueue(queue)
-            init() // Reinitialize the queue to start the download again
-          }
+            return null
+          })
+
+        if (res && res.data) {
+          queue[0].downloadInfo = res.data as DownloadInfo
+          queue[0].status = 'downloading'
+          setQueue(queue)
+          init() // Reinitialize the queue to start the download again
         }
+
         return
       }
       notify({
@@ -194,7 +189,8 @@ async function init() {
         body: `Download failed: ${(error as Error).message}`,
       })
       removeFromQueue(element.params.appName) // Remove the element from the queue
-      setQueue(queue)
+      setQueue(getQueue()) // Update the queue state
+      updateFrontendQueue(getQueue(), getQueueState(), getFinished())
     }
   }
 }
@@ -325,7 +321,7 @@ function cancelDownload(appName: string) {
     status: 'aborted',
   })
 
-  if (queue.length > 0) {
+  if (getQueue().length > 0) {
     console.log(`Queue is not empty, reinitializing the queue`)
     init() // Reinitialize the queue to handle the next download
   }
@@ -333,7 +329,6 @@ function cancelDownload(appName: string) {
 
 // Function to resume a paused download
 function resumeDownload(appName: string) {
-  console.log(123)
   const queue = getQueue()
   const index = indexOfQueueElement(appName)
   const currentElement = getCurrentElement()
@@ -365,8 +360,6 @@ function resumeDownload(appName: string) {
   }
 
   if (!getCurrentElement()) {
-    console.log(21312321)
-
     init()
   }
 }
@@ -414,19 +407,69 @@ function getQueueInformation() {
   }
 }
 // Function to launch a game
-function launch(appName: string) {
+function launch(appName: string, deviceId: string) {
   const installedElements = getInstalledGames()
-  if (installedElements[appName]) {
-    const { executable, install_path } = installedElements[appName]
+  const token = getUser()?.Authentication?.accessToken
+  const gameId = getFinished().find((el) => el.params.appName === appName)?.params.gameInfo.details
+    .id
+  console.log(`Launching game: ${token}, Game ID: ${gameId}, Device ID: ${deviceId}`)
+
+  let webSocket: ReturnType<typeof initWebSocket> | null = null
+  if (!token || !gameId || !deviceId) {
     notify({
-      title: appName,
-      body: `Launching game...`,
+      title: 'Launch Failed',
+      body: `Login expired, please login again`,
     })
+    return
+  }
+  if (installedElements[appName]) {
+    const { executable, install_path } = installedElements[gameId]
+
     const safeExecutable = executable.replace(/^[/\\]+/, '')
 
     const fullPath = path.join(install_path, safeExecutable)
 
-    launchGame(fullPath, install_path)
+    const child = launchGame(fullPath, install_path)
+
+    child.on('spawn', () => {
+      console.log(`Game launched successfully: ${fullPath}`)
+      webSocket = initWebSocket(token, gameId, deviceId)
+      if (webSocket) {
+        webSocket.connect(
+          () => {
+            console.log('WebSocket connected for game launch')
+          },
+          (error) => {
+            console.error('WebSocket connection error:', error)
+          },
+        )
+      }
+
+      updateGameStatus({
+        appName,
+        folder: install_path,
+        status: 'launching',
+      })
+    })
+
+    child.on('error', (error) => {
+      console.error('Error launching game:', error)
+      notify({
+        title: 'Launch Failed',
+        body: `Failed to launch game: ${error.message}`,
+      })
+    })
+    child.on('close', (code) => {
+      console.log(`Game process exited with code: ${code}`)
+      if (webSocket) {
+        webSocket.disconnect()
+      }
+      updateGameStatus({
+        appName,
+        folder: install_path,
+        status: 'done',
+      })
+    })
   }
 }
 export {
