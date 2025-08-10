@@ -11,7 +11,7 @@
       </div>
       <Tabs default-value="install" class="w-full z-10">
         <TabsList
-          class="flex flex-wrap gap-x-4 justify-between w-full border-b rounded-b-none border-gray-700"
+          class="flex flex-row gap-x-4 justify-between w-full border-b rounded-b-none border-gray-700"
         >
           <TabsTrigger
             value="install"

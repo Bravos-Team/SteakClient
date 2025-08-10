@@ -56,7 +56,7 @@
                 />
               </svg>
               Last Played:
-              {{ lastPlayedAt ? convertTimestampToDate(lastPlayedAt) : 'Never Played' }}
+              {{ lastPlayedAt ? convertTimestampToTime(lastPlayedAt) : 'Never Played' }}
             </span>
           </div>
           <div class="mt-4">
@@ -100,6 +100,13 @@ const convertTimestampToDate = (timestamp: number): string => {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
+  })
+}
+const convertTimestampToTime = (timestamp: number): string => {
+  const date = new Date(timestamp)
+  return date.toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
   })
 }
 </script>

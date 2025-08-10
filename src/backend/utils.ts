@@ -190,16 +190,6 @@ export async function downloadFile({ url, dest, fileName, signal }: DownloadArgs
     if (!download) {
       throw new Error('Download stopped or paused')
     }
-    if (existsSync(zipPath) && statSync(zipPath).isFile()) {
-      const tarPath = zipPath.replace(/\.zst$/, '')
-      console.log(`Extracting ${zipPath} to ${tarPath}`)
-
-      await extractFileTarZst(zipPath, tarPath)
-      removeFolder(dest, path.basename(zipPath))
-      // -> path/to/xxx.tar
-      await extractFileTar(tarPath, dest)
-      removeFolder(dest, path.basename(tarPath))
-    }
   } catch (error) {
     console.error(`Error downloading file: ${(error as Error).message}`)
     throw error
@@ -380,7 +370,26 @@ export async function extractFileTar(tarPath: string, dest: string): Promise<voi
       })
   })
 }
-
+export async function extractFileTarXz(tarXZPath: string, dest: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (!existsSync(tarXZPath)) {
+      return reject(new Error(`File not found: ${tarXZPath}`))
+    }
+    spawn('tar', ['-xJf', tarXZPath, '-C', dest], {})
+      .on('close', (code) => {
+        if (code !== 0) {
+          console.error(`tar extraction failed with code ${code}`)
+          return reject(new Error(`Failed to extract ${tarXZPath}`))
+        }
+        console.log(`Extracted ${tarXZPath} to ${dest}`)
+        resolve()
+      })
+      .on('error', (err) => {
+        console.error(`Error extracting tar file: ${err}`)
+        reject(err)
+      })
+  })
+}
 export function launchGame(exePath: string, workingDir: string) {
   const child = spawn(exePath, {
     cwd: workingDir,
@@ -484,4 +493,3 @@ export async function getSystemInfo(path?: string): Promise<{ systemInfo: System
   }
   return { systemInfo }
 }
-

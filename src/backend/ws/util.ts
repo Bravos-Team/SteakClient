@@ -1,5 +1,5 @@
 import { endPointWS } from '../constants/url'
-import  WebSocket  from 'ws'
+import WebSocket from 'ws'
 class WebSocketClient {
   private ws: WebSocket | null = null
   private readonly headers: { [key: string]: string }
@@ -56,19 +56,6 @@ class WebSocketClient {
       this.handleReconnect(onConnect, onError)
     }
   }
-  private handleReconnect(onConnect: () => void, onError: (error: unknown) => void): void {
-    if (this.reconnectAttempts >= this.maxReconnectAttempts || this.isReconnecting) {
-      console.warn('Max reconnect attempts reached or already reconnecting')
-      onError(new Error('Max reconnect attempts reached'))
-      return
-    }
-    this.reconnectAttempts++
-    this.isReconnecting = true
-    console.log(`Reconnecting... Attempt ${this.reconnectAttempts}`)
-    this.reconnectTimeout = setTimeout(() => {
-      this.connect(onConnect, onError)
-    }, this.reconnectDelay)
-  }
 
   disconnect(): void {
     if (this.reconnectTimeout) {
@@ -81,6 +68,20 @@ class WebSocketClient {
     }
     this.ws = null
     this.isReconnecting = false
+  }
+
+  private handleReconnect(onConnect: () => void, onError: (error: unknown) => void): void {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts || this.isReconnecting) {
+      console.warn('Max reconnect attempts reached or already reconnecting')
+      onError(new Error('Max reconnect attempts reached'))
+      return
+    }
+    this.reconnectAttempts++
+    this.isReconnecting = true
+    console.log(`Reconnecting... Attempt ${this.reconnectAttempts}`)
+    this.reconnectTimeout = setTimeout(() => {
+      this.connect(onConnect, onError)
+    }, this.reconnectDelay)
   }
 }
 
