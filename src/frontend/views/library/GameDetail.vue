@@ -216,10 +216,20 @@ onMounted(async () => {
   DMFinished.value =
     QueueStore.getFinished().find((el) => el.params.appName.toString() === route.params.id) ||
     ({} as DMQueueElement)
-  lastPlayedAt.value =
-    LibraryStore.getLibrary().find((game) => game.gameId.toString() === route.params.id)?.lastPlayedAt || 0
-  console.log(LibraryStore.getLibrary());
-  
-    
+  // const rowTime =  new Date().getTime() -
+  // (LibraryStore.getLibrary().find((game) => game.gameId.toString() === route.params.id)
+  //   ?.lastPlayedAt || 0)
+
+  const theLastPlayTime = new Date(
+    LibraryStore.getLibrary().find((game) => game.gameId.toString() === route.params.id)
+      ?.lastPlayedAt || 0,
+  )
+  console.log('before convert:', theLastPlayTime)
+  const beforeConvert = theLastPlayTime.getTime()
+  const rawTime = beforeConvert - new Date().getTime()
+
+  lastPlayedAt.value = new Date(rawTime).getTime()
+
+  console.log(LibraryStore.getLibrary())
 })
 </script>

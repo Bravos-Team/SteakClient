@@ -1,9 +1,17 @@
-import { ensureDir } from 'fs-extra'
-import { downloadFile, stopDownload, toPascalCase } from '../utils'
+import { ensureDir, existsSync } from 'fs-extra'
+import {
+  downloadFile,
+  extractFileTar,
+  extractFileTarZst,
+  removeFolder,
+  stopDownload,
+  toPascalCase,
+} from '../utils'
 import { DMQueueElement, DownloadInfo } from 'src/common/types/type'
 import paths from 'path'
 import { updateGameStatus } from './events'
 import { notify } from '../dialog/dialog'
+import { statSync } from 'fs'
 
 async function installGame(element: DMQueueElement, signal?: AbortSignal) {
   const { appName, path, gameInfo } = element.params
@@ -42,6 +50,17 @@ async function installGame(element: DMQueueElement, signal?: AbortSignal) {
     dest: outputPath,
     signal,
   })
+  const zipPath = paths.join(outputPath, `${fileName}`)
+  if (existsSync(zipPath) && statSync(zipPath).isFile()) {
+    const tarPath = zipPath.replace(/\.zst$/, '')
+    console.log(`Extracting ${zipPath} to ${tarPath}`)
+
+    await extractFileTarZst(zipPath, tarPath)
+    removeFolder(outputPath, paths.basename(zipPath))
+    // -> path/to/xxx.tar
+    await extractFileTar(tarPath, outputPath)
+    removeFolder(outputPath, paths.basename(tarPath))
+  }
 }
 async function stopDownloadFile(appName: string) {
   console.log(`Paused download for game: ${appName}`)

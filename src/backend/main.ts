@@ -35,14 +35,11 @@ app.whenReady().then(async () => {
     if (process.platform === 'darwin') {
       app.setAppUserModelId('steak')
     }
-    // const url = 'https://api.github.com/repos/GloriousEggroll/wine-ge-custom/releases'
-    // const type = 'Wine-GE' as VersionInfo['type']
-    // const count = 10
-   
+
     const main_window = await initializeMainWindow()
     // console.log(configPath)
     // console.log(await getSystemInfo())
-
+    
     main_window.show()
 
     main_window.focus()
@@ -88,3 +85,8 @@ import './download/ipc'
 import './dialog/ipc_handler'
 import './auth/ipc'
 import { getCapacitySystem, getSystemInfo } from './utils'
+import { WINEGE_URL } from './wine/constants'
+import { fetchReleases } from './wine/util'
+import { CommonDependencies, VersionInfo, WineArchitecture, WineInstallInfo } from './wine/type'
+import { WineManager } from './wine/manager'
+import { homePath } from './constants/path'

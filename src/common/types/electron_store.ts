@@ -2,6 +2,7 @@
 
 import { Get } from 'type-fest'
 import { AppSettings, DMQueueElement, InstalledInfo, UserInfo, WindowProps } from './type'
+import { WineInstallInfo, WinePrefixConfig } from 'src/backend/wine/type'
 
 export interface StoreStructure {
   configStore: {
@@ -39,11 +40,9 @@ export interface StoreStructure {
     queue: DMQueueElement[]
     finished: DMQueueElement[]
   }
-  wikiGameInfo: {
-    [title: string]: ''
-  }
-  migrationsStore: {
-    appliedMigrations: string[]
+  wineManager: {
+    winePrefix?: WinePrefixConfig
+    wineInstallation?: WineInstallInfo[]
   }
 }
 

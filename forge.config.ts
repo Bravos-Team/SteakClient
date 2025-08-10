@@ -16,7 +16,7 @@ const config: ForgeConfig = {
     executableName: 'Steak',
     extraResource: [path.resolve(__dirname, 'public')],
     icon: path.resolve(__dirname, 'public/favicon.ico'),
-    buildVersion: '0.1.0',
+    buildVersion: '0.1.1',
   },
   rebuildConfig: {},
   // makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
