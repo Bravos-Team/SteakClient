@@ -1,6 +1,6 @@
 import axios from 'axios'
 import EasyDl from 'easydl'
-import { createWriteStream, ensureDir, existsSync, remove, statSync } from 'fs-extra'
+import { createWriteStream, ensureDir, existsSync, remove } from 'fs-extra'
 import https from 'node:https'
 import path from 'node:path'
 import { mkdirp } from 'mkdirp'
@@ -10,9 +10,6 @@ import { callAbortController } from './util/aborthandler/aborthandler'
 import { exec, spawn } from 'node:child_process'
 import { cpu, fsSize, graphics, mem, osInfo, wifiConnections } from 'systeminformation'
 import { SystemInfo } from 'src/common/types/type'
-
-import { steakApiUrl } from './constants/url'
-import { getMainWindow } from './main_window'
 interface ProgressCallback {
   (downloadedBytes: number, downloadSpeed: number, progress: number, diskWriteSpeed: number): void
 }

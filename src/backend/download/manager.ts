@@ -32,7 +32,6 @@ import { WineManager } from '../wine/manager'
 import { wineStore } from '../constants/key_value_store'
 import { CommonDependencies, WineInstallInfo } from '../wine/type'
 import { WINEGE_URL } from '../wine/constants'
-import { i } from 'node_modules/@tanstack/vue-query/build/modern/queryClient-CAHOJcvF'
 import { SystemUtils } from '../wine/util'
 
 // Function to initialize the download queue
@@ -485,15 +484,6 @@ async function launch(appName: string, deviceId: string) {
       await wineManager.saveWineFetchInfo(WINEGE_URL)
       await wineManager.downloadWine()
       wineInstalled = wineStore.get('wineInstallation', [] as WineInstallInfo[])[0]
-      wineManager.setActivePrefix(wineInstalled.installPath)
-      await wineManager.installDependencies([
-        CommonDependencies.VCRUN2019,
-        CommonDependencies.D3DX9,
-        CommonDependencies.D3DX10,
-        CommonDependencies.DXVK,
-        CommonDependencies.COREFONTS,
-        CommonDependencies.LIBERATION,
-      ])
     }
 
     if (!wineInstalled.installed) {
@@ -504,7 +494,8 @@ async function launch(appName: string, deviceId: string) {
       return
     }
     const savePath = path.join(homePath, 'Games')
-    if (!SystemUtils.fileExists(path.join(savePath, appName.toString()))) {
+    const pathPrefix = path.join(savePath, appName.toString())
+    if (!SystemUtils.fileExists(pathPrefix)) {
       const isCreating = await wineManager.createPreFix(
         appName.toString(),
         savePath,
@@ -518,12 +509,19 @@ async function launch(appName: string, deviceId: string) {
         })
         return
       }
+      wineManager.setActivePrefix(pathPrefix)
+      await wineManager.installDependencies([
+        CommonDependencies.DXVK,
+        CommonDependencies.VKD3D,
+        CommonDependencies.COREFONTS,
+        CommonDependencies.LIBERATION,
+      ])
     }
 
-    if (wineManager.setActivePrefix(wineInstalled.installPath)) {
+    if (wineManager.setActivePrefix(pathPrefix) && wineManager.setWineInstallation(wineInstalled)) {
       // Launch the game
 
-      wineManager.rungame(fullPath)
+      wineManager.rungame(install_path, safeExecutable)
     }
   }
 }

@@ -16,7 +16,7 @@ const config: ForgeConfig = {
     executableName: 'Steak',
     extraResource: [path.resolve(__dirname, 'public')],
     icon: path.resolve(__dirname, 'public/favicon.ico'),
-    buildVersion: '0.1.1',
+    buildVersion: '1.0.0',
   },
   rebuildConfig: {},
   // makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
@@ -27,9 +27,44 @@ const config: ForgeConfig = {
       setupExe: 'SteakSetup.exe',
     }),
     new MakerZIP({}, ['darwin', 'linux', 'win32']),
-    new MakerDeb({}),
-    new MakerRpm({}),
-    
+    new MakerDeb({
+      options: {
+        maintainer: 'Htmlalo <thuattvps39601@gmail.com>',
+        homepage: 'https://github.com/Bravos-Team/SteakClient',
+        description: 'Steak Desktop Application',
+        icon: path.resolve(__dirname, 'public/icon.png'),
+        section: 'games',
+        priority: 'optional',
+        depends: [
+          'wine | wine-stable', // Wine với fallback
+          'winetricks',
+          'libnotify4',
+          'libappindicator3-1', // Đã đúng
+          'libxss1', // Thêm cho Electron
+          'libgtk-3-0', // GUI support
+          'libasound2', // Audio support
+          'xvfb', // Virtual display
+          'cabextract', // Cho Winetricks
+          'unzip',
+          'curl',
+          'ca-certificates', // SSL certificates
+        ],
+
+        suggests: [
+          'nvidia-driver-libs-i386', // Nếu dùng NVIDIA
+          'mesa-utils',
+        ],
+      },
+    }),
+    new MakerRpm({
+      options: {
+        name: 'Steak',
+        description: 'Steak Desktop Application',
+        icon: path.resolve(__dirname, 'public/icon.png'),
+        license: 'MIT',
+        homepage: 'https://github.com/Bravos-Team/SteakClient',
+      },
+    }),
   ],
   plugins: [
     new VitePlugin({
