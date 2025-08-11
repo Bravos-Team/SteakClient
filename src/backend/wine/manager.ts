@@ -175,14 +175,14 @@ export class WineManager {
     }
   }
 
-  async rungame(gamePath: string, args: string[] = []): Promise<boolean> {
-    if (!SystemUtils.fileExists(gamePath)) {
-      this.logger.error(`Game not found: ${gamePath}`)
+  async rungame(gameDir: string, gameExecute: string, args: string[] = []): Promise<boolean> {
+    if (!SystemUtils.fileExists(gameDir)) {
+      this.logger.error(`Game not found: ${gameDir}`)
       return false
     }
 
-    this.logger.info(`🎮 Launching game: ${path.basename(gamePath)}`)
-    this.logger.debug(`Game path: ${gamePath}`)
+    this.logger.info(`🎮 Launching game: ${path.basename(gameDir)}`)
+    this.logger.debug(`Game path: ${gameDir}`)
     this.logger.debug(`Arguments: ${args.join(' ')}`)
 
     if (this.currentPrefix) {
@@ -195,13 +195,23 @@ export class WineManager {
     if (this.currentPrefix) {
       env.WINEPREFIX = this.currentPrefix.path
     }
-
+    if (this.currentWineInstallation) {
+      const winePath = this.currentWineInstallation.installPath
+      env.WINELOADER = path.join(winePath, 'bin', 'wine')
+      env.LD_LIBRARY_PATH = `${winePath}/lib64:${winePath}/lib:${process.env.LD_LIBRARY_PATH || ''}`
+      env.WINESERVER = path.join(winePath, 'bin', 'wineserver')
+      env.PATH = `${winePath}/bin:${process.env.PATH}`
+    }
+    if (this.currentPrefix) {
+      env.WINEPREFIX = this.currentPrefix.path
+    }
     try {
       const wineCommand = this.currentWineInstallation
         ? path.join(this.currentWineInstallation.installPath, 'bin', 'wine')
         : 'wine'
+      process.chdir(gameDir)
       const starttime = Date.now()
-      const result = await SystemUtils.executeCommand(wineCommand, [gamePath, ...args], { env })
+      const result = await SystemUtils.executeCommand(wineCommand, [gameExecute, ...args], { env })
       const duration = Math.round((Date.now() - starttime) / 1000)
       if (!result.success) {
         this.logger.error(`Failed to launch game: ${result.stderr}`)

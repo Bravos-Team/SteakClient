@@ -80,6 +80,9 @@ export enum CommonDependencies {
   ARIAL = 'arial',
   TIMES = 'times',
   DINPUT8 = 'dinput8',
+  D3DX11_43 = 'd3dx11_43',
+  DXVK_NVAPI = 'dxvk-nvapi',
+  VKD3D = 'vkd3d'
 }
 export interface Logger {
   info(message: string): void
