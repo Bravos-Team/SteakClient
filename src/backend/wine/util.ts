@@ -1,7 +1,7 @@
 import { axiosClient } from '../utils'
-import { CommandResult, fetchProps, Logger, VersionInfo, WineInstallInfo } from './type'
+import { CommandResult, fetchProps, Logger, VersionInfo } from './type'
 import chalk from 'chalk'
-import { exec, spawn } from 'child_process'
+import { ChildProcess, exec, spawn } from 'child_process'
 import { existsSync, mkdirSync } from 'fs-extra'
 import { promisify } from 'util'
 import * as os from 'os'
@@ -117,7 +117,27 @@ export class SystemUtils {
       }
     })
   }
+  static executeCommandWine(
+    command: string,
+    args: string[] = [],
+    options: {
+      env?: Record<string, string>
+      cwd?: string
+      timeout?: number
+    } = {},
+  ) :ChildProcess{
+    // TODO: Implement command execution logic here
 
+    this.logger.debug(`Executing command: ${command} ${args.join(' ')}`)
+    const env = { ...process.env, ...options.env }
+    const child = spawn(command, args, {
+      env,
+      cwd: options.cwd,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    })
+   
+    return child
+  }
   /**
    * Checks if a file exists at the given path.
    * @param filePath The path to the file.

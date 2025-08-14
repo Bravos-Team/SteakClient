@@ -39,24 +39,17 @@
             Release Date: {{ convertTimestampToDate(gameInfo.details.updatedAt || 0) }}
           </p>
           <p class="text-gray-300 mt-4 mb-6">{{ gameInfo.details.shortDescription }}</p>
-          <div class="flex items-center text-sm text-gray-400 mb-6">
+          <div class="flex flex-col gap-2 text-sm text-gray-400 mb-6">
             <span class="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+              <CalendarClock class="h-5 w-5 mr-1" />
               Last Played:
-              {{ lastPlayedAt ? convertTimestampToTime(lastPlayedAt) : 'Never Played' }}
+              {{ lastPlayedAt ? formatDiff(lastPlayedAt) : 'Never Played' }}
+            </span>
+            <span class="flex items-center">
+              <Timer class="h-5 w-5 mr-1" />
+
+              Play Time:
+              {{ playSeconds ? formatPlayTime(playSeconds) : '0 seconds' }}
             </span>
           </div>
           <div class="mt-4">
@@ -83,13 +76,14 @@
 <script setup lang="ts">
 import { Card, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Download } from 'lucide-vue-next'
+import { ArrowLeft, Download , Timer, CalendarClock } from 'lucide-vue-next'
 import type { GameDetails, InstallParams } from '@/types/type'
 
 defineProps<{
   gameInfo: GameDetails
   installParams: InstallParams
   lastPlayedAt?: number
+  playSeconds?: number
 }>()
 defineEmits<{
   (e: 'install', gameId: string): void
@@ -102,11 +96,22 @@ const convertTimestampToDate = (timestamp: number): string => {
     year: 'numeric',
   })
 }
-const convertTimestampToTime = (timestamp: number): string => {
-  const date = new Date(timestamp)
-  return date.toLocaleTimeString('vi-VN', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+const formatDiff = (diffMs: number) => {
+  const minutes = Math.floor(diffMs / (1000 * 60))
+  const hours = Math.floor(diffMs / (1000 * 60 * 60))
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  if (minutes < 1) return 'Just now'
+  if (minutes < 60) return `${minutes} minutes ago`
+  if (hours < 24) return `${hours} hours ago`
+  return `${days} days ago`
+}
+const formatPlayTime = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+  if (seconds < 60) return `${seconds} seconds`
+  if (minutes < 60) return `${minutes} minutes`
+  if (hours < 24) return `${hours} hours`
+  return `${days} days`
 }
 </script>

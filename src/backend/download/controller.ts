@@ -5,7 +5,7 @@ import {
   extractFileTarZst,
   removeFolder,
   stopDownload,
-  toPascalCase,
+  
 } from '../utils'
 import { DMQueueElement, DownloadInfo } from 'src/common/types/type'
 import paths from 'path'

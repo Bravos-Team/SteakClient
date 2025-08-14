@@ -35,7 +35,7 @@ function handleRemoveFinished(appName: string) {
 </script>
 
 <template>
-  <div class="bg-background p-0">
+  <div class="bg-background h-full p-0">
     <h1 class="text-xl font-semibold text-foreground/80 mx-5 mt-6 mb-4">Downloads</h1>
     <DownloadChart />
     <DownloadProgress />

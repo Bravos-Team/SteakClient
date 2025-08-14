@@ -9,7 +9,7 @@ import {
 import { ColorLogger, fetchReleases, SystemUtils } from './util'
 import { TypeCheckedStoreBackEnd } from '../electron_store'
 import { remove } from 'fs-extra'
-import { downloadFile, extractFileTar, extractFileTarXz, removeFolder } from '../utils'
+import { downloadFile, extractFileTarXz, removeFolder } from '../utils'
 import { appPath } from '../constants/path'
 import { notify } from '../dialog/dialog'
 
@@ -175,10 +175,10 @@ export class WineManager {
     }
   }
 
-  async rungame(gameDir: string, gameExecute: string, args: string[] = []): Promise<boolean> {
+  rungame(gameDir: string, gameExecute: string, args: string[] = []) {
     if (!SystemUtils.fileExists(gameDir)) {
       this.logger.error(`Game not found: ${gameDir}`)
-      return false
+      return null
     }
 
     this.logger.info(`🎮 Launching game: ${path.basename(gameDir)}`)
@@ -210,18 +210,13 @@ export class WineManager {
         ? path.join(this.currentWineInstallation.installPath, 'bin', 'wine')
         : 'wine'
       process.chdir(gameDir)
-      const starttime = Date.now()
-      const result = await SystemUtils.executeCommand(wineCommand, [gameExecute, ...args], { env })
-      const duration = Math.round((Date.now() - starttime) / 1000)
-      if (!result.success) {
-        this.logger.error(`Failed to launch game: ${result.stderr}`)
-        return false
-      }
-      this.logger.info(`Game launched successfully in ${duration} seconds!`)
-      return result.success
+      const child = SystemUtils.executeCommandWine(wineCommand, [gameExecute, ...args], {
+        env,
+      })
+      return child
     } catch (error) {
       this.logger.error(`Error launching game: ${error}`)
-      return false
+      return null
     }
   }
 

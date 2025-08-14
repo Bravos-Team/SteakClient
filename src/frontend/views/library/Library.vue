@@ -134,6 +134,7 @@ const games = computed(() => {
       title: game.title,
       image: game.thumbnailUrl,
       lastPlayedAt: game.lastPlayedAt,
+      playSeconds: game.playSeconds,
       isInQueue: DMQueueElements.value.includes(game.gameId),
       isFinished: DMFinished.value.includes(game.gameId),
     })) ?? []

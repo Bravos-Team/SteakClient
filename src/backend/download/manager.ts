@@ -289,7 +289,6 @@ function cancelDownload(appName: string) {
   // Check if the current element is downloading the specified app
   const queue = getQueue()
   const index = indexOfQueueElement(appName)
-  const outputPath = queue[index]?.params.path || path.join(homePath, 'Games')
 
   if (index < 0) {
     console.warn(`No download found for ${appName} in the queue`)
@@ -456,23 +455,14 @@ async function launch(appName: string, deviceId: string) {
           })
         })
 
-      child.on('error', (error) => {
+      child.on('error', (error: unknown) => {
         console.error('Error launching game:', error)
-        notify({
-          title: 'Launch Failed',
-          body: `Failed to launch game: ${error.message}`,
-        })
       })
       child.on('close', (code) => {
         console.log(`Game process exited with code: ${code}`)
         if (webSocket) {
           webSocket.disconnect()
         }
-        updateGameStatus({
-          appName,
-          folder: install_path,
-          status: 'done',
-        })
       })
     }
 
@@ -510,18 +500,49 @@ async function launch(appName: string, deviceId: string) {
         return
       }
       wineManager.setActivePrefix(pathPrefix)
-      await wineManager.installDependencies([
-        CommonDependencies.DXVK,
-        CommonDependencies.VKD3D,
-        CommonDependencies.COREFONTS,
-        CommonDependencies.LIBERATION,
-      ])
+      await wineManager.installDependencies([CommonDependencies.DXVK, CommonDependencies.VKD3D])
     }
 
     if (wineManager.setActivePrefix(pathPrefix) && wineManager.setWineInstallation(wineInstalled)) {
       // Launch the game
 
-      wineManager.rungame(install_path, safeExecutable)
+      const child = wineManager.rungame(install_path, safeExecutable)
+      if (!child) {
+        notify({
+          title: 'Game Launch Failed',
+          body: `Failed to launch game: ${safeExecutable}`,
+        })
+        return
+      }
+
+      child.on('spawn', () => {
+        webSocket = initWebSocket(token, gameId, deviceId)
+        if (webSocket) {
+          webSocket.connect(
+            () => {
+              console.log('WebSocket connected for game launch')
+            },
+            (error) => {
+              console.error('WebSocket connection error:', error)
+            },
+          )
+        }
+      })
+      updateGameStatus({
+        appName,
+        folder: install_path,
+        status: 'launching',
+      })
+      child.on('error', (error: unknown) => {
+        console.error('Error launching game:', error)
+      })
+
+      child.on('close', (code) => {
+        console.log(`Game process exited with code: ${code}  for ${safeExecutable}`)
+        if (webSocket) {
+          webSocket.disconnect()
+        }
+      })
     }
   }
 }

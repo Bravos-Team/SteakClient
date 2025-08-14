@@ -393,7 +393,6 @@ export function launchGame(exePath: string, workingDir: string) {
     detached: true,
     stdio: 'ignore',
   })
-  child.unref() // Detach the child process
   return child
 }
 
