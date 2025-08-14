@@ -34,6 +34,7 @@ I
           :game-info="installParamsInfo.gameInfo"
           :install-params="installParamsInfo"
           :last-played-at="lastPlayedAt"
+          :play-seconds="playSeconds"
           @install="handleInstall"
         />
         <div class="w-full h-full 2xl:basis-6/12">
@@ -79,6 +80,7 @@ const {
   refetch: refetchGameInfo,
 } = useGetGameInfo(route.params.id as string)
 const lastPlayedAt = ref(0)
+const playSeconds = ref(0)
 console.log('Game ID:', route.params.id)
 console.log('Last Played At:', lastPlayedAt.value)
 const DMFinished = ref<DMQueueElement>({} as DMQueueElement)
@@ -217,19 +219,23 @@ onMounted(async () => {
     QueueStore.getFinished().find((el) => el.params.appName.toString() === route.params.id) ||
     ({} as DMQueueElement)
   // const rowTime =  new Date().getTime() -
-  // (LibraryStore.getLibrary().find((game) => game.gameId.toString() === route.params.id)
-  //   ?.lastPlayedAt || 0)
-
-  const theLastPlayTime = new Date(
-    LibraryStore.getLibrary().find((game) => game.gameId.toString() === route.params.id)
-      ?.lastPlayedAt || 0,
+  const gameLibrary = LibraryStore.getLibrary().find(
+    (game) => game.gameId.toString() === route.params.id,
   )
-  console.log('before convert:', theLastPlayTime)
-  const beforeConvert = theLastPlayTime.getTime()
-  const rawTime = beforeConvert - new Date().getTime()
+  if (gameLibrary) {
+    const lastPlayAt = gameLibrary.lastPlayedAt || 0
 
-  lastPlayedAt.value = new Date(rawTime).getTime()
+    const lastPlayedTime = new Date(lastPlayAt).getTime()
+    const diffMs = Date.now() - lastPlayedTime // chênh lệch theo ms
+    lastPlayedAt.value = new Date(diffMs).getTime()
+    if (lastPlayAt === 0) {
+      lastPlayedAt.value = 0
+    }
+    const playSecs = gameLibrary.playSeconds || 0
+    console.log(playSecs)
 
-  console.log(LibraryStore.getLibrary())
+    playSeconds.value = playSecs ? playSecs : 0
+    console.log('lastPlayedAt.value:', lastPlayedAt.value)
+  }
 })
 </script>
