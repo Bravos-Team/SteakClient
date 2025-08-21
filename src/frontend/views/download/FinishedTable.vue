@@ -52,7 +52,7 @@ defineProps<{
               <td class="py-3">Epic Games</td>
               <td class="py-3 flex justify-center">
                 <button
-                  @click="$emit('remove', item.params.appName)"
+                  @click="$emit('remove', item.params.id)"
                   class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white"
                 >
                   <svg

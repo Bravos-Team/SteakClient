@@ -1,5 +1,6 @@
-import { sendFrontendMessage } from '../ipc'
-import { DMQueueElement, DownloadManagerState, GameStatus } from 'src/common/types/type'
+
+import { sendFrontendMessage } from '../ipc/manager'
+import { DMQueueElement, DownloadManagerState, GameStatus } from './type'
 
 export function updateFrontendQueue(
   queue: DMQueueElement[],

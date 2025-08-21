@@ -1,10 +1,12 @@
-import { UserInfo } from 'src/common/types/type'
+
 import { steakLoginUrl } from '../constants/url'
-import { addHandler, addListener } from '../ipc'
+
 import { createLoginWindow } from '../login_window'
 import { getUser } from './state'
 import { login, logout } from './controller'
 import { removeToken } from './util'
+import { UserInfo } from './type'
+import { addHandler, addListener } from '../ipc/manager'
 
 addListener('openLoginWindow', () => {
   const loginWindow = createLoginWindow()

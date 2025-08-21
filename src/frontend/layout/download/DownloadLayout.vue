@@ -16,21 +16,21 @@ QueueStore.updateAll({
   state: info.state,
 })
 useDownloadManagerSync()
-function handlePauseDownload(appName: string) {
-  window.api.pausedDownload(appName)
-  console.log(`Paused download for ${appName}`)
+function handlePauseDownload(id: string) {
+  window.api.pausedDownload(id)
+  console.log(`Paused download for ${id}`)
 }
-function handleResumeDownload(appName: string) {
-  window.api.resumeDownload(appName)
-  console.log('Resumed download')
+function handleResumeDownload(id: string) {
+  window.api.resumeDownload(id)
+  console.log(`Resumed download for ${id}`)
 }
-function handleCancelDownload(appName: string) {
-  window.api.cancelDownload(appName)
-  console.log(`Cancelled download for ${appName}`)
+function handleCancelDownload(id: string) {
+  window.api.cancelDownload(id)
+  console.log(`Cancelled download for ${id}`)
 }
-function handleRemoveFinished(appName: string) {
-  window.api.removeFinished(appName)
-  console.log(`Removed finished download for ${appName}`)
+function handleRemoveFinished(id: string) {
+  window.api.removeFinished(id)
+  console.log(`Removed finished download for ${id}`)
 }
 </script>
 

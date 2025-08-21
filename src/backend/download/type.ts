@@ -1,19 +1,3 @@
-import { TitleBarOverlay } from 'electron'
-export interface UserInfo {
-  displayName: string | null
-  avatarUrl: string | null
-  Authentication: {
-    accessToken: string | null
-    refreshToken: string | null
-  }
-}
-export interface WindowProps extends Electron.Rectangle {
-  maximize: boolean
-  frame?: boolean
-  titleBarStyle?: 'default' | 'hidden' | 'hiddenInset'
-  titleBarOverlay: TitleBarOverlay | boolean
-}
-
 export interface InstallArgs {
   path: string
   branch?: string
@@ -21,7 +5,7 @@ export interface InstallArgs {
 }
 
 export interface InstallParams extends InstallArgs {
-  appName: string
+  id: string
   gameInfo: GameDetails
   size?: number
   installSize?: number
@@ -61,7 +45,7 @@ export interface SystemRequirementEntry {
   storage: string
 }
 export interface InstalledInfo {
-  appName: string
+  id: string
   executable: string
   install_path: string
   install_size: number
@@ -82,7 +66,7 @@ export type Status =
   | 'launching'
 
 export interface GameStatus {
-  appName: string
+  id: string
   progress?: InstallProgress
   folder?: string
   context?: string
@@ -123,43 +107,4 @@ export type Platform = (typeof Platforms)[number]
 export interface SystemRequirements {
   minimum: SystemRequirementEntry
   recommend?: SystemRequirementEntry
-}
-
-export interface AppSettings {
-  defaultInstallPath: string
-}
-export interface SystemInfo {
-  cpu: {
-    manufacturer: string
-    model: string
-    brand: string
-    cores: number
-    speed: number
-  }
-  memory: {
-    total: number
-    free: number
-    available: number
-  }
-  gpu: Array<{
-    model: string
-    vendor: string
-    vram: number
-  }> | null
-  os: {
-    platform: string
-    distro: string
-    release: string
-    codename: string
-  }
-  wifi: {
-    ssid: string
-    signalLevel: number
-  } | null
-  storage: Array<{
-    mount: string
-    size: number
-    used: number
-    available: number
-  }> | null
 }

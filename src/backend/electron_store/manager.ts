@@ -1,7 +1,8 @@
 
 import { Get } from 'type-fest'
 import Store from 'electron-store'
-import { StoreStructure, TypeCheckStore, UnknownGuard, ValidStoreName } from 'src/common/types/electron_store'
+import { StoreStructure, TypeCheckStore, UnknownGuard, ValidStoreName } from './type'
+
 
 export class TypeCheckedStoreBackEnd<Name extends ValidStoreName> implements TypeCheckStore<Name> {
   private store: Store

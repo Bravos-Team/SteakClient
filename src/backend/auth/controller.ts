@@ -2,10 +2,12 @@ import { deleteUser, getUser, isLogin, setUser } from './state'
 import { session } from 'electron'
 import { getLoginWindow } from '../login_window'
 import { getMainWindow } from '../main_window'
-import { sendFrontendMessage } from '../ipc'
-import { UserInfo } from 'src/common/types/type'
+
+
 import { notify } from '../dialog/dialog'
 import { getRefreshToken, getToken } from '../auth/util'
+import { UserInfo } from './type'
+import { sendFrontendMessage } from '../ipc/manager'
 
 const logout = () => {
   if (!isLogin) {

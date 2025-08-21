@@ -1,5 +1,5 @@
-import { DMQueueElement, DownloadManagerState, InstalledInfo } from 'src/common/types/type'
-import { TypeCheckedStoreBackEnd } from '../electron_store'
+import { TypeCheckedStoreBackEnd } from '../electron_store/manager'
+import { DMQueueElement, DownloadManagerState, InstalledInfo } from './type'
 
 let queueState: DownloadManagerState = 'idle'
 let currentElement: DMQueueElement | null = null
@@ -44,40 +44,40 @@ const setFinished = (elements: DMQueueElement[]) => {
   const cleanedElements = elements.map(({ downloadInfo, ...rest }) => rest)
   store.set('finished', cleanedElements)
 }
-const removeFromQueue = (appName: string) => {
+const removeFromQueue = (id: string) => {
   const queue = getQueue()
-  const index = queue.findIndex((el) => el.params.appName === appName)
+  const index = queue.findIndex((el) => el.params.id === id)
   if (index !== -1) {
     queue.splice(index, 1)
     setQueue(queue)
   }
 }
-const removeFromFinished = (appName: string) => {
+const removeFromFinished = (id: string) => {
   const finished = getFinished()
-  const index = finished.findIndex((el) => el.params.appName === appName)
+  const index = finished.findIndex((el) => el.params.id === id)
   if (index !== -1) {
     finished.splice(index, 1)
     setFinished(finished)
   }
 }
-const removeFromInstalledGames = (appName: string) => {
+const removeFromInstalledGames = (id: string) => {
   const installedGames = getInstalledGames()
-  if (installedGames[appName]) {
-    delete installedGames[appName]
+  if (installedGames[id]) {
+    delete installedGames[id]
     setInstalledGames(installedGames)
   }
 }
-const indexOfQueueElement = (appName: string): number => {
+const indexOfQueueElement = (id: string): number => {
   const queue = getQueue()
-  return queue.findIndex((el) => el.params.appName === appName)
+  return queue.findIndex((el) => el.params.id === id)
 }
-const indexOfFinishedElement = (appName: string): number => {
+const indexOfFinishedElement = (id: string): number => {
   const finished = getFinished()
-  return finished.findIndex((el) => el.params.appName === appName)
+  return finished.findIndex((el) => el.params.id === id)
 }
-const indexOfInstalledGame = (appName: string): number => {
+const indexOfInstalledGame = (id: string): number => {
   const installedGames = getInstalledGames()
-  return Object.keys(installedGames).indexOf(appName)
+  return Object.keys(installedGames).indexOf(id)
 }
 
 export {

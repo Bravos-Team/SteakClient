@@ -1,8 +1,13 @@
 // export class TypeCheckedStoreBackEnd<Name extends>
 
 import { Get } from 'type-fest'
-import { AppSettings, DMQueueElement, InstalledInfo, UserInfo, WindowProps } from './type'
+
 import { WineInstallInfo, WinePrefixConfig } from 'src/backend/wine/type'
+import { UserInfo } from 'src/backend/auth'
+import { WindowProps } from 'src/backend/windows/type'
+import { AppSettings } from 'src/backend/config/type'
+import { DMQueueElement, InstalledInfo } from 'src/backend/download/type'
+
 
 export interface StoreStructure {
   configStore: {

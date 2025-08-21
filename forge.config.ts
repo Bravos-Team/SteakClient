@@ -14,7 +14,7 @@ const config: ForgeConfig = {
     asar: true,
     name: 'Steak',
     executableName: 'Steak',
-    extraResource: [path.resolve(__dirname, 'public')],
+    extraResource: [path.resolve(__dirname, 'public'),path.resolve(__dirname , 'src/common')],
     icon: path.resolve(__dirname, 'public/favicon.ico'),
     buildVersion: '1.0.1',
   },

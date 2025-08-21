@@ -10,7 +10,7 @@ export interface InstallArgs {
 }
 
 export interface InstallParams extends InstallArgs {
-  appName: string
+  id: string
   gameInfo: GameDetails
   size?: number | 0
   installSize?: number | 0
@@ -70,13 +70,13 @@ export interface SystemRequirementEntry {
   storage: string
 }
 export interface InstalledInfo {
+  id: string
   executable: string
   install_path: string
+  install_size: number
   launch_path?: string
   version?: string
-  appName?: string
 }
-
 export type Status =
   | 'queued'
   | 'downloading'
@@ -89,7 +89,7 @@ export type Status =
   | 'paused'
 
 export interface GameStatus {
-  appName: string
+  id: string
   progress?: InstallProgress
   folder?: string
   context?: string

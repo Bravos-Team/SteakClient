@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useDownloadStore = defineStore('download', () => {
-  const gameStatus = ref<GameStatus>({ appName: '', status: 'queued' })
+  const gameStatus = ref<GameStatus>({ id: '', status: 'queued' })
 
   const setGameStatus = (status: GameStatus) => {
     gameStatus.value = status
@@ -12,7 +12,7 @@ export const useDownloadStore = defineStore('download', () => {
     return gameStatus.value
   }
   const setProgress = (progress: InstallProgress) => {
-    if (gameStatus.value.appName) {
+    if (gameStatus.value.id) {
       gameStatus.value.progress = progress
     } else {
       console.warn('Game status not set, cannot update progress')
@@ -55,7 +55,7 @@ export const useDownloadQueueStore = defineStore('downloadQueue', () => {
   const addToQueue = (element: DMQueueElement) => {
     console.log(element)
 
-    const exists = elements.value.some((e) => e.params.appName === element.params.appName)
+    const exists = elements.value.some((e) => e.params.id === element.params.id)
     if (!exists) elements.value.push(element)
   }
 

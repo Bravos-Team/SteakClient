@@ -4,7 +4,7 @@ import started from 'electron-squirrel-startup'
 import { fileURLToPath } from 'node:url'
 import { config } from 'dotenv'
 import { createMainWindow } from './main_window'
-import { addHandler } from './ipc'
+
 import { electronRendererUrl } from './constants/url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -33,13 +33,13 @@ if (process.platform === 'linux')
 app.whenReady().then(async () => {
   try {
     if (process.platform === 'darwin') {
-      app.setAppUserModelId('steak')
+      app.setAppUserModelId('Steak')
     }
 
     const main_window = await initializeMainWindow()
     // console.log(configPath)
     // console.log(await getSystemInfo())
-    
+
     main_window.show()
 
     main_window.focus()
@@ -85,4 +85,4 @@ import './download/ipc'
 import './dialog/ipc_handler'
 import './auth/ipc'
 import { getCapacitySystem, getSystemInfo } from './utils'
-
+import { addHandler } from './ipc/manager'

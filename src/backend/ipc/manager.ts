@@ -1,6 +1,8 @@
 import { ipcMain, type IpcMainEvent, type IpcMainInvokeEvent } from 'electron'
-import { AsyncIPCFunctions, FrontendMessages, SyncIPCFunctions } from 'src/common/types/ipc'
-import { getMainWindow } from './main_window'
+
+import { getMainWindow } from '../main_window'
+import { AsyncIPCFunctions, FrontendMessages, SyncIPCFunctions } from './type'
+
 
 function addListener<ChannelName extends keyof SyncIPCFunctions>(
   channel: ChannelName,

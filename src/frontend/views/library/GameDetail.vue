@@ -158,7 +158,7 @@ const fetchGameData = async () => {
       toast.error('Unable to find game information or download information.')
       return
     }
-    installParamsInfo.value.appName = gameInfo.value.details.id
+    installParamsInfo.value.id = gameInfo.value.details.id
     installParamsInfo.value.path = ''
     console.log(downloadParamsInfo.value)
 
@@ -216,7 +216,7 @@ onMounted(async () => {
     state: info.state,
   })
   DMFinished.value =
-    QueueStore.getFinished().find((el) => el.params.appName.toString() === route.params.id) ||
+    QueueStore.getFinished().find((el) => el.params.id.toString() === route.params.id) ||
     ({} as DMQueueElement)
   // const rowTime =  new Date().getTime() -
   const gameLibrary = LibraryStore.getLibrary().find(

@@ -13,7 +13,7 @@
         <div class="w-full h-full grayscale-25 relative">
           <img
             :src="gameInfo?.details?.thumbnail"
-            :alt="installParams?.appName"
+            :alt="installParams?.id"
             class="w-full h-full object-cover rounded-md"
           />
           <div
