@@ -1,7 +1,8 @@
 
 
 import { ipcRenderer, type IpcRendererEvent } from 'electron'
-import { AsyncIPCFunctions, FrontendMessages, SyncIPCFunctions } from 'src/common/types/ipc'
+import { AsyncIPCFunctions, FrontendMessages, SyncIPCFunctions } from 'src/backend/ipc/type'
+
 
 
 

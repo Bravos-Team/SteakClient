@@ -1,4 +1,5 @@
-import { addHandler } from '../ipc'
+
+import { addHandler } from '../ipc/manager'
 import { showDialog } from './dialog'
 
 addHandler('openFolder', async (e, path: string) => {

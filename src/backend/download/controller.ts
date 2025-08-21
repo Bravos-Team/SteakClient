@@ -5,40 +5,38 @@ import {
   extractFileTarZst,
   removeFolder,
   stopDownload,
-  
 } from '../utils'
-import { DMQueueElement, DownloadInfo } from 'src/common/types/type'
+
 import paths from 'path'
 import { updateGameStatus } from './events'
 import { notify } from '../dialog/dialog'
 import { statSync } from 'fs'
+import { DMQueueElement, DownloadInfo } from './type'
 
 async function installGame(element: DMQueueElement, signal?: AbortSignal) {
-  const { appName, path, gameInfo } = element.params
+  const { id, path, gameInfo } = element.params
 
   const { fileName, downloadUrl } = element.downloadInfo as DownloadInfo
-  console.log(`Installing game ${appName} at path ${path}`)
+  console.log(`Installing game ${id} at path ${path}`)
 
   // Path zipURL
   const testUrl = `https://mmatechnical.com/Download/Download-Test-File/(MMA)-500MB.zip`
 
-  // Path to download the file
-  // const downloadPath = paths.join(homePath, 'Games', appName)
-  const outputPath = paths.join(path, appName.toString())
 
-  // console.log(`Downloading ${appName} from ${zipUrl} to ${outputPath}`)
+  const outputPath = paths.join(path, id.toString())
+
 
   notify({
     title: gameInfo.details.title,
     body: `Installing ...`,
   })
   updateGameStatus({
-    appName,
+    id: id,
     status: 'installing',
     folder: outputPath,
   })
 
-  console.log(`Installing game ${appName} at path ${123}`)
+  console.log(`Installing game ${id} at path ${123}`)
 
   // Ensure the output directory exists
   ensureDir(outputPath)
@@ -48,6 +46,20 @@ async function installGame(element: DMQueueElement, signal?: AbortSignal) {
     fileName,
     url: downloadUrl,
     dest: outputPath,
+    progressCallback: (downloadedBytes, downloadSpeed, progress, diskWriteSpeed, eta) => {
+      updateGameStatus({
+        id,
+        folder: outputPath,
+        status: 'downloading',
+        progress: {
+          bytes: downloadedBytes.toString(),
+          eta,
+          downSpeed: downloadSpeed.toString(),
+          diskWriteSpeed: diskWriteSpeed.toString(),
+          percent: progress,
+        },
+      })
+    },
     signal,
   })
   const zipPath = paths.join(outputPath, `${fileName}`)
@@ -62,8 +74,8 @@ async function installGame(element: DMQueueElement, signal?: AbortSignal) {
     removeFolder(outputPath, paths.basename(tarPath))
   }
 }
-async function stopDownloadFile(appName: string) {
-  console.log(`Paused download for game: ${appName}`)
-  stopDownload(appName)
+async function stopDownloadFile(id: string) {
+  console.log(`Paused download for game: ${id}`)
+  stopDownload(id)
 }
 export { installGame, stopDownloadFile }

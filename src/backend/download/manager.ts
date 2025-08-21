@@ -1,4 +1,3 @@
-import { DMQueueElement } from 'src/common/types/type'
 import { createAbortController } from '../util/aborthandler/aborthandler'
 import { updateFrontendQueue, updateGameStatus } from './events'
 import { installGame, stopDownloadFile } from './controller'
@@ -27,12 +26,17 @@ import { notify } from '../dialog/dialog'
 import axios, { AxiosError } from 'axios'
 import { DownloadInfo } from '@/types/type'
 import { getUser } from '../auth'
-import { initWebSocket } from '../ws/util'
+import {  initWebSocketManager } from '../ws/util'
 import { WineManager } from '../wine/manager'
-import { wineStore } from '../constants/key_value_store'
+
 import { CommonDependencies, WineInstallInfo } from '../wine/type'
 import { WINEGE_URL } from '../wine/constants'
-import { SystemUtils } from '../wine/util'
+
+import { DMQueueElement } from './type'
+import { wineStore } from '../electron_store/state'
+import { WebSocketConfig, WebSocketEventHandler } from '../ws/types'
+import { endPointWS } from '../constants/url'
+import { SystemUtils } from '../util/system/system'
 
 // Function to initialize the download queue
 
@@ -64,7 +68,7 @@ async function init() {
     updateFrontendQueue(getQueue(), 'running', getFinished())
 
     // Logic to install the game
-    const crl = createAbortController(element.params.appName).signal
+    const crl = createAbortController(element.params.id).signal
     try {
       await installGame(element, crl)
 
@@ -74,11 +78,11 @@ async function init() {
       element.status = 'done'
 
       const installedElements = getInstalledGames()
-      if (!installedElements[element.params.appName]) {
-        installedElements[element.params.appName] = {
-          appName: element.params.appName,
+      if (!installedElements[element.params.id]) {
+        installedElements[element.params.id] = {
+          id: element.params.id,
           executable: element.downloadInfo?.execPath || '',
-          install_path: path.join(element.params.path, element.params.appName.toString()),
+          install_path: path.join(element.params.path, element.params.id.toString()),
           install_size: element.params.installSize || 0,
 
           version: element.params.gameInfo.details.version,
@@ -88,12 +92,10 @@ async function init() {
       setInstalledGames(installedElements)
 
       const finishedElements = getFinished()
-      if (!finishedElements.some((el) => el.params.appName === element.params.appName)) {
+      if (!finishedElements.some((el) => el.params.id === element.params.id)) {
         finishedElements.push(element)
       } else {
-        const index = finishedElements.findIndex(
-          (el) => el.params.appName === element.params.appName,
-        )
+        const index = finishedElements.findIndex((el) => el.params.id === element.params.id)
         finishedElements[index] = element
       }
 
@@ -106,7 +108,7 @@ async function init() {
 
       // Update the queue state and current element
 
-      console.log(`Download for ${element.params.appName} completed`)
+      console.log(`Download for ${element.params.id} completed`)
 
       updateFrontendQueue(getQueue(), getQueueState(), getFinished())
       // Notify the frontend about the updated queue and game status
@@ -115,7 +117,7 @@ async function init() {
       // Update the frontend queue and game status
 
       updateGameStatus({
-        appName: element.params.appName,
+        id: element.params.id,
         folder: element.params.path,
         status: 'done',
       })
@@ -126,11 +128,11 @@ async function init() {
     } catch (error) {
       // Check if the download was paused
       if (error instanceof Error && error.message.includes('paused')) {
-        console.log(`Download for ${element.params.appName} paused`)
+        console.log(`Download for ${element.params.id} paused`)
         return
       }
       // If the download was aborted or failed, handle it
-      console.error(`Error downloading ${element.params.appName}:`, error)
+      console.error(`Error downloading ${element.params.id}:`, error)
       element.status = 'error'
       element.endTime = Date.now()
 
@@ -145,11 +147,11 @@ async function init() {
       // Remove the current element from the queue
       updateFrontendQueue(getQueue(), getQueueState(), getFinished())
       updateGameStatus({
-        appName: element.params.appName,
+        id: element.params.id,
         folder: element.params.path,
         status: 'error',
       })
-      stopDownloadFile(element.params.appName) // Stop the download if it failed
+      stopDownloadFile(element.params.id) // Stop the download if it failed
 
       if (error instanceof Error && error.message.includes('headers')) {
         const token = getUser()?.Authentication?.accessToken
@@ -161,15 +163,12 @@ async function init() {
           return
         }
         const res = await axios
-          .get(
-            'https://api.steak.io.vn/api/v1/store/public/games/download/' + element.params.appName,
-            {
-              headers: {
-                Cookie: `access_token=${token}`,
-                'Content-Type': 'application/json',
-              },
+          .get('https://api.steak.io.vn/api/v1/store/public/games/download/' + element.params.id, {
+            headers: {
+              Cookie: `access_token=${token}`,
+              'Content-Type': 'application/json',
             },
-          )
+          })
           .catch((err: AxiosError) => {
             notify({
               title: element.params.gameInfo.details.title || 'Download Failed',
@@ -192,7 +191,7 @@ async function init() {
         title: element.params.gameInfo.details.title || 'Download Failed',
         body: `Download failed: ${(error as Error).message}`,
       })
-      removeFromQueue(element.params.appName) // Remove the element from the queue
+      removeFromQueue(element.params.id) // Remove the element from the queue
       setQueue(getQueue()) // Update the queue state
       updateFrontendQueue(getQueue(), getQueueState(), getFinished())
     }
@@ -201,11 +200,12 @@ async function init() {
 
 // Function to add a new element to the download queue
 async function addToQueue(element: DMQueueElement) {
-  if (!element || !element.params || !element.params.appName) {
-    throw new Error('Invalid element or missing appName in params')
+  console.log(`Adding to queue:`, element.params.id)
+  if (!element || !element.params || !element.params.id) {
+    throw new Error('Invalid element or missing id in params')
   }
   const elements = getQueue()
-  const index = indexOfQueueElement(element.params.appName)
+  const index = indexOfQueueElement(element.params.id.toString())
   // Check if the element already exists in the queue
 
   if (index >= 0) {
@@ -220,7 +220,7 @@ async function addToQueue(element: DMQueueElement) {
 
   updateFrontendQueue(elements, getQueueState())
   updateGameStatus({
-    appName: element.params.appName,
+    id: element.params.id,
     folder: element.params.path,
     status: 'queued',
   })
@@ -228,6 +228,8 @@ async function addToQueue(element: DMQueueElement) {
     title: element.params.gameInfo.details.title || 'Download Added',
     body: `Add Queue ...`,
   })
+  console.log(`Added to queue: ${element.params.id}`)
+
   // If the queue is idle or paused, initialize the queue
   if (getQueueState() === 'idle') {
     await init()
@@ -235,27 +237,27 @@ async function addToQueue(element: DMQueueElement) {
 }
 
 // Function to pause the current download
-function paused(appName: string) {
-  if (!appName) {
-    throw new Error('App name is required to pause the download')
+function paused(id: string) {
+  if (!id) {
+    throw new Error('ID is required to pause the download')
   }
   const currentElement = getCurrentElement()
-  if (!currentElement || currentElement.params.appName !== appName) {
-    throw new Error(`No download in progress for app: ${appName}`)
+  if (!currentElement || currentElement.params.id !== id) {
+    throw new Error(`No download in progress for ID: ${id}`)
   }
 
   // Update the queue state to paused
   setQueueState('paused')
 
   // Pause the download using the utility function
-  stopDownloadFile(appName)
+  stopDownloadFile(id)
 
   // Update the current element status to paused
   currentElement.status = 'paused'
   currentElement.endTime = Date.now()
 
   // Update the queue and frontend
-  const queue = getQueue().filter((el) => el.params.appName !== appName)
+  const queue = getQueue().filter((el) => el.params.id !== id)
   queue.push(currentElement)
   setQueue(queue)
   setCurrentElement(null)
@@ -264,7 +266,7 @@ function paused(appName: string) {
 
   updateFrontendQueue(queue, getQueueState(), getFinished())
   updateGameStatus({
-    appName: currentElement.params.appName,
+    id: currentElement.params.id,
     folder: currentElement.params.path,
     status: 'paused',
   })
@@ -282,16 +284,16 @@ function paused(appName: string) {
 }
 
 // Function to cancel a download
-function cancelDownload(appName: string) {
-  if (!appName) {
-    throw new Error('App name is required to cancel the download')
+function cancelDownload(id: string) {
+  if (!id) {
+    throw new Error('ID is required to cancel the download')
   }
   // Check if the current element is downloading the specified app
   const queue = getQueue()
-  const index = indexOfQueueElement(appName)
+  const index = indexOfQueueElement(id)
 
   if (index < 0) {
-    console.warn(`No download found for ${appName} in the queue`)
+    console.warn(`No download found for ${id} in the queue`)
     return
   }
 
@@ -300,16 +302,16 @@ function cancelDownload(appName: string) {
     body: `Download cancelled`,
   })
   // Remove the app from the queue
-  removeFromQueue(appName)
+  removeFromQueue(id)
   if (getQueueState() === 'running') {
     // If the current element is the one being cancelled, set it to null
     setCurrentElement(null)
-    stopDownloadFile(appName) // Stop the download using the utility function
+    stopDownloadFile(id) // Stop the download using the utility function
     setQueueState('idle') // Update the queue state to idle
   }
   setQueueState('idle') // Update the queue state to idle
   // Update the current element status to aborted
-  const isCurrent = getCurrentElement()?.params.appName === appName
+  const isCurrent = getCurrentElement()?.params.id === id
   if (isCurrent) {
     setCurrentElement(null)
   }
@@ -319,7 +321,7 @@ function cancelDownload(appName: string) {
   // Notify the frontend about the paused download
   updateFrontendQueue(getQueue(), getQueueState(), getFinished())
   updateGameStatus({
-    appName,
+    id,
     folder: getCurrentElement()?.params.path || '',
     status: 'aborted',
   })
@@ -331,21 +333,21 @@ function cancelDownload(appName: string) {
 }
 
 // Function to resume a paused download
-function resumeDownload(appName: string) {
+function resumeDownload(id: string) {
   const queue = getQueue()
-  const index = indexOfQueueElement(appName)
+  const index = indexOfQueueElement(id)
   const currentElement = getCurrentElement()
   const queueState = getQueueState()
 
   console.log(queue[index].status)
 
-  if (!appName) {
-    throw new Error('App name is required to resume the download')
+  if (!id) {
+    throw new Error('ID is required to resume the download')
   }
   // Check if the app exists in the queue
-  if (queueState === 'running' && currentElement?.params.appName !== appName) {
+  if (queueState === 'running' && currentElement?.params.id !== id) {
     if (currentElement !== null) {
-      stopDownloadFile(currentElement.params.appName)
+      stopDownloadFile(currentElement.params.id)
       setCurrentElement(null)
     }
   }
@@ -367,16 +369,16 @@ function resumeDownload(appName: string) {
   }
 }
 
-function removeFinished(appName: string) {
+function removeFinished(id: string) {
   // Check if the app exists in the finished downloads
-  if (!appName) {
-    throw new Error('App name is required to remove a finished download')
+  if (!id) {
+    throw new Error('ID is required to remove a finished download')
   }
 
   // Find the index of the finished element
-  const index = indexOfFinishedElement(appName)
+  const index = indexOfFinishedElement(id)
   if (index < 0) {
-    console.warn(`No finished download found for ${appName}`)
+    console.warn(`No finished download found for ${id}`)
     return
   }
 
@@ -387,10 +389,10 @@ function removeFinished(appName: string) {
   removeFolder(outputPath, getFinished()[index]?.params.gameInfo.details.id.toString() || '')
 
   // Remove the finished element from the state
-  removeFromFinished(appName)
+  removeFromFinished(id)
 
   // Remove the installed game information
-  removeFromInstalledGames(appName)
+  removeFromInstalledGames(id)
 
   // Notify the frontend about the removed finished download
   notify({
@@ -409,15 +411,14 @@ function getQueueInformation() {
     state: getQueueState(),
   }
 }
+
 // Function to launch a game
-async function launch(appName: string, deviceId: string) {
+async function launch(id: string, deviceId: string) {
   const installedElements = getInstalledGames()
   const token = getUser()?.Authentication?.accessToken
-  const gameId = getFinished().find((el) => el.params.appName === appName)?.params.gameInfo.details
-    .id
+  const gameId = getFinished().find((el) => el.params.id === id)?.params.gameInfo.details.id
   console.log(`Launching game: ${token}, Game ID: ${gameId}, Device ID: ${deviceId}`)
 
-  let webSocket: ReturnType<typeof initWebSocket> | null = null
   if (!token || !gameId || !deviceId) {
     notify({
       title: 'Launch Failed',
@@ -425,7 +426,28 @@ async function launch(appName: string, deviceId: string) {
     })
     return
   }
-  if (installedElements[appName]) {
+  const config: WebSocketConfig = {
+    endpoint: endPointWS,
+    headers: {
+      Authorization: token,
+      'Game-Id': gameId,
+      'Device-Id': deviceId,
+    },
+  }
+  const handlers: WebSocketEventHandler = {
+    onConnect: () => {
+      console.log('WebSocket connected for game launch')
+    },
+    onError: (error) => {
+      console.error('WebSocket connection error:', error)
+    },
+    onClose: () => {
+      console.log('WebSocket closed')
+    },
+  }
+
+  if (installedElements[id]) {
+    const webSocket = await initWebSocketManager(config, handlers)
     const { executable, install_path } = installedElements[gameId]
 
     const safeExecutable = executable.replace(/^[/\\]+/, '')
@@ -433,116 +455,115 @@ async function launch(appName: string, deviceId: string) {
     const fullPath = path.join(install_path, safeExecutable)
     if (process.platform === 'win32') {
       const child = launchGame(fullPath, install_path)
-      if (process.platform)
-        child.on('spawn', () => {
-          console.log(`Game launched successfully: ${fullPath}`)
-          webSocket = initWebSocket(token, gameId, deviceId)
-          if (webSocket) {
-            webSocket.connect(
-              () => {
-                console.log('WebSocket connected for game launch')
-              },
-              (error) => {
-                console.error('WebSocket connection error:', error)
-              },
-            )
-          }
 
-          updateGameStatus({
-            appName,
-            folder: install_path,
-            status: 'launching',
-          })
+      child.on('spawn', async () => {
+        console.log(`Game launched successfully: ${fullPath}`)
+
+        updateGameStatus({
+          id: id,
+          folder: install_path,
+          status: 'launching',
         })
+        webSocket.connect()
+      })
 
       child.on('error', (error: unknown) => {
-        console.error('Error launching game:', error)
+        notify({
+          title: 'Game Launch Error',
+          body: `Error launching game: ${(error as Error).message}`,
+        })
+        if (webSocket) {
+          webSocket.disconnect()
+        }
       })
-      child.on('close', (code) => {
+      child.on('exit', async (code) => {
         console.log(`Game process exited with code: ${code}`)
         if (webSocket) {
           webSocket.disconnect()
         }
       })
     }
+    if (process.platform === 'linux') {
+      const wineManager = new WineManager()
+      const wineInstallations = wineStore.get('wineInstallation', [] as WineInstallInfo[])
+      console.log(wineInstallations)
+      let wineInstalled = wineInstallations[0]
+      if (wineInstallations.length <= 0) {
+        await wineManager.saveWineFetchInfo(WINEGE_URL)
+        await wineManager.downloadWine()
+        wineInstalled = wineStore.get('wineInstallation', [] as WineInstallInfo[])[0]
+      }
 
-    const wineManager = new WineManager()
-    const wineInstallations = wineStore.get('wineInstallation', [] as WineInstallInfo[])
-    console.log(wineInstallations)
-    let wineInstalled = wineInstallations[0]
-    if (wineInstallations.length <= 0) {
-      await wineManager.saveWineFetchInfo(WINEGE_URL)
-      await wineManager.downloadWine()
-      wineInstalled = wineStore.get('wineInstallation', [] as WineInstallInfo[])[0]
-    }
-
-    if (!wineInstalled.installed) {
-      notify({
-        title: 'Wine Not Installed',
-        body: `Please install Wine ${wineInstalled.name} before launching the game.`,
-      })
-      return
-    }
-    const savePath = path.join(homePath, 'Games')
-    const pathPrefix = path.join(savePath, appName.toString())
-    if (!SystemUtils.fileExists(pathPrefix)) {
-      const isCreating = await wineManager.createPreFix(
-        appName.toString(),
-        savePath,
-        'win64',
-        wineInstalled.installPath,
-      )
-      if (!isCreating) {
+      if (!wineInstalled.installed) {
         notify({
-          title: 'Wine Prefix Creation Failed',
-          body: `Failed to create Wine prefix for ${appName}`,
+          title: 'Wine Not Installed',
+          body: `Please install Wine ${wineInstalled.name} before launching the game.`,
         })
         return
       }
-      wineManager.setActivePrefix(pathPrefix)
-      await wineManager.installDependencies([CommonDependencies.DXVK, CommonDependencies.VKD3D])
-    }
-
-    if (wineManager.setActivePrefix(pathPrefix) && wineManager.setWineInstallation(wineInstalled)) {
-      // Launch the game
-
-      const child = wineManager.rungame(install_path, safeExecutable)
-      if (!child) {
-        notify({
-          title: 'Game Launch Failed',
-          body: `Failed to launch game: ${safeExecutable}`,
-        })
-        return
+      const savePath = path.join(homePath, 'Games')
+      const pathPrefix = path.join(savePath, id.toString())
+      if (!SystemUtils.fileExists(pathPrefix)) {
+        const isCreating = await wineManager.createPreFix(
+          id.toString(),
+          savePath,
+          'win64',
+          wineInstalled.installPath,
+        )
+        if (!isCreating) {
+          notify({
+            title: 'Wine Prefix Creation Failed',
+            body: `Failed to create Wine prefix for ${id}`,
+          })
+          return
+        }
+        await wineManager.setActivePrefix(pathPrefix)
+        await wineManager.installDependencies([CommonDependencies.DXVK, CommonDependencies.VKD3D])
       }
 
-      child.on('spawn', () => {
-        webSocket = initWebSocket(token, gameId, deviceId)
-        if (webSocket) {
-          webSocket.connect(
-            () => {
-              console.log('WebSocket connected for game launch')
-            },
-            (error) => {
-              console.error('WebSocket connection error:', error)
-            },
-          )
-        }
-      })
-      updateGameStatus({
-        appName,
-        folder: install_path,
-        status: 'launching',
-      })
-      child.on('error', (error: unknown) => {
-        console.error('Error launching game:', error)
-      })
+      if (
+        (await wineManager.setActivePrefix(pathPrefix)) &&
+        (await wineManager.setWineInstallation(wineInstalled))
+      ) {
+        // Launch the game
 
-      child.on('close', (code) => {
-        console.log(`Game process exited with code: ${code}  for ${safeExecutable}`)
-        if (webSocket) {
-          webSocket.disconnect()
+        const child = await wineManager.rungame(install_path, safeExecutable)
+        if (!child) {
+          notify({
+            title: 'Game Launch Failed',
+            body: `Failed to launch game: ${safeExecutable}`,
+          })
+          return
         }
-      })
+
+        child.on('spawn', async () => {
+          webSocket.connect()
+          if (webSocket.isConnected()) {
+            console.log('WebSocket is connected')
+          }
+        })
+        updateGameStatus({
+          id: id,
+          folder: install_path,
+          status: 'launching',
+        })
+        child.on('error', async (error: unknown) => {
+          notify({
+            title: 'Game Launch Error',
+            body: `Error launching game: ${(error as Error).message}`,
+          })
+          if (webSocket) {
+            webSocket.disconnect()
+          }
+        })
+
+        child.on('exit', async (code) => {
+          console.log(`Game process exited with code: ${code}  for ${safeExecutable}`)
+          if (webSocket) {
+            webSocket.disconnect()
+          }
+        })
+      }
     }
   }
 }

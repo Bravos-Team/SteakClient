@@ -53,7 +53,7 @@ defineProps<{
               <td class="py-3">Epic Games</td>
               <td class="py-3 flex justify-center gap-2" v-if="QueueStore.getState() === 'running'">
                 <button
-                  @click="$emit('cancel', firstELement.params.appName)"
+                  @click="$emit('cancel', firstELement.params.id)"
                   class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white"
                 >
                   <svg
@@ -72,7 +72,7 @@ defineProps<{
                   </svg>
                 </button>
                 <button
-                  @click="$emit('pause', firstELement.params.appName)"
+                  @click="$emit('pause', firstELement.params.id)"
                   class="w-8 h-8 flex items-center justify-center rounded-full bg-green-500 hover:bg-green-600 text-white"
                 >
                   <svg
@@ -96,7 +96,7 @@ defineProps<{
                 v-if="QueueStore.getState() === 'paused' || QueueStore.getState() === 'idle'"
               >
                 <button
-                  @click="$emit('cancel', firstELement.params.appName)"
+                  @click="$emit('cancel', firstELement.params.id)"
                   class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white"
                 >
                   <svg
@@ -115,7 +115,7 @@ defineProps<{
                   </svg>
                 </button>
                 <button
-                  @click="$emit('resume', firstELement.params.appName)"
+                  @click="$emit('resume', firstELement.params.id)"
                   class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-500 hover:bg-blue-600 text-white"
                 >
                   <svg

@@ -6,12 +6,15 @@ import {
   WineInstallInfo,
   WinePrefixConfig,
 } from './type'
-import { ColorLogger, fetchReleases, SystemUtils } from './util'
-import { TypeCheckedStoreBackEnd } from '../electron_store'
+
+
 import { remove } from 'fs-extra'
 import { downloadFile, extractFileTarXz, removeFolder } from '../utils'
 import { appPath } from '../constants/path'
 import { notify } from '../dialog/dialog'
+import { TypeCheckedStoreBackEnd } from '../electron_store/manager'
+import { ColorLogger, SystemUtils } from '../util/system/system'
+import { fetchReleases } from './util'
 
 export class WineManager {
   private logger: ColorLogger
@@ -113,7 +116,7 @@ export class WineManager {
       return false
     }
   }
-  setActivePrefix(pathPrefix: string): boolean {
+ async setActivePrefix(pathPrefix: string): Promise<boolean> {
     if (!SystemUtils.fileExists(pathPrefix)) {
       this.logger.error(`Wine prefix not found: ${pathPrefix}`)
       return false
@@ -133,7 +136,7 @@ export class WineManager {
 
     return true
   }
-  setWineInstallation(info: WineInstallInfo): boolean {
+  async setWineInstallation(info: WineInstallInfo): Promise<boolean> {
     const wineBinPath = path.join(info.installPath, 'bin')
     if (!SystemUtils.fileExists(wineBinPath)) {
       this.logger.error(`Wine installation not found: ${wineBinPath}`)
@@ -175,7 +178,7 @@ export class WineManager {
     }
   }
 
-  rungame(gameDir: string, gameExecute: string, args: string[] = []) {
+  async rungame(gameDir: string, gameExecute: string, args: string[] = [])  {
     if (!SystemUtils.fileExists(gameDir)) {
       this.logger.error(`Game not found: ${gameDir}`)
       return null
@@ -210,7 +213,7 @@ export class WineManager {
         ? path.join(this.currentWineInstallation.installPath, 'bin', 'wine')
         : 'wine'
       process.chdir(gameDir)
-      const child = SystemUtils.executeCommandWine(wineCommand, [gameExecute, ...args], {
+      const child = await SystemUtils.executeCommandWine(wineCommand, [gameExecute, ...args], {
         env,
       })
       return child

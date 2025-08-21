@@ -82,9 +82,9 @@ defineProps<{
 }>()
 
 defineEmits<{
-  (e: 'install', appName: string): void
-  (e: 'delete', appName: string): void
-  (e: 'save', appName: string): void
-  (e: 'launch', appName: string): void
+  (e: 'install', gameId: string): void
+  (e: 'delete', gameId: string): void
+  (e: 'save', gameId: string): void
+  (e: 'launch', gameId: string): void
 }>()
 </script>

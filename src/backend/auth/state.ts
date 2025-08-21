@@ -1,5 +1,5 @@
-import { UserInfo } from 'src/common/types/type'
-import { configStore } from '../constants/key_value_store'
+import { configStore } from '../electron_store/state'
+import { UserInfo } from './type'
 
 const setUser = (user: UserInfo) => {
   configStore.set('userInfo', user)

@@ -153,7 +153,7 @@ const fetchGameData = async (id: string) => {
     }
     installState.value.params = {
       gameInfo: { ...gameInfo.value } as GameDetails,
-      appName: gameInfo.value.details.id,
+      id: gameInfo.value.details.id,
       path: '',
       installSize: downloadParams.value?.installSize || 0,
     }
@@ -182,8 +182,8 @@ const handleInstall = async (Id: string) => {
   }
 }
 
-const handleDelete = (appName: string) => {
-  toast.success(`Deleted ${appName}`)
+const handleDelete = (id: string) => {
+  toast.success(`Deleted ${id}`)
 }
 
 const install = async (params: InstallParams) => {
@@ -220,10 +220,10 @@ onMounted(async () => {
   })
 
   DMQueueElements.value = QueueStore.getQueue().map(
-    (item: DMQueueElement) => item.params.appName as string,
+    (item: DMQueueElement) => item.params.id as string,
   )
   DMFinished.value = QueueStore.getFinished().map(
-    (item: DMQueueElement) => item.params.appName as string,
+    (item: DMQueueElement) => item.params.id as string,
   )
 })
 onUnmounted(() => {

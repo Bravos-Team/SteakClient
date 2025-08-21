@@ -1,21 +1,16 @@
-import {
-  DMQueueElement,
-  DownloadInfo,
-  DownloadManagerState,
-  GameStatus,
-  InstallParams,
-  SystemInfo,
-  UserInfo,
-} from './type'
+import { UserInfo } from "src/backend/auth"
+import { DMQueueElement, DownloadInfo, DownloadManagerState, GameStatus, InstallParams } from "src/backend/download/type"
+import { SystemInfo } from "src/backend/system/type"
+
 
 interface SyncIPCFunctions {
   openDialog: () => string[] | null
   openLoginWindow: () => void
   logout: () => void
-  removeFinished: (appName: string) => void
-  pausedDownload: (appName: string) => void
-  resumeDownload: (app_name: string) => void
-  cancelDownload: (appName: string) => void
+  removeFinished: (gameId: string) => void
+  pausedDownload: (gameId: string) => void
+  resumeDownload: (gameId: string) => void
+  cancelDownload: (gameId: string) => void
 }
 
 interface AsyncIPCFunctions {

@@ -52,7 +52,7 @@ defineProps<{
                 v-if="item.status === 'paused' || item.status === 'downloading'"
               >
                 <button
-                  @click="$emit('cancel', item.params.appName)"
+                  @click="$emit('cancel', item.params.id)"
                   class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white"
                 >
                   <svg
@@ -71,7 +71,7 @@ defineProps<{
                   </svg>
                 </button>
                 <button
-                  @click="$emit('resume', item.params.appName)"
+                  @click="$emit('resume', item.params.id)"
                   class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-500 hover:bg-blue-600 text-white"
                 >
                   <svg
@@ -91,7 +91,7 @@ defineProps<{
               </td>
               <td class="py-3 flex justify-center" v-else>
                 <button
-                  @click="$emit('cancel', item.params.appName)"
+                  @click="$emit('cancel', item.params.id)"
                   class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 text-white"
                 >
                   <svg

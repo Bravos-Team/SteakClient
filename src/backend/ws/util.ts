@@ -1,94 +1,69 @@
-import { endPointWS } from '../constants/url'
 import { WebSocket } from 'ws'
-class WebSocketClient {
+import { WebSocketConfig, WebSocketEventHandler } from './types'
+
+const MAX_RECONNECT_ATTEMPTS = 5
+const RECONNECT_DELAY = 5000
+const PING_INTERVAL = 30 * 60 * 1000
+class WebSocketManager {
   private ws: WebSocket | null = null
-  private readonly headers: { [key: string]: string }
   private reconnectAttempts = 0
-  private readonly maxReconnectAttempts = 5
-  private readonly reconnectDelay = 5000 // 5 seconds
   private reconnectTimeout: NodeJS.Timeout | null = null
+  private heartbeatInterval: NodeJS.Timeout | null = null
   private lastPingTime = Date.now()
-  private heartBeatInterval: NodeJS.Timeout | null = null
   private isReconnecting = false
+
   constructor(
-    private endpoint: string,
-    private gameId: string,
-    private authToken: string,
-    private deviceId: string,
+    private config: WebSocketConfig,
+    private eventHandlers: WebSocketEventHandler,
   ) {
-    this.headers = {
-      Authorization: this.authToken,
-      'Game-Id': gameId,
-      'Device-Id': deviceId,
+    this.config = {
+      maxReconnectAttempts: MAX_RECONNECT_ATTEMPTS,
+      reconnectDelay: RECONNECT_DELAY,
+      pingInterval: PING_INTERVAL,
+      ...config,
     }
   }
 
-  connect(onConnect: () => void, onError: (error: unknown) => void): void {
-    console.log('Attempting to open WebSocket to:', this.endpoint)
-
-    if (this.ws?.readyState === WebSocket.OPEN) {
+  connect(): void {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       console.warn('WebSocket is already open, disconnecting first.')
       this.disconnect()
     }
+    if (!this.config.endpoint.match(/^wss?:\/\//)) {
+      this.eventHandlers.onError?.(new Error('Invalid WebSocket endpoint'))
+      return
+    }
     try {
-      if (!this.endpoint.startsWith('wss://') && !this.endpoint.startsWith('ws://')) {
-        console.error('Invalid WebSocket endpoint:', this.endpoint)
-        onError(new Error('Invalid WebSocket endpoint'))
-        return
-      }
-      this.ws = new WebSocket(this.endpoint, { headers: this.headers })
+      this.ws = new WebSocket(this.config.endpoint, { headers: this.config.headers })
       this.ws.on('open', () => {
-        console.log(`WebSocket connected at ${new Date().toLocaleTimeString('vi-VN')}`)
         this.reconnectAttempts = 0
         this.isReconnecting = false
-        this.startHeartBeat()
-        onConnect()
-      })
-      this.ws.on('pong', () => {
-        console.log(`WebSocket pong received at ${new Date().toLocaleTimeString('vi-VN')}`)
-        // Đánh dấu connection vẫn sống
-        this.lastPingTime = Date.now()
-      })
-      this.ws.on('error', (error) => {
-        console.error('WebSocket error:', error)
-        onError(error)
-        this.handleReconnect(onConnect, onError)
+        this.startHeartbeat()
+        this.eventHandlers.onConnect?.()
       })
 
+      this.ws.on('pong', () => {
+        this.lastPingTime = Date.now()
+        console.log(`WebSocket pong received at ${new Date().toLocaleTimeString('vi-VN')}`)
+      })
+      this.ws.on('error', (error) => {
+        this.eventHandlers.onError?.(error)
+        this.handleReconnect()
+      })
       this.ws.on('close', () => {
-        console.log(`WebSocket closed at ${new Date().toLocaleTimeString('vi-VN')}`)
-        this.stopHeartBeat()
+        this.eventHandlers.onClose?.()
+        this.stopHeartbeat()
         if (this.isReconnecting) {
-          this.handleReconnect(onConnect, onError)
+          this.handleReconnect()
         }
       })
     } catch (error) {
-      console.error('Error during WebSocket connection:', error)
-      onError(error)
-      this.handleReconnect(onConnect, onError)
+      this.eventHandlers.onError?.(error)
+      this.handleReconnect()
     }
   }
 
-  startHeartBeat(): void {
-    this.heartBeatInterval = setInterval(() => {
-      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-        this.ws.ping()
-      }
-      if (Date.now() - this.lastPingTime > 60000) {
-        console.warn('WebSocket ping timeout')
-        this.ws?.terminate()
-      }
-    }, 30000)
-  }
-  stopHeartBeat(): void {
-    if (this.heartBeatInterval) {
-      clearInterval(this.heartBeatInterval)
-      this.heartBeatInterval = null
-    }
-  }
   disconnect(): void {
-    console.log('WebSocket disconnecting')
-
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.close()
       console.log('WebSocket disconnected')
@@ -101,21 +76,43 @@ class WebSocketClient {
     this.isReconnecting = false
   }
 
-  private handleReconnect(onConnect: () => void, onError: (error: unknown) => void): void {
-    if (this.reconnectAttempts >= this.maxReconnectAttempts || this.isReconnecting) {
-      console.warn('Max reconnect attempts reached or already reconnecting')
-      onError(new Error('Max reconnect attempts reached'))
+  private startHeartbeat(): void {
+    this.stopHeartbeat()
+    this.heartbeatInterval = setInterval(() => {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.ping()
+      }
+      if (Date.now() - this.lastPingTime > 2 * (this.config.pingInterval || 0)) {
+        console.warn('WebSocket ping timeout')
+        this.ws?.terminate()
+      }
+    }, this.config.pingInterval)
+  }
+
+  private stopHeartbeat(): void {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval)
+      this.heartbeatInterval = null
+    }
+  }
+  private handleReconnect(): void {
+    if (this.reconnectAttempts >= (this.config.maxReconnectAttempts || 5) || this.isReconnecting) {
+      this.eventHandlers.onError?.(new Error('Max reconnect attempts reached'))
       return
     }
     this.reconnectAttempts++
     this.isReconnecting = true
-    console.log(`Reconnecting... Attempt ${this.reconnectAttempts}`)
     this.reconnectTimeout = setTimeout(() => {
-      this.connect(onConnect, onError)
-    }, this.reconnectDelay)
+      this.connect()
+    }, this.config.reconnectDelay)
+  }
+  isConnected(): boolean {
+    return this.ws?.readyState === WebSocket.OPEN
   }
 }
-
-export function initWebSocket(token: string, gameId: string, deviceId: string) {
-  return new WebSocketClient(endPointWS, gameId, token, deviceId)
+export async function initWebSocketManager(
+  config: WebSocketConfig,
+  handlers: WebSocketEventHandler = {},
+): Promise<WebSocketManager> {
+  return new WebSocketManager(config, handlers)
 }

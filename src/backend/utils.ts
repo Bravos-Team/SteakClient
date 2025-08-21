@@ -1,17 +1,22 @@
 import axios from 'axios'
 import EasyDl from 'easydl'
-import { createWriteStream, ensureDir, existsSync, remove } from 'fs-extra'
+import { ensureDir, existsSync, remove } from 'fs-extra'
 import https from 'node:https'
 import path from 'node:path'
-import { mkdirp } from 'mkdirp'
-import { Entry, open } from 'yauzl'
-import { updateGameStatus } from './download'
+
 import { callAbortController } from './util/aborthandler/aborthandler'
 import { exec, spawn } from 'node:child_process'
 import { cpu, fsSize, graphics, mem, osInfo, wifiConnections } from 'systeminformation'
-import { SystemInfo } from 'src/common/types/type'
+import { SystemInfo } from './system/type'
+
 interface ProgressCallback {
-  (downloadedBytes: number, downloadSpeed: number, progress: number, diskWriteSpeed: number): void
+  (
+    downloadedBytes: number,
+    downloadSpeed: number,
+    progress: number,
+    diskWriteSpeed: number,
+    eta: string,
+  ): void
 }
 function bytesToSize(bytes: number) {
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
@@ -52,69 +57,13 @@ function throttle<T extends (...args: any[]) => any>(
   }
 }
 
-export const unzip = (zipPath: string, unzipToDir: string): Promise<void> => {
-  return new Promise<void>((resolve, reject) => {
-    try {
-      mkdirp.sync(unzipToDir)
-
-      open(zipPath, { lazyEntries: true }, (err, zipFile) => {
-        if (err || !zipFile) {
-          zipFile?.close()
-          return reject(err)
-        }
-
-        zipFile.readEntry()
-
-        zipFile.on('entry', (entry: Entry) => {
-          try {
-            const entryPath = path.join(unzipToDir, entry.fileName)
-
-            if (/\/$/.test(entry.fileName)) {
-              mkdirp.sync(entryPath)
-              zipFile.readEntry()
-            } else {
-              zipFile.openReadStream(entry, (readErr, readStream) => {
-                if (readErr || !readStream) {
-                  zipFile.close()
-                  return reject(readErr)
-                }
-
-                const file = createWriteStream(entryPath)
-                readStream.pipe(file)
-
-                file.on('finish', () => {
-                  file.close(() => {
-                    zipFile.readEntry()
-                  })
-                })
-
-                file.on('error', (err) => {
-                  zipFile.close()
-                  reject(err)
-                })
-              })
-            }
-          } catch (e) {
-            zipFile.close()
-            reject(e)
-          }
-        })
-
-        zipFile.on('end', () => {
-          resolve()
-        })
-
-        zipFile.on('error', (err) => {
-          zipFile.close()
-          reject(err)
-        })
-      })
-    } catch (e) {
-      reject(e)
-    }
-  })
-}
-export async function downloadFile({ url, dest, fileName, signal }: DownloadArgs) {
+export async function downloadFile({
+  url,
+  dest,
+  fileName,
+  progressCallback,
+  signal,
+}: DownloadArgs) {
   const zipPath = path.join(dest, `${fileName}`)
   console.log(`Downloading from ${url} to ${zipPath}`)
 
@@ -137,18 +86,9 @@ export async function downloadFile({ url, dest, fileName, signal }: DownloadArgs
 
   const throttledProgress = throttle(
     (bytes: number, speed: number, percentage: number, writingSpeed: number, eta: string) => {
-      updateGameStatus({
-        appName: fileName,
-        folder: pathOutDir,
-        status: 'downloading',
-        progress: {
-          bytes: bytes.toString(),
-          eta: eta, // Placeholder, calculate ETA if needed
-          downSpeed: speed.toString(),
-          diskWriteSpeed: writingSpeed.toString(),
-          percent: percentage,
-        },
-      })
+      if (progressCallback) {
+        progressCallback(bytes, speed, percentage, writingSpeed, eta)
+      }
     },
     1000, // Throttle to 1 second
   )
@@ -192,9 +132,9 @@ export async function downloadFile({ url, dest, fileName, signal }: DownloadArgs
     throw error
   }
 }
-export function stopDownload(appName: string) {
-  callAbortController(appName)
-  console.log(`Paused download for game: ${appName}`)
+export function stopDownload(id: string) {
+  callAbortController(id)
+  console.log(`Paused download for game: ${id}`)
 }
 
 export function removeFolder(pathFolder: string, folderName: string) {
