@@ -20,7 +20,7 @@ const routes = [
       { path: 'download', component: () => import('@/layout/download/DownloadLayout.vue') },
       { path: 'account', component: () => import('@/views/Account.vue') },
       { path: 'settings', component: () => import('@/views/Setting.vue') },
-      { path: 'test', component: () => import('@/views/library/GameDetail.vue') },
+      { path: 'logout', component: () => import('@/views/library/Library.vue') },
       { path: ':pathMatch(.*)*', component: () => import('@/views/NotFound.vue') },
     ],
   },

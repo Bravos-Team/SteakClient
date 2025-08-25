@@ -39,7 +39,6 @@ app.whenReady().then(async () => {
     const main_window = await initializeMainWindow()
     // console.log(configPath)
     // console.log(await getSystemInfo())
-
     main_window.show()
 
     main_window.focus()
@@ -86,3 +85,5 @@ import './dialog/ipc_handler'
 import './auth/ipc'
 import { getCapacitySystem, getSystemInfo } from './utils'
 import { addHandler } from './ipc/manager'
+import { getGameStatusList } from './download'
+

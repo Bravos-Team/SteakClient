@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
-import { useDownloadStore } from '@/stores/download/useDownloadStore'
+import { useDownloadQueueStore, useGameStatusStore } from '@/stores/download/useDownloadStore'
 
-const DownloadStore = useDownloadStore()
-
-const infoProgress = computed(() => DownloadStore.getProgress())
+const GameStatusStore = useGameStatusStore()
+const DownloadQueueStore = useDownloadQueueStore()
+const infoProgress = computed(() => GameStatusStore.getProgress(DownloadQueueStore.getQueue()[0]?.params.id.toString() || ''))
 const progressPercent = computed(() => `${(infoProgress.value?.percent || 0).toFixed(2)}%`)
 const downloadProgress = computed(() => {
   const percent = infoProgress.value?.percent || 0

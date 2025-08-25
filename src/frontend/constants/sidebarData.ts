@@ -1,9 +1,9 @@
 import { Settings2, Gamepad, ShoppingCart, Power, ArrowDownToLine } from 'lucide-vue-next'
 export const navMain = [
-  { title: 'Library', to: '/library', icon: Gamepad },
-  { title: 'Store', to: '/store', icon: ShoppingCart },
-  { title: 'Settings', to: '/settings', icon: Settings2 },
-  { title: 'Logout', to: '/test', icon: Power },
+  {key : 'library', title: 'Library', to: '/library', icon: Gamepad },
+  { key: 'store', title: 'Store', to: '/store', icon: ShoppingCart },
+  { key: 'settings', title: 'Settings', to: '/settings', icon: Settings2 },
+  { key: 'logout', title: 'Logout', to: '/logout', icon: Power },
 ]
 
-export const navFooter = [{ title: 'Download', to: '/download', icon: ArrowDownToLine }]
+export const navFooter = [{ key: 'download', title: 'Download', to: '/download', icon: ArrowDownToLine }]

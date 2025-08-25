@@ -1,12 +1,13 @@
 <template>
   <Dialog>
-    <div class="flex my-2">
+    <div v-if="user && games.length > 0" class="flex my-2">
       <div class="ml-4 w-full max-w-[500px]">
-        <ComboboxSearch />
+        <ComboboxSearch :games="games" />
       </div>
     </div>
     <div class="w-full flex flex-1 flex-col h-screen p-4">
       <div
+        v-if="user && games.length > 0"
         class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4 auto-rows-min"
       >
         <GameCard
@@ -17,9 +18,33 @@
           @delete="handleDelete"
           @save="saveGame"
           @launch="handleLaunch"
+          @exit="handleExit"
         />
       </div>
-      <div></div>
+
+      <div v-if="user && games.length === 0">
+        <div class="flex flex-col justify-center items-center">
+          <span class="text-3xl text-center">
+            <p>Your library is empty.</p>
+            <p>Please add some games to your library.</p>
+            <p>Click the button below to go to the store.</p>
+            <p>Then, your games will show up Library.</p>
+          </span>
+          <router-link class="mt-2 flex w-4/12" to="/store"
+            ><Button size="lg" class="w-full">Go to Store</Button>
+          </router-link>
+        </div>
+      </div>
+      <div v-if="!user">
+        <div class="flex flex-col justify-center items-center h-full">
+          <span class="text-3xl text-center">
+            <p>Please log in to access your library.</p>
+          </span>
+          <router-link class="mt-2 flex w-4/12" to="/account"
+            ><Button size="lg" class="w-full">Log In</Button>
+          </router-link>
+        </div>
+      </div>
       <InstallDialog
         v-if="isDialogOpen && !isQueryGameInfoFetching"
         :installParams="installState.params"
@@ -42,12 +67,19 @@ import ComboboxSearch from '@/components/ComboboxSearch.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { DMQueueElement, DownloadInfo, GameDetails, GameLibrary, InstallParams } from '@/types/type'
+import {
+  DMQueueElement,
+  DownloadInfo,
+  GameDetails,
+  GameLibrary,
+  GameStatus,
+  InstallParams,
+} from '@/types/type'
 
 import GameCard from '@/components/library/GameCard.vue'
 
 import { useGameLibrary } from '@/composables/useGameLibraryIpc'
-import { useDownloadQueueStore } from '@/stores/download/useDownloadStore'
+import { useDownloadQueueStore, useGameStatusStore } from '@/stores/download/useDownloadStore'
 import {
   useGetGameDownloadInfo,
   useGetGameInfo,
@@ -58,6 +90,9 @@ import { useSystemIpc } from '@/composables/useSystemIpc'
 import { useSystemInfo } from '@/stores/util'
 import { generateDeviceId } from '@/utils/fingerprint'
 import { useLibraryStore } from '@/stores/library/useLibrary'
+import { useAuthStore } from '@/stores/auth/useAuthStore'
+import { useRouter } from 'vue-router'
+import { useDownloadManagerSync } from '@/composables/useDownloadManagerSync'
 
 const isDialogOpen = ref(false)
 const isInstalling = ref(false)
@@ -67,13 +102,17 @@ const capacityDisks = ref<{ totalSize: number; freeSize: number; remaining: numb
   freeSize: 0,
   remaining: 0,
 })
+const router = useRouter()
+
 const LibraryStoreIpc = useGameLibrary()
 const LibraryStore = useLibraryStore()
+const AuthStore = useAuthStore()
 const QueueStore = useDownloadQueueStore()
 const DMQueueElements = ref([] as string[])
 const DMFinished = ref([] as string[])
 const selectedGameId = ref('')
 const installPath = ref('')
+const GameStatusStore = useGameStatusStore()
 const installState = ref<{ params: InstallParams; downloadInfo: DownloadInfo }>({
   params: {} as InstallParams,
   downloadInfo: {} as DownloadInfo,
@@ -123,6 +162,9 @@ const checkCapacity = async (path: string) => {
     remaining: freeSize - installState.value.params.installSize,
   }
 }
+const handleExit = (gameId: string) => {
+  window.api.exitGame(gameId)
+}
 const { data: downloadParams, refetch: refetchDownloadParams } =
   useGetGameDownloadInfo(selectedGameId)
 
@@ -168,8 +210,7 @@ const fetchGameData = async (id: string) => {
 }
 
 const handleLaunch = async (Id: string) => {
-  const deviceId = await generateDeviceId()
-  await window.api.launchGame(Id, deviceId)
+  await window.api.launchGame(Id)
 }
 // Xử lý sự kiện cài đặt
 const handleInstall = async (Id: string) => {
@@ -210,26 +251,28 @@ const install = async (params: InstallParams) => {
     isInstalling.value = false
   }
 }
-
+useDownloadManagerSync()
+const user = ref(AuthStore.user)
 onMounted(async () => {
+  console.log(router.currentRoute.value.path)
   const info = await window.api.getDMQueueInformation()
   QueueStore.updateAll({
     elements: info.elements,
     finished: info.finished,
     state: info.state,
   })
-
+  const gameStatus = (await window.api.getGameStatusList()) as GameStatus[]
+  GameStatusStore.setGameStatus(gameStatus)
   DMQueueElements.value = QueueStore.getQueue().map(
     (item: DMQueueElement) => item.params.id as string,
   )
   DMFinished.value = QueueStore.getFinished().map(
     (item: DMQueueElement) => item.params.id as string,
   )
+  user.value = AuthStore.getUser()
 })
 onUnmounted(() => {
- 
   setLibrary(games.value)
-  console.log('Library updated:', games.value);
-  
+  console.log('Library updated:', games.value)
 })
 </script>

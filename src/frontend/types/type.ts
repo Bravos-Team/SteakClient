@@ -1,6 +1,7 @@
 export interface UserInfo {
   displayName: string | null
   avatarUrl: string | null
+  deviceId: string | null
 }
 
 export interface InstallArgs {
@@ -51,6 +52,7 @@ export interface GameDetails {
   publisherName: string
   genres: string[]
   tags: string[]
+  latestVersionName?: string
 }
 export interface DownloadInfo {
   downloadUrl: string
@@ -78,6 +80,7 @@ export interface InstalledInfo {
   version?: string
 }
 export type Status =
+  | 'finished'
   | 'queued'
   | 'downloading'
   | 'installing'
@@ -85,8 +88,10 @@ export type Status =
   | 'uninstalling'
   | 'done'
   | 'error'
-  | 'aborted'
+  | 'abort'
   | 'paused'
+  | 'launching'
+  | 'exited'
 
 export interface GameStatus {
   id: string

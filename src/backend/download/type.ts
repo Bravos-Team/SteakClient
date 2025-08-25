@@ -16,6 +16,7 @@ export interface GameDetails {
   publisherName: string
   genres: string[]
   tags: string[]
+  latestVersionName?: string
 }
 export interface GameInfo {
   id: string
@@ -54,6 +55,7 @@ export interface InstalledInfo {
 }
 
 export type Status =
+  | 'finished'
   | 'queued'
   | 'downloading'
   | 'installing'
@@ -61,9 +63,10 @@ export type Status =
   | 'uninstalling'
   | 'done'
   | 'error'
-  | 'aborted'
+  | 'abort'
   | 'paused'
   | 'launching'
+  | 'exited'
 
 export interface GameStatus {
   id: string

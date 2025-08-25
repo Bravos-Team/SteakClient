@@ -138,6 +138,7 @@ export class SystemUtils {
       env?: Record<string, string>
       cwd?: string
       timeout?: number
+      signal?: AbortSignal
     } = {},
   ): Promise<ChildProcess> {
     // TODO: Implement command execution logic here
@@ -148,8 +149,8 @@ export class SystemUtils {
       env,
       cwd: options.cwd,
       stdio: ['pipe', 'pipe', 'pipe'],
+      signal: options.signal,
     })
-
     return child
   }
 

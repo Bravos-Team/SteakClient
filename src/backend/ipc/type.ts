@@ -1,7 +1,12 @@
-import { UserInfo } from "src/backend/auth"
-import { DMQueueElement, DownloadInfo, DownloadManagerState, GameStatus, InstallParams } from "src/backend/download/type"
-import { SystemInfo } from "src/backend/system/type"
-
+import { UserInfo } from 'src/backend/auth'
+import {
+  DMQueueElement,
+  DownloadInfo,
+  DownloadManagerState,
+  GameStatus,
+  InstallParams,
+} from 'src/backend/download/type'
+import { SystemInfo } from 'src/backend/system/type'
 
 interface SyncIPCFunctions {
   openDialog: () => string[] | null
@@ -11,13 +16,17 @@ interface SyncIPCFunctions {
   pausedDownload: (gameId: string) => void
   resumeDownload: (gameId: string) => void
   cancelDownload: (gameId: string) => void
+  setAuth: () => void
+  exitGame: (gameId: string) => void
 }
 
 interface AsyncIPCFunctions {
+  getGameStatusList: () => Promise<GameStatus[]>
+
   removeToken: () => Promise<void>
   getCapacitySystem: (path?: string) => Promise<{ totalSize: number; freeSize: number }>
   getSystemInfo: (path?: string) => Promise<SystemInfo>
-  launchGame: (appName: string, deviceId: string) => Promise<void>
+  launchGame: (appName: string) => Promise<void>
   openWebViewDevTools: (webviewId: string) => Promise<void>
   login: (userInfo: UserInfo) => Promise<void>
   getUser: () => UserInfo | null

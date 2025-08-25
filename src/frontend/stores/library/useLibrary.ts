@@ -23,11 +23,14 @@ export const useLibraryStore = defineStore('library', () => {
   const getLibrary = () => {
     return library.value
   }
-
+  const getGameById = (gameId: string) => {
+    return library.value.find((game) => game.gameId === gameId)
+  }
   return {
     addGame,
     removeGame,
     getLibrary,
     setLibrary,
+    getGameById,
   }
 })

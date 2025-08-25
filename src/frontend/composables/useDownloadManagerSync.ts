@@ -1,8 +1,8 @@
-import { DMQueueElement, DownloadManagerState, GameStatus } from '@/types/type'
+import { DMQueueElement, DownloadManagerState, GameStatus, Status } from '@/types/type'
 import { onMounted, onUnmounted } from 'vue'
-import { useDownloadQueueStore, useDownloadStore } from '@/stores/download/useDownloadStore'
+import { useDownloadQueueStore, useGameStatusStore } from '@/stores/download/useDownloadStore'
 const QueueStore = useDownloadQueueStore()
-const DownloadStore = useDownloadStore()
+const GameStatusStore = useGameStatusStore()
 export function useDownloadManagerSync() {
   onMounted(() => {
     const handleDMQueueInformation = window.api.handleDMQueueInformation(
@@ -20,9 +20,15 @@ export function useDownloadManagerSync() {
     )
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleGameStatus = window.api.handleGameStatus((e: any, payload: GameStatus) => {
-      DownloadStore.setGameStatus(payload)
-      console.log('Game status updated:', payload)
-      console.log(DownloadStore.getProgress())
+      const GameStatusList = GameStatusStore.getGameStatus()
+      console.log('Received game status update:', payload)
+
+      if (GameStatusList.find((game) => game.id === payload.id)) {
+        GameStatusStore.updateGameStatus(payload.id.toString(), payload)
+        return
+      }
+      GameStatusStore.addGameStatus(payload)
+      console.log('Game status added:', payload)
     })
     onUnmounted(() => {
       handleDMQueueInformation()

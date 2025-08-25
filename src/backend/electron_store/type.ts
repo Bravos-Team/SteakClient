@@ -13,10 +13,7 @@ export interface StoreStructure {
   configStore: {
     userHome: string
     userInfo: UserInfo
-    Authentication: {
-      accessToken: string
-      refreshToken: string
-    }
+    
     // theme: string
     // zoomPercent: number
     // contentFontFamily: string

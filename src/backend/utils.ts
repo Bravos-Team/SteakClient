@@ -167,7 +167,10 @@ function runCommand(command: string): Promise<void> {
     })
   })
 }
-
+export function exitGame(id: string) {
+  callAbortController(id)
+  console.log(`Exited game: ${id}`)
+}
 // export function extractFileTarZst(zstPath: string, dest: string): Promise<void> {
 //   return new Promise((resolve, reject) => {
 //     const tarPath = zstPath.replace(/\.zst$/, '') // -> path/to/xxx.tar
@@ -327,11 +330,12 @@ export async function extractFileTarXz(tarXZPath: string, dest: string): Promise
       })
   })
 }
-export function launchGame(exePath: string, workingDir: string) {
+export function launchGame(exePath: string, workingDir: string, signal: AbortSignal) {
   const child = spawn(exePath, {
     cwd: workingDir,
     detached: true,
     stdio: 'ignore',
+    signal,
   })
   return child
 }

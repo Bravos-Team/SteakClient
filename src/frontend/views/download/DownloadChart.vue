@@ -10,7 +10,7 @@
               height="70"
               type="line"
               :options="chartOptions"
-              :series="[...downloadSeries, ...diskSeries]"
+              :series="[downloadSeries[0], diskSeries[0]]"
             />
           </div>
           <div class="w-full h-0.5 bg-sky-500/30 rounded"></div>
@@ -29,11 +29,11 @@
 </template>
 <script setup lang="ts">
 import { Card } from '@/components/ui/card'
-import { useDownloadStore } from '@/stores/download/useDownloadStore'
+import { useDownloadQueueStore, useGameStatusStore } from '@/stores/download/useDownloadStore'
 import { computed, Ref, ref, watchEffect } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
-
-const DownloadStore = useDownloadStore()
+const DownloadQueueStore = useDownloadQueueStore()
+const GameStatusStore = useGameStatusStore()
 const MAX_POINTS = 20
 // Biểu đồ ApexCharts
 const chartOptions = ref({
@@ -57,12 +57,14 @@ const chartOptions = ref({
     axisBorder: { show: false },
     axisTicks: { show: false },
   },
-  yaxis: { show: false, min: 0 },
+  yaxis: { show: true, min: 0 },
 })
 const downloadSeries = ref([{ name: 'Download', data: Array(20).fill(0) }])
 const diskSeries = ref([{ name: 'Disk', data: Array(20).fill(0) }])
 
-const infoProgress = computed(() => DownloadStore.getProgress())
+const infoProgress = computed(() =>
+  GameStatusStore.getProgress(DownloadQueueStore.getQueue()[0]?.params.id.toString() || ''),
+)
 const downloadSpeed = computed(() => formatSpeed(parseFloat(infoProgress.value?.downSpeed || '0')))
 const diskSpeed = computed(() => formatSpeed(parseFloat(infoProgress.value?.diskWriteSpeed || '0')))
 
@@ -76,11 +78,13 @@ const pushSeriesData = (seriesRef: Ref<any>, value: number) => {
 }
 
 watchEffect(() => {
-  const down = parseFloat(infoProgress.value?.downSpeed || '0') / 1048576
-  const disk = parseFloat(infoProgress.value?.diskWriteSpeed || '0') / 1048576
+  const down = parseFloat(infoProgress.value?.downSpeed?.toString() || '0') / 1048576
+  const disk = parseFloat(infoProgress.value?.diskWriteSpeed?.toString() || '0') / 1048576
   if (down === 0 && disk === 0) {
     downloadSeries.value[0].data = Array(20).fill(0)
     diskSeries.value[0].data = Array(20).fill(0)
+   
+    
     return
   }
   pushSeriesData(downloadSeries, down)

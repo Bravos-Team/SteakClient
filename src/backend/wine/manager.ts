@@ -7,7 +7,6 @@ import {
   WinePrefixConfig,
 } from './type'
 
-
 import { remove } from 'fs-extra'
 import { downloadFile, extractFileTarXz, removeFolder } from '../utils'
 import { appPath } from '../constants/path'
@@ -116,7 +115,7 @@ export class WineManager {
       return false
     }
   }
- async setActivePrefix(pathPrefix: string): Promise<boolean> {
+  async setActivePrefix(pathPrefix: string): Promise<boolean> {
     if (!SystemUtils.fileExists(pathPrefix)) {
       this.logger.error(`Wine prefix not found: ${pathPrefix}`)
       return false
@@ -178,7 +177,7 @@ export class WineManager {
     }
   }
 
-  async rungame(gameDir: string, gameExecute: string, args: string[] = [])  {
+  async rungame(gameDir: string, gameExecute: string, args: string[] = [], signal: AbortSignal) {
     if (!SystemUtils.fileExists(gameDir)) {
       this.logger.error(`Game not found: ${gameDir}`)
       return null
@@ -215,6 +214,7 @@ export class WineManager {
       process.chdir(gameDir)
       const child = await SystemUtils.executeCommandWine(wineCommand, [gameExecute, ...args], {
         env,
+        signal,
       })
       return child
     } catch (error) {

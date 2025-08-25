@@ -1,6 +1,7 @@
-import { generateDeviceId, generateDeviceInfo } from '@/utils/fingerprint'
+import { generateDeviceInfo } from '@/utils/fingerprint'
 import { SteakApi } from '..'
-
+import { useAuthStore } from '@/stores/auth/useAuthStore'
+const AuthStore = useAuthStore()
 export const getMyLibrary = (signal?: AbortSignal) => {
   return SteakApi.get('/store/private/library/my-games', { signal: signal })
 }
@@ -15,7 +16,7 @@ export const getGameDownloadInfo = (gameId: string, signal?: AbortSignal) => {
 
 export const renewUserRefreshToken = async () => {
   return await SteakApi.post('/user/auth/refresh', {
-    deviceId: await generateDeviceId(),
+    deviceId: AuthStore.user?.deviceId,
     deviceInfo: await generateDeviceInfo(),
   })
 }

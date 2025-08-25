@@ -13,11 +13,13 @@ import MainSidebar from './MainSidebar.vue'
 import MainContent from './MainContent.vue'
 import { useUseFromIpc } from '@/composables/useUseFromIpc'
 import { Toaster } from '@/components/ui/sonner'
+
 const QueueStore = useDownloadQueueStore()
 
 import 'vue-sonner/style.css'
 import { useDownloadQueueStore } from '@/stores/download/useDownloadStore'
 import { onBeforeMount, onMounted } from 'vue'
+import { useDownloadManagerSync } from '@/composables/useDownloadManagerSync'
 onBeforeMount(async () => {
   await useUseFromIpc()
   const info = await window.api.getDMQueueInformation()

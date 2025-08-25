@@ -3,7 +3,6 @@ import { session } from 'electron'
 import { getLoginWindow } from '../login_window'
 import { getMainWindow } from '../main_window'
 
-
 import { notify } from '../dialog/dialog'
 import { getRefreshToken, getToken } from '../auth/util'
 import { UserInfo } from './type'
@@ -33,9 +32,7 @@ const login = async (userInfo: UserInfo) => {
     throw new Error('User information is incomplete')
   }
   console.log('Logging in user:', userInfo.displayName)
-
   setUser(userInfo)
-
   const user = getUser()
   if (!user || !user.displayName) {
     throw new Error('User information is not set correctly')
@@ -44,8 +41,16 @@ const login = async (userInfo: UserInfo) => {
     accessToken: await getToken(),
     refreshToken: await getRefreshToken(),
   }
-  setUser(user)
   const loginWindow = getLoginWindow()
+  user.deviceId = await loginWindow?.webContents
+    .executeJavaScript('localStorage.getItem("deviceId");', true)
+    .then((deviceId) => {
+      return deviceId
+    })
+  console.log(user)
+
+  setUser(user)
+
   if (loginWindow) {
     loginWindow.close()
   }
@@ -59,4 +64,25 @@ const login = async (userInfo: UserInfo) => {
   }
 }
 
-export { logout, login }
+const setAuth = async () => {
+  const token = await getToken()
+  const refreshToken = await getRefreshToken()
+  if (!token || !refreshToken) {
+    logout()
+    notify({
+      title: 'Authentication Error',
+      body: 'Your session has expired. Please log in again.',
+    })
+    return
+  }
+  const user = getUser()
+  if (user) {
+    user.Authentication = {
+      accessToken: token,
+      refreshToken: refreshToken,
+    }
+    setUser(user)
+  }
+}
+
+export { logout, login, setAuth }

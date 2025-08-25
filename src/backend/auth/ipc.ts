@@ -1,9 +1,8 @@
-
 import { steakLoginUrl } from '../constants/url'
 
 import { createLoginWindow } from '../login_window'
 import { getUser } from './state'
-import { login, logout } from './controller'
+import { login, logout, setAuth } from './controller'
 import { removeToken } from './util'
 import { UserInfo } from './type'
 import { addHandler, addListener } from '../ipc/manager'
@@ -33,4 +32,8 @@ addListener('logout', () => {
 
 addHandler('removeToken', async () => {
   await removeToken()
+})
+
+addListener('setAuth', () => {
+  setAuth()
 })

@@ -11,9 +11,15 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
-
+import { useAuthStore } from '@/stores/auth/useAuthStore'
+const AuthStore = useAuthStore()
+const handleLogout = () => {
+  AuthStore.clearUser()
+  window.api.logout()
+}
 defineProps<{
   items: {
+    key: string
     title: string
     to: string
     icon?: LucideIcon
@@ -31,16 +37,21 @@ defineProps<{
         :default-open="item.isActive"
         class="group/collapsible"
       > -->
-      <SidebarMenuItem  v-for="item in items" :key="item.title">
+      <SidebarMenuItem v-for="item in items" :key="item.title">
         <!-- <CollapsibleTrigger as-child> -->
-        <SidebarMenuButton :class="'transition duration-300'"  size="xl" asChild>
+        <SidebarMenuButton :class="'transition duration-300'" size="xl" asChild>
           <!-- <component :is="item.icon" v-if="item.icon" />
               <span>{{ item.title }}</span>
               <ChevronRight class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" /> -->
-          <router-link :to="item.to">
+          <button @click="handleLogout" v-if="item.key === 'logout'" :to="item.to">
+            <component :is="item.icon" />
+            <span>{{ item.title }}</span>
+          </button>
+          <router-link v-else :to="item.to">
             <component :is="item.icon" />
             <span>{{ item.title }}</span>
           </router-link>
+
           <!-- <a :href="item.url">
                       <component :is="item.icon" />
                       <span>{{item.title}}</span>

@@ -1,4 +1,4 @@
-import { createAbortController } from '../util/aborthandler/aborthandler'
+import { callAbortController, createAbortController } from '../util/aborthandler/aborthandler'
 import { updateFrontendQueue, updateGameStatus } from './events'
 import { installGame, stopDownloadFile } from './controller'
 
@@ -26,17 +26,19 @@ import { notify } from '../dialog/dialog'
 import axios, { AxiosError } from 'axios'
 import { DownloadInfo } from '@/types/type'
 import { getUser } from '../auth'
-import {  initWebSocketManager } from '../ws/util'
+import { initWebSocketManager } from '../ws/util'
 import { WineManager } from '../wine/manager'
 
 import { CommonDependencies, WineInstallInfo } from '../wine/type'
 import { WINEGE_URL } from '../wine/constants'
 
-import { DMQueueElement } from './type'
+import { DMQueueElement, GameStatus } from './type'
 import { wineStore } from '../electron_store/state'
 import { WebSocketConfig, WebSocketEventHandler } from '../ws/types'
 import { endPointWS } from '../constants/url'
 import { SystemUtils } from '../util/system/system'
+import { getMainWindow } from '../main_window'
+import { ChildProcess } from 'child_process'
 
 // Function to initialize the download queue
 
@@ -76,6 +78,7 @@ async function init() {
       element.params.gameInfo.details.is_installed = true
       element.endTime = Date.now()
       element.status = 'done'
+      console.log('Download completed:', element.params.gameInfo.details)
 
       const installedElements = getInstalledGames()
       if (!installedElements[element.params.id]) {
@@ -84,8 +87,7 @@ async function init() {
           executable: element.downloadInfo?.execPath || '',
           install_path: path.join(element.params.path, element.params.id.toString()),
           install_size: element.params.installSize || 0,
-
-          version: element.params.gameInfo.details.version,
+          version: element.params.gameInfo.latestVersionName?.toString(),
         }
       }
 
@@ -323,7 +325,7 @@ function cancelDownload(id: string) {
   updateGameStatus({
     id,
     folder: getCurrentElement()?.params.path || '',
-    status: 'aborted',
+    status: 'abort',
   })
 
   if (getQueue().length > 0) {
@@ -412,12 +414,32 @@ function getQueueInformation() {
   }
 }
 
+function getGameStatusList() {
+  const DMElement = getQueueInformation()
+  const GameStatusList = [] as GameStatus[]
+  DMElement.elements.forEach((element) => {
+    GameStatusList.push({
+      id: element.params.id,
+      folder: element.params.path,
+      status: element.status ?? 'queued',
+    })
+  })
+  DMElement.finished.forEach((element) => {
+    GameStatusList.push({
+      id: element.params.id,
+      folder: element.params.path,
+      status: element.status ?? 'done',
+    })
+  })
+  console.log(GameStatusList)
+  return GameStatusList
+}
+
 // Function to launch a game
 async function launch(id: string, deviceId: string) {
   const installedElements = getInstalledGames()
   const token = getUser()?.Authentication?.accessToken
   const gameId = getFinished().find((el) => el.params.id === id)?.params.gameInfo.details.id
-  console.log(`Launching game: ${token}, Game ID: ${gameId}, Device ID: ${deviceId}`)
 
   if (!token || !gameId || !deviceId) {
     notify({
@@ -426,6 +448,7 @@ async function launch(id: string, deviceId: string) {
     })
     return
   }
+
   const config: WebSocketConfig = {
     endpoint: endPointWS,
     headers: {
@@ -446,127 +469,111 @@ async function launch(id: string, deviceId: string) {
     },
   }
 
-  if (installedElements[id]) {
-    const webSocket = await initWebSocketManager(config, handlers)
-    const { executable, install_path } = installedElements[gameId]
+  if (!installedElements[id]) return
+  const webSocket = await initWebSocketManager(config, handlers)
+  const { executable, install_path } = installedElements[gameId]
+  const safeExecutable = executable.replace(/^[/\\]+/, '')
+  const fullPath = path.join(install_path, safeExecutable)
+  const crl = createAbortController(id).signal
 
-    const safeExecutable = executable.replace(/^[/\\]+/, '')
-
-    const fullPath = path.join(install_path, safeExecutable)
-    if (process.platform === 'win32') {
-      const child = launchGame(fullPath, install_path)
-
-      child.on('spawn', async () => {
-        console.log(`Game launched successfully: ${fullPath}`)
-
-        updateGameStatus({
-          id: id,
-          folder: install_path,
-          status: 'launching',
-        })
-        webSocket.connect()
+  const attachChildHandlers = (child: ChildProcess) => {
+    child.on('spawn', async () => {
+      updateGameStatus({
+        id: id,
+        folder: install_path,
+        status: 'launching',
       })
 
-      child.on('error', (error: unknown) => {
-        notify({
-          title: 'Game Launch Error',
-          body: `Error launching game: ${(error as Error).message}`,
-        })
-        if (webSocket) {
-          webSocket.disconnect()
-        }
-      })
-      child.on('exit', async (code) => {
-        console.log(`Game process exited with code: ${code}`)
-        if (webSocket) {
-          webSocket.disconnect()
-        }
-      })
-    }
-    if (process.platform === 'linux') {
-      const wineManager = new WineManager()
-      const wineInstallations = wineStore.get('wineInstallation', [] as WineInstallInfo[])
-      console.log(wineInstallations)
-      let wineInstalled = wineInstallations[0]
-      if (wineInstallations.length <= 0) {
-        await wineManager.saveWineFetchInfo(WINEGE_URL)
-        await wineManager.downloadWine()
-        wineInstalled = wineStore.get('wineInstallation', [] as WineInstallInfo[])[0]
+      webSocket.connect()
+      if (webSocket.isConnected()) {
+        console.log('WebSocket is connected')
       }
+    })
 
-      if (!wineInstalled.installed) {
-        notify({
-          title: 'Wine Not Installed',
-          body: `Please install Wine ${wineInstalled.name} before launching the game.`,
-        })
+    child.on('error', async (error: unknown) => {
+      if (error instanceof Error && error.message.includes('abort')) {
         return
       }
-      const savePath = path.join(homePath, 'Games')
-      const pathPrefix = path.join(savePath, id.toString())
-      if (!SystemUtils.fileExists(pathPrefix)) {
-        const isCreating = await wineManager.createPreFix(
-          id.toString(),
-          savePath,
-          'win64',
-          wineInstalled.installPath,
-        )
-        if (!isCreating) {
-          notify({
-            title: 'Wine Prefix Creation Failed',
-            body: `Failed to create Wine prefix for ${id}`,
-          })
-          return
-        }
-        await wineManager.setActivePrefix(pathPrefix)
-        await wineManager.installDependencies([CommonDependencies.DXVK, CommonDependencies.VKD3D])
+      notify({
+        title: 'Game Launch Error',
+        body: `Error launching game: ${(error as Error).message}`,
+      })
+      callAbortController(id)
+      updateGameStatus({
+        id: id,
+        folder: install_path,
+        status: 'error',
+      })
+    })
+    child.on('exit', async (code) => {
+      console.log(`Game process exited with code: ${code}  for ${safeExecutable}`)
+      updateGameStatus({
+        id: id,
+        folder: install_path,
+        status: 'exited',
+      })
+      if (webSocket) {
+        webSocket.disconnect()
+        getMainWindow()?.reload()
       }
-
-      if (
-        (await wineManager.setActivePrefix(pathPrefix)) &&
-        (await wineManager.setWineInstallation(wineInstalled))
-      ) {
-        // Launch the game
-
-        const child = await wineManager.rungame(install_path, safeExecutable)
-        if (!child) {
-          notify({
-            title: 'Game Launch Failed',
-            body: `Failed to launch game: ${safeExecutable}`,
-          })
-          return
-        }
-
-        child.on('spawn', async () => {
-          webSocket.connect()
-          if (webSocket.isConnected()) {
-            console.log('WebSocket is connected')
-          }
-        })
-        updateGameStatus({
-          id: id,
-          folder: install_path,
-          status: 'launching',
-        })
-        child.on('error', async (error: unknown) => {
-          notify({
-            title: 'Game Launch Error',
-            body: `Error launching game: ${(error as Error).message}`,
-          })
-          if (webSocket) {
-            webSocket.disconnect()
-          }
-        })
-
-        child.on('exit', async (code) => {
-          console.log(`Game process exited with code: ${code}  for ${safeExecutable}`)
-          if (webSocket) {
-            webSocket.disconnect()
-          }
+    })
+    crl.addEventListener('abort', () => {
+      child.kill()
+      console.log('Game launch aborted, killing the process')
+    })
+  }
+  if (process.platform === 'win32') {
+    const child = launchGame(fullPath, install_path, crl)
+    attachChildHandlers(child)
+  }
+  if (process.platform === 'linux') {
+    const wineManager = new WineManager()
+    let wineInstalled = wineStore.get('wineInstallation', [] as WineInstallInfo[])[0]
+    if (!wineInstalled) {
+      await wineManager.saveWineFetchInfo(WINEGE_URL)
+      await wineManager.downloadWine()
+      wineInstalled = wineStore.get('wineInstallation', [] as WineInstallInfo[])[0]
+    }
+    if (!wineInstalled?.installed) {
+      return notify({
+        title: 'Wine Not Installed',
+        body: `Please install Wine ${wineInstalled?.name}`,
+      })
+    }
+    const savePath = path.join(homePath, 'Games')
+    const prefixPath = path.join(savePath, 'prefix')
+    if (!SystemUtils.fileExists(prefixPath)) {
+      const ok = await wineManager.createPreFix(
+        'prefix',
+        savePath,
+        'win64',
+        wineInstalled.installPath,
+      )
+      if (!ok) {
+        return notify({
+          title: 'Wine Prefix Creation Failed',
+          body: `Failed to create Wine prefix for ${id}`,
         })
       }
+      await wineManager.setActivePrefix(prefixPath)
+      await wineManager.installDependencies([CommonDependencies.DXVK, CommonDependencies.VKD3D])
+    }
+    if (
+      (await wineManager.setActivePrefix(prefixPath)) &&
+      (await wineManager.setWineInstallation(wineInstalled))
+    ) {
+      const child = await wineManager.rungame(install_path, safeExecutable, [], crl)
+      if (!child) {
+        return notify({
+          title: 'Game Launch Failed',
+          body: `Failed to launch game: ${safeExecutable}`,
+        })
+      }
+      attachChildHandlers(child)
     }
   }
 }
+
 export {
   init,
   addToQueue,
@@ -576,4 +583,5 @@ export {
   getQueueInformation,
   removeFinished,
   launch,
+  getGameStatusList,
 }

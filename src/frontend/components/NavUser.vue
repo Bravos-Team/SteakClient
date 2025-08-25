@@ -28,9 +28,9 @@ import {
 import { UserInfo } from '@/types/type'
 import { useAuthStore } from '@/stores/auth/useAuthStore'
 import { computed } from 'vue'
-const userStore = useAuthStore()
+const AuthStore = useAuthStore()
 const user = computed(() => {
-  const userData = userStore.getUser()
+  const userData = AuthStore.getUser()
   return {
     displayName: userData?.displayName || 'Guest',
     avatarUrl: userData?.avatarUrl || '',
@@ -38,9 +38,8 @@ const user = computed(() => {
 })
 
 const logout = () => {
-  userStore.clearUser()
+  AuthStore.clearUser()
   window.api.logout()
-  window.location.reload() // Reload the page to reflect the logout state
 }
 const { isMobile } = useSidebar()
 </script>
@@ -111,7 +110,7 @@ const { isMobile } = useSidebar()
               Notifications
             </DropdownMenuItem>
           </DropdownMenuGroup>
-          <DropdownMenuSeparator v-if="userStore.isAuthenticated()"/>
+          <DropdownMenuSeparator v-if="userStore.isAuthenticated()" />
           <DropdownMenuItem v-if="userStore.isAuthenticated()" @click="logout">
             <LogOut />
             Log out
